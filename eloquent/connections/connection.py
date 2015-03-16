@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import time
+from contextlib import contextmanager
 from .connection_interface import ConnectionInterface
 from ..query.grammars.grammar import QueryGrammar
 from ..query.builder import QueryBuilder
 from ..query.expression import QueryExpression
-#from ..schema.grammars import Grammar as QueryGrammar
 from ..query.processors.processor import QueryProcessor
 from ..exceptions.query import QueryException
 
@@ -13,6 +13,19 @@ from ..exceptions.query import QueryException
 class Connection(ConnectionInterface):
 
     def __init__(self, connection, database='', table_prefix='', config=None):
+        """
+        :param connection: A dbapi connection instance
+        :type connection: mixed
+
+        :param database: The database name
+        :type database: str
+
+        :param table_prefix: The table prefix
+        :type table_prefix: str
+
+        :param config: The connection configuration
+        :type config: dict
+        """
         self._connection = connection
         self._cursor = None
 
@@ -35,14 +48,13 @@ class Connection(ConnectionInterface):
 
         self._logging_queries = False
 
-        self._query_grammar = None
+        self._query_grammar = self.get_default_query_grammar()
 
         self._schema_grammar = None
 
         self._post_processor = self.get_default_post_processor()
 
         self.use_default_query_grammar()
-        #self.use_default_schema_grammar()
 
     def use_default_query_grammar(self):
         self._query_grammar = self.get_default_query_grammar()
@@ -50,23 +62,11 @@ class Connection(ConnectionInterface):
     def get_default_query_grammar(self):
         return QueryGrammar()
 
-    def use_default_schema_grammar(self):
-        self._schema_grammar = self.get_default_schema_grammar()
-
-    def get_default_schema_grammar(self):
-        return SchemaGrammar()
-
     def use_default_post_processor(self):
         self._post_processor = self.get_default_post_processor()
 
     def get_default_post_processor(self):
         return QueryProcessor()
-
-    def get_schema_builder(self):
-        if self._schema_grammar is None:
-            self._schema_grammar = self.get_default_schema_grammar()
-
-        return SchemaBuilder(self)
 
     def table(self, table):
         query = QueryBuilder(self, self._query_grammar, self._post_processor)
@@ -130,7 +130,7 @@ class Connection(ConnectionInterface):
 
             bindings_ = me.prepare_bindings(bindings_)
 
-            return me.get_connection().execute(query_, bindings_)
+            return me._get_cursor().execute(query_, bindings_)
 
         return self._run(query, bindings, callback)
 
@@ -148,6 +148,11 @@ class Connection(ConnectionInterface):
 
         return self._run(query, bindings, callback)
 
+    def _get_cursor(self):
+        self._cursor = self.get_connection().cursor()
+
+        return self._cursor
+
     def unprepared(self, query):
         def callback(me, query_, _):
             if me.pretending():
@@ -163,19 +168,21 @@ class Connection(ConnectionInterface):
 
         return bindings
 
-    def transaction(self, callback):
+    @contextmanager
+    def transaction(self):
         self.begin_transaction()
 
         try:
-            result = callback(self)
+            yield self
+        except Exception as e:
+            self.rollback()
+            raise
 
+        try:
             self.commit()
         except Exception:
             self.rollback()
-
             raise
-
-        return result
 
     def begin_transaction(self):
         self._transactions += 1
@@ -320,6 +327,24 @@ class Connection(ConnectionInterface):
     def set_schema_grammar(self, grammar):
         self._schema_grammar = grammar
 
+    def get_post_processor(self):
+        """
+        Get the query post processor used by the connection
+
+        :return: The query post processor
+        :rtype: QueryProcessor
+        """
+        return self._post_processor
+
+    def set_post_processor(self, processor):
+        """
+        Set the query post processor used by the connection
+
+        :param processor: The query post processor
+        :type processor: QueryProcessor
+        """
+        self._post_processor = processor
+
     def pretending(self):
         return self._pretending
 
@@ -347,3 +372,19 @@ class Connection(ConnectionInterface):
         grammar.set_table_prefix(self._table_prefix)
 
         return grammar
+
+    def __enter__(self):
+        self.begin_transaction()
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            try:
+                self.commit()
+            except Exception:
+                self.rollback()
+                raise
+        else:
+            self.rollback()
+            raise (exc_type, exc_val, exc_tb)

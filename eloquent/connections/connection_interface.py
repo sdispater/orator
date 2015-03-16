@@ -144,7 +144,7 @@ class ConnectionInterface(object):
         """
         raise NotImplementedError()
 
-    def transaction(self, callback):
+    def transaction(self):
         raise NotImplementedError()
 
     def begin_transaction(self):

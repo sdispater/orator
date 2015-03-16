@@ -9,13 +9,13 @@ from .connector import Connector
 class PostgresConnector(Connector):
 
     def connect(self, config):
-        return self.get_api().connect(
-            host=config['host'],
-            database=config['database'],
-            user=config['username'],
-            password=config['password'],
-            connection_factory=psycopg2.extras.DictConnection
+        connection = self.get_api().connect(
+            connection_factory=psycopg2.extras.DictConnection,
+            **dict(filter(lambda x: x[0] != 'driver', config.items()))
         )
+        connection.autocommit = True
+
+        return connection
 
     def get_api(self):
         return psycopg2

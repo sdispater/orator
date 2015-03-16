@@ -12,3 +12,24 @@ class PostgresConnection(Connection):
 
     def get_default_post_processor(self):
         return PostgresQueryProcessor()
+
+    def begin_transaction(self):
+        self._connection.autocommit = False
+
+        super(PostgresConnection, self).begin_transaction()
+
+    def commit(self):
+        if self._transactions == 1:
+            self._connection.commit()
+            self._connection.autocommit = True
+
+        self._transactions -= 1
+
+    def rollback(self):
+        if self._transactions == 1:
+            self._transactions = 0
+
+            self._connection.rollback()
+            self._connection.autocommit = True
+        else:
+            self._transactions -= 1

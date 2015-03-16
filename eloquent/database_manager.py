@@ -8,6 +8,13 @@ from .exceptions import ArgumentError
 class DatabaseManager(ConnectionResolverInterface):
 
     def __init__(self, config, factory=ConnectionFactory()):
+        """
+        :param config: The connections configuration
+        :type config: dict
+
+        :param factory: A connection factory
+        :type factory: ConnectionFactory
+        """
         self._config = config
         self._factory = factory
 
@@ -16,9 +23,18 @@ class DatabaseManager(ConnectionResolverInterface):
         self._extensions = {}
 
     def connection(self, name=None):
+        """
+        Get a database connection instance
+
+        :param name: The connection name
+        :type name: str
+
+        :return: A Connection instance
+        :rtype: Connection
+        """
         name, type = self._parse_connection_name(name)
 
-        if 'name' not in self._connections:
+        if name not in self._connections:
             connection = self._make_connection(name)
 
             self._set_connection_for_type(connection, type)
@@ -28,6 +44,15 @@ class DatabaseManager(ConnectionResolverInterface):
         return self._connections[name]
 
     def _parse_connection_name(self, name):
+        """
+        Parse the connection into a tuple of the name and read / write type
+
+        :param name: The name of the connection
+        :type name: str
+
+        :return: A tuple of the name and read / write type
+        :rtype: tuple
+        """
         if name is None:
             name = self.get_default_connection()
 
@@ -37,6 +62,14 @@ class DatabaseManager(ConnectionResolverInterface):
         return name, None
 
     def purge(self, name=None):
+        """
+        Disconnect from the given database and remove from local cache
+
+        :param name: The name of the connection
+        :type name: str
+
+        :rtype: None
+        """
         self.disconnect(name)
 
         if name in self._connections:
