@@ -13,7 +13,7 @@ setup(
     author='Sébastien Eustace',
     author_email='sebastien.eustace@gmail.com',
     url='https://github.com/sdispater/eloquent',
-    download_url='https://github.com/sdispater/eloquent/archive/v0.1.tar.gz',
+    download_url='https://github.com/sdispater/eloquent/archive/v%s.tar.gz' % __version__,
     packages=find_packages(),
     install_requires=[],
     tests_require=['nose', 'mock'],

@@ -1,0 +1,111 @@
+Basic Usage
+===========
+
+Configuration
+-------------
+
+All you need to get you started is the configuration describing your database connections
+and passing it to a ``DatabaseManager`` instance.
+
+.. code-block:: python
+
+    from eloquent import DatabaseManager
+
+    config = {
+        'mysql': {
+            'driver': 'mysql',
+            'host': 'localhost',
+            'database': 'database',
+            'username': 'root',
+            'password': '',
+            'prefix': ''
+        }
+    }
+
+    db = DatabaseManager(config)
+
+
+Read / Write connections
+------------------------
+
+Sometimes you may wish to use one database connection for SELECT statements,
+and another for INSERT, UPDATE, and DELETE statements. Eloquent makes this easy,
+and the proper connections will always be used whether you use raw queries, the query
+builder or the actual ORM
+
+Here is an example of how read / write connections should be configured:
+
+.. code-block:: python
+
+    config = {
+        'mysql': {
+            'read': [
+                'host': '192.168.1.1'
+            ],
+            'read': [
+                'host': '192.168.1.2'
+            ],
+            'driver': 'mysql',
+            'database': 'database',
+            'username': 'root',
+            'password': '',
+            'prefix': ''
+        }
+    }
+
+Note that two keys have been added to the configuration dictionary: ``read`` and ``write``.
+Both of these keys have dictionary values containing a single key: ``host``.
+The rest of the database options for the ``read`` and ``write`` connections
+will be merged from the main ``mysql`` dictionary. So, you only need to place items
+in the ``read`` and ``write`` dictionaries if you wish to override the values in the main dictionary.
+So, in this case, ``192.168.1.1`` will be used as the "read" connection, while ``192.168.1.2``
+will be used as the "write" connection. The database credentials, prefix, character set,
+and all other options in the main ``mysql`` dictionary will be shared across both connections.
+
+Running queries
+---------------
+
+Once you have configured your database connection, you can run queries.
+
+
+Running a select query
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    results = db.select('select * from users where id = ?', [1])
+
+The ``select`` method will always return a list of results.
+
+Running an insert statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    db.insert('insert into users (id, name) values (?, ?)', [1, 'John'])
+
+Running an update statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    db.update('update users set votes = 100 where name = ?', ['John'])
+
+Running a delete statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    db.delete('delete from users')
+
+
+.. note::
+
+    The ``update`` and ``delete`` statements return the number of rows affected by the operation.
+
+Running a general statement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    db.statement('drop table users')
