@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import psycopg2
-import psycopg2.extras
+try:
+    import psycopg2
+    import psycopg2.extras
+except ImportError:
+    pass
 
 from .connector import Connector
 
