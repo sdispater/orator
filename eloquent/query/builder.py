@@ -1029,13 +1029,18 @@ class QueryBuilder(object):
         :type key: str
 
         :return: The list of values
-        :rtype: list
+        :rtype: list or dict
         """
         columns = self._get_list_select(column, key)
 
-        results = Collection(self.get(columns))
+        if key is not None:
+            results = {}
+            for result in self.get(columns):
+                results[result[key]] = result[column]
+        else:
+            results = list(map(lambda x: x[column], self.get(columns)))
 
-        return results.lists(columns[0], columns[1] if 1 < len(columns) else None)
+        return results
 
     def _get_list_select(self, column, key=None):
         """

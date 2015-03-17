@@ -891,8 +891,6 @@ class QueryBuilderTestCase(EloquentTestCase):
         self.assertEqual(result, results[0])
 
     def test_list_methods_gets_list_of_colmun_values(self):
-        # TODO
-        return
         builder = self.get_builder()
         results = [
             {'foo': 'bar'}, {'foo': 'baz'}
@@ -902,9 +900,16 @@ class QueryBuilderTestCase(EloquentTestCase):
         result = builder.from_('users').where('id', '=', 1).lists('foo')
         self.assertEqual(['bar', 'baz'], result)
 
+        builder = self.get_builder()
+        results = [
+            {'id': 1, 'foo': 'bar'}, {'id': 10, 'foo': 'baz'}
+        ]
+        builder.get_connection().select.return_value = results
+        builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results)
+        result = builder.from_('users').where('id', '=', 1).lists('foo', 'id')
+        self.assertEqual({1: 'bar', 10: 'baz'}, result)
+
     def test_implode(self):
-        # TODO
-        return
         builder = self.get_builder()
         results = [
             {'foo': 'bar'}, {'foo': 'baz'}
@@ -913,6 +918,15 @@ class QueryBuilderTestCase(EloquentTestCase):
         builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results)
         result = builder.from_('users').where('id', '=', 1).implode('foo')
         self.assertEqual('barbaz', result)
+
+        builder = self.get_builder()
+        results = [
+            {'foo': 'bar'}, {'foo': 'baz'}
+        ]
+        builder.get_connection().select.return_value = results
+        builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results)
+        result = builder.from_('users').where('id', '=', 1).implode('foo', ',')
+        self.assertEqual('bar,baz', result)
 
     def test_pluck_return_single_column(self):
         builder = self.get_builder()
