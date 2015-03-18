@@ -1129,6 +1129,16 @@ class QueryBuilderTestCase(EloquentTestCase):
         )
         self.assertTrue(result)
 
+    def test_insert_method_with_keyword_arguments(self):
+        builder = self.get_builder()
+        query = 'INSERT INTO "users" ("email") VALUES (?)'
+        builder.get_connection().insert.return_value = True
+        result = builder.from_('users').insert({'email': 'foo'})
+        builder.get_connection().insert.assert_called_once_with(
+            query, ['foo']
+        )
+        self.assertTrue(result)
+
     def test_sqlite_multiple_insert(self):
         builder = self.get_sqlite_builder()
         query = 'INSERT INTO "users" ("email", "name") ' \
@@ -1193,6 +1203,25 @@ class QueryBuilderTestCase(EloquentTestCase):
         query = 'UPDATE `users` SET `email` = %s, `name` = %s WHERE `id` = %s' % (marker, marker, marker)
         builder.get_connection().update.return_value = 1
         result = builder.from_('users').where('id', '=', 1).update(email='foo', name='bar')
+        builder.get_connection().update.assert_called_with(
+            query, ['foo', 'bar', 1]
+        )
+        self.assertEqual(1, result)
+
+    def test_update_with_dictionaries(self):
+        builder = self.get_builder()
+        query = 'UPDATE "users" SET "email" = ?, "name" = ? WHERE "id" = ?'
+        builder.get_connection().update.return_value = 1
+        result = builder.from_('users').where('id', '=', 1).update({'email': 'foo', 'name': 'bar'})
+        builder.get_connection().update.assert_called_with(
+            query, ['foo', 'bar', 1]
+        )
+        self.assertEqual(1, result)
+        builder = self.get_builder()
+
+        query = 'UPDATE "users" SET "email" = ?, "name" = ? WHERE "id" = ?'
+        builder.get_connection().update.return_value = 1
+        result = builder.from_('users').where('id', '=', 1).update({'email': 'foo'}, name='bar')
         builder.get_connection().update.assert_called_with(
             query, ['foo', 'bar', 1]
         )

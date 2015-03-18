@@ -1206,22 +1206,27 @@ class QueryBuilder(object):
         if len(results) > 0:
             return dict((k.lower(), v) for k, v in results[0].items())['aggregate']
 
-    def insert(self, values):
+    def insert(self, _values=None, **values):
         """
         Insert a new record into the database
 
-        :param values: The new record values
-        :type values: dict or list
+        :param _values: The new record values
+        :type _values: dict or list
+
+        :param values: The new record values as keyword arguments
+        :type values: dict
 
         :return: The result
         :rtype: bool
         """
-        if not values:
+        if not values and not _values:
             return True
 
-        if not isinstance(values, list):
+        if not isinstance(_values, list):
+            values.update(_values)
             values = [values]
         else:
+            values = _values
             for i, value in enumerate(values):
                 values[i] = OrderedDict(sorted(value.items()))
 
@@ -1258,7 +1263,7 @@ class QueryBuilder(object):
 
         return self._processor.process_insert_get_id(self, sql, values, sequence)
 
-    def update(self, **values):
+    def update(self, _values=None, **values):
         """
         Update a record in the database
 
@@ -1268,6 +1273,9 @@ class QueryBuilder(object):
         :return: The number of records affected
         :rtype: int
         """
+        if _values is not None:
+            values.update(_values)
+
         values = OrderedDict(sorted(values.items()))
 
         bindings = list(values.values()) + self.get_bindings()
@@ -1445,7 +1453,7 @@ class QueryBuilder(object):
         Get the query connection
 
         :return: The current connection instance
-        :rtype: Connection
+        :rtype: eloquent.connections.connection.Connection
         """
         return self._connection
 
