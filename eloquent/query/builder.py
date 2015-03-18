@@ -197,7 +197,7 @@ class QueryBuilder(object):
             if one is None:
                 raise ArgumentError('Missing "one" argument')
 
-            join = JoinClause(type, table)
+            join = JoinClause(table, type)
 
             self.joins.append(join.on(
                 one, operator, two, 'and', where
@@ -229,7 +229,7 @@ class QueryBuilder(object):
         """
         return self.join(table, one, operator, two, type, True)
 
-    def left_join(self, table, one, operator=None, two=None):
+    def left_join(self, table, one=None, operator=None, two=None):
         """
         Add a left join to the query
 
@@ -248,6 +248,9 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
+        if isinstance(table, JoinClause):
+            table.type = 'left'
+
         return self.join(table, one, operator, two, 'left')
 
     def left_join_where(self, table, one, operator, two):
@@ -271,7 +274,7 @@ class QueryBuilder(object):
         """
         return self.join_where(table, one, operator, two, 'left')
 
-    def right_join(self, table, one, operator=None, two=None):
+    def right_join(self, table, one=None, operator=None, two=None):
         """
         Add a right join to the query
 
@@ -290,6 +293,9 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
+        if isinstance(table, JoinClause):
+            table.type = 'right'
+
         return self.join(table, one, operator, two, 'right')
 
     def right_join_where(self, table, one, operator, two):

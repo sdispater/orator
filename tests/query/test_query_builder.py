@@ -764,7 +764,7 @@ class QueryBuilderTestCase(EloquentTestCase):
     def test_complex_joins(self):
         builder = self.get_builder()
         builder.select('*').from_('users').join(
-            JoinClause('inner', 'contacts')
+            JoinClause('contacts')
             .on('users.id', '=', 'contacts.id')
             .or_on('users.name', '=', 'contacts.name')
         )
@@ -777,7 +777,7 @@ class QueryBuilderTestCase(EloquentTestCase):
 
         builder = self.get_builder()
         builder.select('*').from_('users').join(
-            JoinClause('inner', 'contacts')
+            JoinClause('contacts')
             .where('users.id', '=', 'foo')
             .or_where('users.name', '=', 'bar')
         )
@@ -797,10 +797,32 @@ class QueryBuilderTestCase(EloquentTestCase):
         )
         self.assertEqual(['foo', 'bar'], builder.get_bindings())
 
+        builder = self.get_builder()
+        builder.select('*').from_('users').left_join(
+            JoinClause('contacts')
+            .where('users.id', '=', 'foo')
+            .or_where('users.name', '=', 'bar')
+        )
+        self.assertEqual(
+            'SELECT * FROM "users" '
+            'LEFT JOIN "contacts" ON "users"."id" = ? '
+            'OR "users"."name" = ?',
+            builder.to_sql()
+        )
+        self.assertEqual(['foo', 'bar'], builder.get_bindings())
+
+        self.assertEqual(
+            'SELECT * FROM "users" '
+            'LEFT JOIN "contacts" ON "users"."id" = ? '
+            'OR "users"."name" = ?',
+            builder.to_sql()
+        )
+        self.assertEqual(['foo', 'bar'], builder.get_bindings())
+
     def test_join_where_null(self):
         builder = self.get_builder()
         builder.select('*').from_('users').join(
-            JoinClause('inner', 'contacts')
+            JoinClause('contacts')
             .on('users.id', '=', 'contacts.id')
             .where_null('contacts.deleted_at')
         )
@@ -814,7 +836,7 @@ class QueryBuilderTestCase(EloquentTestCase):
 
         builder = self.get_builder()
         builder.select('*').from_('users').join(
-            JoinClause('inner', 'contacts')
+            JoinClause('contacts')
             .on('users.id', '=', 'contacts.id')
             .or_where_null('contacts.deleted_at')
         )
@@ -829,7 +851,7 @@ class QueryBuilderTestCase(EloquentTestCase):
     def test_join_where_not_null(self):
         builder = self.get_builder()
         builder.select('*').from_('users').join(
-            JoinClause('inner', 'contacts')
+            JoinClause('contacts')
             .on('users.id', '=', 'contacts.id')
             .where_not_null('contacts.deleted_at')
         )
@@ -843,7 +865,7 @@ class QueryBuilderTestCase(EloquentTestCase):
 
         builder = self.get_builder()
         builder.select('*').from_('users').join(
-            JoinClause('inner', 'contacts')
+            JoinClause('contacts')
             .on('users.id', '=', 'contacts.id')
             .or_where_not_null('contacts.deleted_at')
         )
@@ -1424,7 +1446,7 @@ class QueryBuilderTestCase(EloquentTestCase):
             .where('registered', True)\
             .group_by('city')\
             .having('population', '>', 3)\
-            .join(JoinClause('inner', 'othertable').where('bar', '=', 'foo'))
+            .join(JoinClause('othertable').where('bar', '=', 'foo'))
 
         self.assertEqual(expected_sql, builder.to_sql())
         self.assertEqual(expected_bindings, builder.get_bindings())

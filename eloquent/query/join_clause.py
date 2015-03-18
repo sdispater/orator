@@ -5,7 +5,7 @@ from .expression import QueryExpression
 
 class JoinClause(object):
 
-    def __init__(self, type, table):
+    def __init__(self, table, type='inner'):
         self.type = type
         self.table = table
 
