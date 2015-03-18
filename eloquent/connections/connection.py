@@ -69,9 +69,29 @@ class Connection(ConnectionInterface):
         return QueryProcessor()
 
     def table(self, table):
-        query = QueryBuilder(self, self._query_grammar, self._post_processor)
+        """
+        Begin a fluent query against a database table
+
+        :param table: The database table
+        :type table: str
+
+        :return: A QueryBuilder instance
+        :rtype: QueryBuilder
+        """
+        query = self.query()
 
         return query.from_(table)
+
+    def query(self):
+        """
+        Begin a fluent query
+
+        :return: A QueryBuilder instance
+        :rtype: QueryBuilder
+        """
+        query = QueryBuilder(self, self._query_grammar, self._post_processor)
+
+        return query
 
     def raw(self, value):
         return QueryExpression(value)

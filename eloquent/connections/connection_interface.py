@@ -15,6 +15,15 @@ class ConnectionInterface(object):
         """
         raise NotImplementedError()
 
+    def query(self):
+        """
+        Begin a fluent query
+
+        :return: A QueryBuilder instance
+        :rtype: QueryBuilder
+        """
+        raise NotImplementedError()
+
     def raw(self, value):
         """
         Get a new raw query expression
