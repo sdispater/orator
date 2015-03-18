@@ -150,7 +150,7 @@ class Connection(ConnectionInterface):
 
             bindings_ = me.prepare_bindings(bindings_)
 
-            return me._get_cursor().execute(query_, bindings_)
+            return me._new_cursor().execute(query_, bindings_)
 
         return self._run(query, bindings, callback)
 
@@ -161,16 +161,19 @@ class Connection(ConnectionInterface):
 
             bindings_ = me.prepare_bindings(bindings_)
 
-            cursor = me.get_connection().cursor()
+            cursor = me._new_cursor()
             cursor.execute(query_, bindings_)
 
             return cursor.rowcount
 
         return self._run(query, bindings, callback)
 
-    def _get_cursor(self):
+    def _new_cursor(self):
         self._cursor = self.get_connection().cursor()
 
+        return self._cursor
+
+    def get_cursor(self):
         return self._cursor
 
     def unprepared(self, query):
