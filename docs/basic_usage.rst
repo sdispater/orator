@@ -109,3 +109,73 @@ Running a general statement
 .. code-block:: python
 
     db.statement('drop table users')
+
+
+Database transactions
+---------------------
+
+To run a set of operations within a database transaction, you can use the ``transaction`` method
+which is a context manager:
+
+.. code-block:: python
+
+    with db.transaction():
+        db.table('users').update({votes: 1})
+        db.table('posts').delete()
+
+.. note::
+
+    Any exception thrown within a transaction block will cause the transaction to be rolled back
+    automatically.
+
+Sometimes you may need to start a transaction yourself:
+
+.. code-block:: python
+
+    db.begin_transaction()
+
+You can rollback a transaction with the ``rollback`` method:
+
+.. code-block:: python
+
+    db.rollback()
+
+You can also commit a transaction via the ``commit`` method:
+
+.. code-block:: python
+
+    db.commit()
+
+
+.. warning::
+
+    By default, all underlying DBAPI connections are set to be in autocommit mode
+    meaning that you don't need to explicitly commit after each operation.
+
+
+Accessing connections
+---------------------
+
+When using multiple connections, you can access them via the ``connection()`` method:
+
+.. code-block:: python
+
+    users = db.connection('foo').table('users').get()
+
+You also can access the raw, underlying dbapi connection instance:
+
+.. code-block:: python
+
+    db.connection().get_connection()
+
+Sometimes, you may need to reconnect to a given database:
+
+.. code-block:: python
+
+    db.reconnect('foo')
+
+If you need to disconnect from the given database, use the ``disconnect`` method:
+
+.. code-block:: python
+
+    db.disconnect('foo')

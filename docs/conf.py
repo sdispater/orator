@@ -28,7 +28,9 @@ import os
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []
+extensions = [
+    'sphinx.ext.autodoc'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -85,7 +87,7 @@ exclude_patterns = ['_build']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'pastie'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -241,7 +243,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'Eloquent', u'Eloquent Documentation',
-   u'Sébastien Eustace', 'Eloquent', 'One line description of project.',
+   u'Sébastien Eustace', 'Eloquent', 'The Eloquent ORM provides a simple yet beautiful ActiveRecord implementation.',
    'Miscellaneous'),
 ]
 

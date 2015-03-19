@@ -16,6 +16,6 @@ You can install Eloquent in 2 different ways:
     The different dbapi packages are not part of the package dependencies,
     so you must install them in order to connect to corresponding databases:
 
-        * Postgres: pyscopg2
-        * MySQL: PyMySQL or MySQL-python
-        * Sqlite: The sqlite3 is bundled with Python by default
+        * Postgres: ``pyscopg2``
+        * MySQL: ``PyMySQL`` or ``MySQL-python``
+        * Sqlite: The ``sqlite3`` module is bundled with Python by default

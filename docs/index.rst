@@ -11,6 +11,7 @@ but modified to be more pythonic.
 
     installation
     basic_usage
+    query_builder
 
 
 
@@ -20,4 +21,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
