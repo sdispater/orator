@@ -1024,6 +1024,26 @@ class QueryBuilder(object):
             not self._use_write_connection
         )
 
+    def chunk(self, count):
+        """
+        Chunk the results of the query
+
+        :param count: The chunk size
+        :type count: int
+
+        :return: The current chunk
+        :rtype: list
+        """
+        page = 1
+        results = self.for_page(page, count).get()
+
+        while len(results) > 0:
+            yield results
+
+            page += 1
+
+            results = self.for_page(page, count).get()
+
     def lists(self, column, key=None):
         """
         Get a list with the values of a given column
