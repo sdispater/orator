@@ -15,8 +15,8 @@ setup(
     url='https://github.com/sdispater/eloquent',
     download_url='https://github.com/sdispater/eloquent/archive/%s.tar.gz' % __version__,
     packages=find_packages(),
-    install_requires=[],
-    tests_require=['pytest', 'mock'],
+    install_requires=['simplejson', 'arrow', 'inflection', 'six'],
+    tests_require=['pytest', 'mock', 'flexmock'],
     test_suite='nose.collector',
     classifiers=[
         'Intended Audience :: Developers',

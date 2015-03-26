@@ -1,3 +1,5 @@
+.. _BasicUsage:
+
 Basic Usage
 ===========
 
@@ -24,6 +26,8 @@ and passing it to a ``DatabaseManager`` instance.
 
     db = DatabaseManager(config)
 
+
+.. _read_write_connections:
 
 Read / Write connections
 ------------------------

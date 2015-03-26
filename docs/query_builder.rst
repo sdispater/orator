@@ -1,3 +1,5 @@
+.. _QueryBuilder:
+
 Query Builder
 =============
 
@@ -32,6 +34,17 @@ Retrieving all row from a table
 
     for user in users:
         print(user['name'])
+
+
+Chunking results from a table
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    for users in db.table('users').chunk(100):
+        for user in users:
+            # ...
+
 
 Retrieving a single row from a table
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

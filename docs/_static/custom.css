@@ -1,0 +1,256 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,400italic,500,700);
+@import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
+@import url("css/theme.css");
+@import url("highlight.css");
+
+body {
+    font-family: "Roboto", sans-serif;
+}
+
+.wy-body-for-nav {
+    background: #FFFFFF;
+}
+
+.wy-nav-content {
+    background: #FFFFFF;
+}
+
+.wy-nav-content-wrap {
+    background: #FFFFFF;
+}
+
+.rst-content h1:hover .headerlink,
+.rst-content h2:hover .headerlink,
+.rst-content h3:hover .headerlink,
+.rst-content h4:hover .headerlink,
+.rst-content h5:hover .headerlink,
+.rst-content h6:hover .headerlink,
+.rst-content dl dt:hover .headerlink {
+    display: inline;
+}
+
+.wy-plain-list-disc li,
+.rst-content .section ul li,
+.rst-content .toctree-wrapper ul li,
+article ul li {
+    font: 400 14px/28px "Roboto",sans-serif;
+    color: #7A7A7A;
+}
+
+.wy-nav-side {
+    background: #2B303B;
+}
+
+.wy-side-nav-search {
+    background-color: rgb(39, 43, 53);
+}
+
+.wy-menu-vertical li.current {
+    background: rgb(33, 37, 45);
+}
+
+.wy-menu-vertical li.on a, .wy-menu-vertical li.current > a {
+    background: #2B303B;
+    border: 0;
+}
+
+.wy-menu-vertical li.current a {
+    font-size: 13px;
+    border-right: 0;
+}
+
+.wy-menu-vertical a,
+.wy-menu-vertical a:visited {
+    color: #788195;
+    line-height: 24px;
+}
+
+.wy-menu-vertical a:hover {
+    color: #FFFFFF;
+    background: none;
+}
+
+.wy-menu-vertical li.current a,
+.wy-menu-vertical li.current a:visited {
+    color: #788195;
+}
+
+.wy-menu-vertical li.current a:hover {
+    color: #FFFFFF;
+    background: none;
+}
+
+.wy-menu-vertical li.current > a {
+    color: #FFFFFF !important;
+}
+
+.wy-menu-vertical li.current > a:hover {
+    background: #2B303B !important;
+}
+
+.wy-side-nav-search input[type="text"] {
+    border: 1px solid #2B303B;
+    background: rgb(23, 27, 35);
+    box-shadow: none;
+    color: #FFFFFF;
+    border-radius: 4px;
+}
+
+.wy-side-nav-search > a,
+.wy-side-nav-search > a:visited {
+    color: #FFFFFF;
+}
+
+.wy-side-nav-search > a:hover {
+    background: none;
+}
+
+.rst-content .highlighted {
+    background: rgba(205, 220, 57, 0.7);
+    border: 1px solid rgba(205, 220, 57, 0.9);
+    padding: 1px 3px;
+    border-radius: 3px;
+    color: rgba(135, 150, 0, 1);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #7A7A7A;
+    padding: 10px 0px;
+    font-family: "Montserrat",serif;
+    line-height: 1;
+    margin: 40px 0 30px 0;
+    font-weight: 400;
+}
+
+h1 {
+    font-size: 42px;
+}
+
+h2 {
+    font-size: 32px;
+    color: #2C3E50;
+    position: relative;
+}
+
+h2:before {
+    content: "#";
+    margin-left: -30px;
+    font-size: 32px;
+    top: 10px;
+    color: #03A9F4;
+    opacity: 0.6;
+    position: absolute;
+}
+
+h3 {
+    font-size: 24px;
+}
+
+h4 {
+    font-size: 20px;
+}
+
+
+h1,
+h1 a,
+.header h1,
+.header h1 a {
+    font: 700 42px/66px "Roboto", "Montserrat", sans-serif;
+    margin-bottom: 30px;
+    font-weight: 700;
+    color: #2C3E50;
+}
+
+a, a:visited {
+    color: #00BCD4;
+}
+
+p {
+    font: 400 14px/28px "Roboto",sans-serif;
+    color: #7A7A7A;
+}
+
+pre, pre code, .rst-content tt {
+    background-color: #FAFAFA;
+    font-size: 14px;
+}
+
+pre, code, .rst-content tt {
+	font-family: "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
+	font-weight: 400;
+    border-radius: 3px;
+    font-size: 1em;
+    margin: 0px 2px;
+}
+
+div[class^="highlight"] {
+    border: 0;
+}
+
+.highlight > pre, div[class^="highlight"] pre {
+	border: 1px solid #F2F2F2;
+    font-size: 13px;
+    padding: 4%;
+}
+
+code {
+    background: #FAFAFA;
+}
+
+p > code {
+    color: #03A9F4;
+    padding: 0.3em 0.5em;
+    display: inline;
+}
+
+.rst-content .admonition-title {
+    display: none;
+}
+
+.rst-content .note,
+.rst-content .warning {
+    padding: 0px 40px;
+    margin: 30px 0px;
+    background: #FFFFFF;
+}
+
+.rst-content .note {
+    border-left: 1px solid rgba(60, 147, 206, 0.7);
+    color: rgb(99, 169, 216) !important;
+}
+
+.rst-content .warning {
+    border-left: 1px solid #FF9800;
+    color: #FFC107 !important;
+}
+
+.rst-content .note > p {
+    padding: 12px 12px 12px 0;
+    color: rgb(99, 169, 216) !important;
+}
+
+.rst-content .warning > p {
+    padding: 12px 12px 12px 0;
+    color: #FF9800 !important;
+}
+
+.note code {
+    background-color: rgba(49, 112, 143, 0.07);
+    border-color: rgba(49, 112, 143, 0.1);
+    color: inherit;
+    padding: 0.3em 0.5em;
+    display: inline;
+}
+
+.note ul li,
+.warning ul li {
+    color: inherit !important;
+}
+
+.warning code {
+    background-color: rgba(255, 152, 0, 0.07);
+    border-color: rgba(255, 152, 0, 0.1);
+    color: inherit;
+    padding: 0.3em 0.5em;
+    display: inline;
+}
