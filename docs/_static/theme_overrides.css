@@ -200,7 +200,7 @@ code {
 }
 
 p > code,
-.rst-content p > tt {
+.rst-content tt {
     color: #03A9F4;
     padding: 0.3em 0.5em;
     display: inline;
@@ -240,7 +240,6 @@ p > code,
 .note code {
     background-color: rgba(49, 112, 143, 0.07);
     border-color: rgba(49, 112, 143, 0.1);
-    color: inherit;
     padding: 0.3em 0.5em;
     display: inline;
 }
@@ -250,10 +249,10 @@ p > code,
     color: inherit !important;
 }
 
-.warning code {
+.warning code,
+.warning tt {
     background-color: rgba(255, 152, 0, 0.07);
     border-color: rgba(255, 152, 0, 0.1);
-    color: inherit;
     padding: 0.3em 0.5em;
     display: inline;
 }
