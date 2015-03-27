@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import copy
 import simplejson as json
 import arrow
 import inflection
@@ -9,6 +8,8 @@ from ..exceptions.orm import MassAssignmentError
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
+from .relations import Relation, HasOne, HasMany
+from .relations.dynamic_property import DynamicProperty
 
 
 class MetaModel(type):
@@ -61,6 +62,7 @@ class Model(object):
         self.__dates = []
         self.__original = {}
         self.__attributes = {}
+        self.__relations = {}
 
         self._boot_if_not_booted()
 
@@ -459,6 +461,55 @@ class Model(object):
         # TODO
 
     # TODO: Relations
+    def has_one(self, related, foreign_key=None, local_key=None):
+        """
+        Define a one to one relationship.
+
+        :param related: The related model:
+        :type related: Model class
+
+        :param foreign_key: The foreign key
+        :type foreign_key: str
+
+        :param local_key: The local key
+        :type local_key: str
+
+        :rtype: HasOne
+        """
+        if not foreign_key:
+            foreign_key = self.get_foreign_key()
+
+        instance = related()
+
+        if not local_key:
+            local_key = self.get_key_name()
+
+        return HasOne(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+
+    def has_many(self, related, foreign_key=None, local_key=None):
+        """
+        Define a one to many relationship.
+
+        :param related: The related model:
+        :type related: Model class
+
+        :param foreign_key: The foreign key
+        :type foreign_key: str
+
+        :param local_key: The local key
+        :type local_key: str
+
+        :rtype: HasOne
+        """
+        if not foreign_key:
+            foreign_key = self.get_foreign_key()
+
+        instance = related()
+
+        if not local_key:
+            local_key = self.get_key_name()
+
+        return HasMany(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
 
     @classmethod
     def destroy(cls, *ids):
@@ -933,6 +984,14 @@ class Model(object):
         """
         return self.__timestamps__
 
+    def get_foreign_key(self):
+        """
+        Get the default foreign key name for the model
+
+        :rtype: str
+        """
+        return '%s_id' % inflection.singularize(inflection.tableize(self.__class__.__name__))
+
     def get_hidden(self):
         """
         Get the hidden attributes for the model.
@@ -1206,6 +1265,13 @@ class Model(object):
             return self._get_attribute_value(key)
 
         # TODO: relations
+        if key in self.__relations:
+            return self.__relations[key]
+
+        relation = super(Model, self).__getattribute__(key)
+
+        if relation:
+            return self._get_relationship_from_method(key)
 
         raise AttributeError(key)
 
@@ -1230,6 +1296,24 @@ class Model(object):
 
     def _get_attribute_from_dict(self, key):
         return self.__attributes.get(key)
+
+    def _get_relationship_from_method(self, method):
+        """
+        Get a relationship value from a method.
+
+        :param method: The method name
+        :type method: str
+
+        :rtype: mixed
+        """
+        relations = super(Model, self).__getattribute__(method)
+
+        if not isinstance(relations, Relation):
+            raise RuntimeError('Relationship method must return an object of type Relation')
+
+        self.__relations[method] = DynamicProperty(relations.get_results(), relations)
+
+        return self.__relations[method]
 
     def has_get_mutator(self, key):
         """
@@ -1509,6 +1593,47 @@ class Model(object):
     def set_exists(self, exists):
         self.__exists = exists
 
+    def get_relations(self):
+        """
+        Get all the loaded relations for the instance.
+
+        :rtype: dict
+        """
+        return self.__relations
+
+    def get_relation(self, relation):
+        """
+        Get a specific relation.
+
+        :param relation: The name of the relation.
+        :type relation: str
+
+        :rtype: mixed
+        """
+        return self.__relations[relation]
+
+    def set_relation(self, relation, value):
+        """
+        Set the specific relation in the model.
+
+        :param relation: The name of the relation
+        :type relation: str
+
+        :param value: The relation
+        :type value: mixed
+
+        :return: The current Model instance
+        :rtype: Model
+        """
+        self.__relations[relation] = value
+
+        return self
+
+    def set_relations(self, relations):
+        self.__relations = relations
+
+        return self
+
     def get_connection(self):
         """
         Get the database connection for the model
@@ -1572,9 +1697,13 @@ class Model(object):
         """
         cls._resolver = None
 
-    def __getattr__(self, item):
+    def __getattribute__(self, item):
         try:
-            return super(Model, self).__getattribute__(item)
+            attr = super(Model, self).__getattribute__(item)
+            if isinstance(attr, Relation):
+                return self.get_attribute(item)
+
+            return attr
         except AttributeError:
             return self.get_attribute(item)
 
