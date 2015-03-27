@@ -163,6 +163,10 @@ a, a:visited {
     color: #00BCD4;
 }
 
+a > em {
+    font-style: normal;
+}
+
 p {
     font: 400 14px/28px "Roboto",sans-serif;
     color: #7A7A7A;
@@ -195,7 +199,8 @@ code {
     background: #FAFAFA;
 }
 
-p > code {
+p > code,
+p > .tt {
     color: #03A9F4;
     padding: 0.3em 0.5em;
     display: inline;
