@@ -180,4 +180,7 @@ class Relation(object):
         return self.__dynamic(item)
 
     def __call__(self, *args, **kwargs):
+        self._query = self._related.new_query()
+        self.add_constraints()
+
         return self
