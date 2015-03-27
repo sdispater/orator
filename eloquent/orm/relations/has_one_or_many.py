@@ -93,6 +93,7 @@ class HasOneOrMany(Relation):
         :rtype: list
         """
         dictionary = self._build_dictionary(results)
+        print(dictionary)
 
         for model in models:
             key = model.get_attribute(self._local_key)
@@ -115,7 +116,7 @@ class HasOneOrMany(Relation):
         value = dictionary[key]
 
         if type == 'one':
-            return value
+            return value[0]
 
         return self._related.new_collection(value)
 
@@ -133,7 +134,11 @@ class HasOneOrMany(Relation):
         foreign = self.get_plain_foreign_key()
 
         for result in results:
-            dictionary[getattr(result, foreign)] = result
+            key = getattr(result, foreign)
+            if key not in dictionary:
+                dictionary[key] = []
+
+            dictionary[key].append(result)
 
         return dictionary
 
@@ -234,7 +239,7 @@ class HasOneOrMany(Relation):
         :type attributes: dict
 
         :param values: The values
-        :type values: list
+        :type values: dict
 
         :rtype: Model
         """
