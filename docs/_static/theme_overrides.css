@@ -200,7 +200,7 @@ code {
 }
 
 p > code,
-p > tt {
+.rst-content p > tt {
     color: #03A9F4;
     padding: 0.3em 0.5em;
     display: inline;
