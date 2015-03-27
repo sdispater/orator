@@ -1,25 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import simplejson as json
-import hashlib
-import time
-import datetime
+
 import arrow
 from flexmock import flexmock, flexmock_teardown
-from ... import EloquentTestCase, mock
-from ...utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
+from ... import EloquentTestCase
 
 from eloquent.query.builder import QueryBuilder
-from eloquent.query.grammars import QueryGrammar
-from eloquent.query.processors import QueryProcessor
 from eloquent.orm.builder import Builder
 from eloquent.orm.model import Model
-from eloquent.exceptions.orm import ModelNotFound, MassAssignmentError
-from eloquent.orm.collection import Collection
 from eloquent.orm.relations import HasOne
-from eloquent.connections import Connection
-from eloquent import DatabaseManager
-from eloquent.utils import basestring
 
 
 class OrmRelationTestCase(EloquentTestCase):

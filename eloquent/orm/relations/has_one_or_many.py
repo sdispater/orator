@@ -55,7 +55,7 @@ class HasOneOrMany(Relation):
 
         :rtype: list
         """
-        return self._match_one_or_many(models, results, relation, type)
+        return self._match_one_or_many(models, results, relation, 'one')
 
     def match_many(self, models, results, relation):
         """
@@ -72,6 +72,7 @@ class HasOneOrMany(Relation):
 
         :rtype: list
         """
+        return self._match_one_or_many(models, results, relation, 'many')
 
     def _match_one_or_many(self, models, results, relation, type):
         """
@@ -91,7 +92,6 @@ class HasOneOrMany(Relation):
 
         :rtype: list
         """
-
         dictionary = self._build_dictionary(results)
 
         for model in models:
@@ -115,7 +115,7 @@ class HasOneOrMany(Relation):
         value = dictionary[key]
 
         if type == 'one':
-            return value[0]
+            return value
 
         return self._related.new_collection(value)
 
@@ -260,7 +260,7 @@ class HasOneOrMany(Relation):
 
         instance = self._related.new_instance(attributes)
 
-        instance.set_attribute(self.get_palin_foreign_key(), self.get_parent_key())
+        instance.set_attribute(self.get_plain_foreign_key(), self.get_parent_key())
 
         instance.save()
 
@@ -297,7 +297,7 @@ class HasOneOrMany(Relation):
         if self._related.uses_timestamps():
             attributes[self.get_related_updated_at()] = self._related.fresh_timestamp()
 
-        return self.query.update(attributes)
+        return self._query.update(attributes)
 
     def get_has_compare_key(self):
         return self.get_foreign_key()
