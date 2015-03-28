@@ -322,6 +322,190 @@ If you want to only update the timestamps on a model, you can use the ``touch`` 
     user.touch()
 
 
+Relationships
+=============
+
+Eloquent makes managing and working with relationships easy. It supports many types of relationships:
+
+* :ref:`OneToOne`
+* :ref:`OneToMany`
+
+.. _OneToOne:
+
+One To One
+----------
+
+Defining a One To One relationship
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A one-to-one relationship is a very basic relation. For instance, a ``User`` model might have a ``Phone``.
+We can define this relation with the ORM:
+
+.. code-block:: python
+
+    class User(Model):
+
+        @property
+        def phone(self):
+            return self.has_one(Phone)
+
+The first argument passed to the ``has_one`` method is the class of the related model.
+Once the relationship is defined, we can retrieve it using :ref:`dynamic_properties`:
+
+.. code-block:: python
+
+    phone = User.find(1).phone
+
+The SQL performed by this statement will be as follow:
+
+.. code-block:: sql
+
+    SELECT * FROM users WHERE id = 1
+
+    SELECT * FROM phones WHERE user_id = 1
+
+The Eloquent ORM assumes the foreign key of the relationship based on the model name. In this case,
+``Phone`` model is assumed to use a ``user_id`` foreign key. If you want to override this convention,
+you can pass a second argument to the ``has_one`` method. Furthermore, you may pass a third argument
+to the method to specify which local column should be used for the association:
+
+.. code-block:: python
+
+    return self.has_one(Phone, 'foreign_key')
+
+    return self.has_one(Phone, 'foreign_key', 'local_key')
+
+
+Defining the inverse of the relation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To define the inverse of the relationship on the ``Phone`` model, you can use the ``belongs_to`` method:
+
+.. code-block:: python
+
+    class Phone(Model):
+
+        @property
+        def user(self):
+            return self.belongs_to(User)
+
+In the example above, the Eloquent ORM will look for a ``user_id`` column on the ``phones`` table. You can
+define a different foreign key column, you can pass it as the second argument of the ``belongs_to`` method:
+
+.. code-block:: python
+
+    return self.belongs_to(User, 'local_key')
+
+Additionally, you pass the third parameter which specifies the name of the associated column on the parent table:
+
+.. code-block:: python
+
+    return self.belongs_to(User, 'local_key', 'parent_key')
+
+
+.. _OneToMany:
+
+One To Many
+-----------
+
+An example of a one-to-many relation is a blog post that has many comments:
+
+.. code-block:: python
+
+    class Post(Model):
+
+        @property
+        def comments(self):
+            return self.has_many(Comment)
+
+Now you can access the post's comments via :ref:`dynamic_properties`:
+
+.. code-block:: python
+
+    comments = Post.find(1).comments
+
+Again, you may override the conventional foreign key by passing a second argument to the ``has_many`` method.
+And, like the ``has_one`` relation, the local column may also be specified:
+
+.. code-block:: python
+
+    return self.has_many(Comment, 'foreign_key')
+
+    return self.has_many(Comment, 'foreign_key', 'local_key')
+
+Defining the inverse of the relation:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To define the inverse of the relationship on the ``Comment`` model, we use the ``belongs_to`` method:
+
+.. code-block:: python
+
+    class Comment(Model):
+
+        @property
+        def post(self):
+            return self.belongs_to(Post)
+
+
+Querying relations
+==================
+
+.. _dynamic_properties:
+
+Dynamic properties
+------------------
+
+The Eloquent ORM allows you to access your relations via dynamic properties.
+It will automatically load the relationship for you. It will then be accessible via
+a dynamic property by the same name as the relation. For example, with the following model ``Post``:
+
+.. code-block:: python
+
+    class Phone(Model):
+
+        @property
+        def user(self):
+            return self.belongs_to(User)
+
+    phone = Phone.find(1)
+
+
+You can then print the user's email like this:
+
+.. code-block:: python
+
+    print(phone.user.email)
+
+Now, for one-to-many relationships:
+
+.. code-block:: python
+
+    class Post(Model):
+
+        @property
+        def comments(self):
+            return self.has_many(Comment)
+
+    post = Post.find(1)
+
+You can then access the post's comments like this:
+
+.. code-block:: python
+
+    comments = post.comments
+
+If you need to add further constraints to which comments are retrieved,
+you may call the ``comments`` method and continue chaining conditions:
+
+.. code-block:: python
+
+    comments = post.comments().where('title', 'foo').first()
+
+.. note::
+
+    Relationships that return many results will return an instance of the ``Collection`` class.
+
+
 Timestamps
 ==========
 
@@ -477,4 +661,3 @@ Alternatively, you may use the ``__visible__`` property to define a whitelist:
 .. code-block:: python
 
     __visible__ = ['first_name', 'last_name']
-

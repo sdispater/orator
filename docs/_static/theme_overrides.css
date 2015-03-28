@@ -313,7 +313,8 @@ green     #859900  operators, other keywords
 .highlight .nb { color: #B58900 } /* Name.Builtin */
 .highlight .nc { color: #268bd2 } /* Name.Class */
 .highlight .no { color: #cb4b16 } /* Name.Constant */
-.highlight .nd { color: #268bd2 } /* Name.Decorator */
+/*.highlight .nd { color: #268bd2 }*/ /* Name.Decorator */
+.highlight .nd { color: #cb4b16 }
 .highlight .ni { color: #cb4b16 } /* Name.Entity */
 .highlight .ne { color: #cb4b16 } /* Name.Exception */
 .highlight .nf { color: #268bd2 } /* Name.Function */
