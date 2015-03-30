@@ -390,7 +390,7 @@ class Builder(object):
         Add a where clause to the query
 
         :param column: The column of the where clause, can also be a QueryBuilder instance for sub where
-        :type column: str or Builder
+        :type column: str|Builder
 
         :param operator: The operator of the where clause
         :type operator: str

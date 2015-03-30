@@ -125,6 +125,10 @@ class Collection(object):
 
         return items
 
+    def to_dict(self):
+        return list(map(lambda value: value.to_dict() if hasattr(value, 'to_dict') else value,
+                        self._items))
+
     def __len__(self):
         return len(self._items)
 

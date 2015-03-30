@@ -3,12 +3,13 @@
 import simplejson as json
 import arrow
 import inflection
+import inspect
 from six import add_metaclass
 from ..exceptions.orm import MassAssignmentError
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
-from .relations import Relation, HasOne, HasMany
+from .relations import Relation, HasOne, HasMany, BelongsTo
 from .relations.dynamic_property import DynamicProperty
 
 
@@ -485,6 +486,38 @@ class Model(object):
             local_key = self.get_key_name()
 
         return HasOne(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+
+    def belongs_to(self, related, foreign_key=None, other_key=None, relation=None):
+        """
+        Define an inverse one to one or many relationship.
+
+        :param related: The related model:
+        :type related: Model class
+
+        :param foreign_key: The foreign key
+        :type foreign_key: str
+
+        :param other_key: The other key
+        :type other_key: str
+
+        :type relation: str
+
+        :rtype: BelongsTo
+        """
+        if relation is None:
+            relation = inspect.stack()[1][3]
+
+        if foreign_key is None:
+            foreign_key = '%s_id' % inflection.underscore(relation)
+
+        instance = related()
+
+        query = instance.new_query()
+
+        if not other_key:
+            other_key = instance.get_key_name()
+
+        return BelongsTo(query, self, foreign_key, other_key, relation)
 
     def has_many(self, related, foreign_key=None, local_key=None):
         """
@@ -1235,8 +1268,28 @@ class Model(object):
 
         :rtype: dict
         """
-        # TODO
-        return {}
+        attributes = {}
+
+        for key, value in self._get_dictable_relations().items():
+            if key in self.get_hidden():
+                continue
+
+            relation = None
+            if hasattr(value, 'to_dict'):
+                relation = value.to_dict()
+            elif value is None:
+                relation = value
+
+            if relation or value is None:
+                attributes[key] = relation
+
+        return attributes
+
+    def _get_dictable_relations(self):
+        """
+        Get an attribute dict of all dictable relations.
+        """
+        return self._get_dictable_items(self.__relations)
 
     def _get_dictable_items(self, values):
         """
