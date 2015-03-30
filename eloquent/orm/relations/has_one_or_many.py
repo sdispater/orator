@@ -93,7 +93,6 @@ class HasOneOrMany(Relation):
         :rtype: list
         """
         dictionary = self._build_dictionary(results)
-        print(dictionary)
 
         for model in models:
             key = model.get_attribute(self._local_key)
