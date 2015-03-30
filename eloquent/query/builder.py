@@ -342,9 +342,9 @@ class QueryBuilder(object):
         # and can add them each as a where clause. We will maintain the boolean we
         # received when the method was called and pass it into the nested where.
         if isinstance(column, dict):
-            def nested(query):
-                for key, value_ in column.items():
-                    query.where(key, '=', value)
+            nested = self.new_query()
+            for key, value in column.items():
+                nested.where(key, '=', value)
 
             return self.where_nested(nested, boolean)
 
