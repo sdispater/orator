@@ -112,7 +112,9 @@ class OrmModelTestCase(EloquentTestCase):
     def test_destroy_method_calls_query_builder_correctly(self):
         OrmModelDestroyStub.destroy(1, 2, 3)
 
-    # TODO: with
+    def test_with_calls_query_builder_correctly(self):
+        result = OrmModelWithStub.with_('foo', 'bar')
+        self.assertEqual('foo', result)
 
     def test_update_process(self):
         query = flexmock(Builder)
@@ -302,7 +304,130 @@ class OrmModelTestCase(EloquentTestCase):
 
         self.assertTrue(model._touch_owners.called)
 
-    # TODO: relations push
+    def test_push_no_relations(self):
+        flexmock(Builder)
+        model = flexmock(Model())
+        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        builder = Builder(query)
+        builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+        model.should_receive('new_query').once().and_return(builder)
+        model.should_receive('_update_timestamps').once()
+
+        model.name = 'john'
+        model.set_exists(False)
+
+        self.assertTrue(model.push())
+        self.assertEqual(1, model.id)
+        self.assertTrue(model.exists)
+
+    def test_push_empty_one_relation(self):
+        flexmock(Builder)
+        model = flexmock(Model())
+        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        builder = Builder(query)
+        builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+        model.should_receive('new_query').once().and_return(builder)
+        model.should_receive('_update_timestamps').once()
+
+        model.name = 'john'
+        model.set_exists(False)
+        model.set_relation('relation_one', None)
+
+        self.assertTrue(model.push())
+        self.assertEqual(1, model.id)
+        self.assertTrue(model.exists)
+        self.assertIsNone(model.relation_one)
+
+    def test_push_one_relation(self):
+        flexmock(Builder)
+        related1 = flexmock(Model())
+        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        builder = Builder(query)
+        builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'related1'}, 'id').and_return(2)
+        related1.should_receive('new_query').once().and_return(builder)
+        related1.should_receive('_update_timestamps').once()
+
+        related1.name = 'related1'
+        related1.set_exists(False)
+
+        model = flexmock(Model())
+        model.should_receive('resolve_connection').and_return(MockConnection().prepare_mock())
+        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        builder = Builder(query)
+        builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+        model.should_receive('new_query').once().and_return(builder)
+        model.should_receive('_update_timestamps').once()
+
+        model.name = 'john'
+        model.set_exists(False)
+        model.set_relation('relation_one', related1)
+
+        self.assertTrue(model.push())
+        self.assertEqual(1, model.id)
+        self.assertTrue(model.exists)
+        self.assertEqual(2, model.relation_one.id)
+        self.assertTrue(model.relation_one.exists)
+        self.assertEqual(2, related1.id)
+        self.assertTrue(related1.exists)
+
+    def test_push_empty_many_relation(self):
+        flexmock(Builder)
+        model = flexmock(Model())
+        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        builder = Builder(query)
+        builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+        model.should_receive('new_query').once().and_return(builder)
+        model.should_receive('_update_timestamps').once()
+
+        model.name = 'john'
+        model.set_exists(False)
+        model.set_relation('relation_many', Collection([]))
+
+        self.assertTrue(model.push())
+        self.assertEqual(1, model.id)
+        self.assertTrue(model.exists)
+        self.assertEqual(0, len(model.relation_many))
+
+    def test_push_many_relation(self):
+        flexmock(Builder)
+        related1 = flexmock(Model())
+        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        builder = Builder(query)
+        builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'related1'}, 'id').and_return(2)
+        related1.should_receive('new_query').once().and_return(builder)
+        related1.should_receive('_update_timestamps').once()
+
+        related1.name = 'related1'
+        related1.set_exists(False)
+
+        flexmock(Builder)
+        related2 = flexmock(Model())
+        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        builder = Builder(query)
+        builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'related2'}, 'id').and_return(3)
+        related2.should_receive('new_query').once().and_return(builder)
+        related2.should_receive('_update_timestamps').once()
+
+        related2.name = 'related2'
+        related2.set_exists(False)
+
+        model = flexmock(Model())
+        model.should_receive('resolve_connection').and_return(MockConnection().prepare_mock())
+        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        builder = Builder(query)
+        builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+        model.should_receive('new_query').once().and_return(builder)
+        model.should_receive('_update_timestamps').once()
+
+        model.name = 'john'
+        model.set_exists(False)
+        model.set_relation('relation_many', Collection([related1, related2]))
+
+        self.assertTrue(model.push())
+        self.assertEqual(1, model.id)
+        self.assertTrue(model.exists)
+        self.assertEqual(2, len(model.relation_many))
+        self.assertEqual([2, 3], model.relation_many.lists('id'))
 
     def test_new_query_returns_eloquent_query_builder(self):
         conn = flexmock(Connection)
@@ -641,6 +766,15 @@ class OrmModelHydrateRawStub(Model):
     @classmethod
     def hydrate(cls, items, connection=None):
         return 'hydrated'
+
+
+class OrmModelWithStub(Model):
+
+    def new_query(self):
+        mock = flexmock(Builder(None))
+        mock.should_receive('with_').once().with_args('foo', 'bar').and_return('foo')
+
+        return mock
 
 
 class OrmModelSaveStub(Model):

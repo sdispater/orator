@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from flexmock import flexmock, flexmock_teardown
 from .. import EloquentTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
 
@@ -11,6 +12,9 @@ from eloquent.orm.collection import Collection
 
 
 class BuilderTestCase(EloquentTestCase):
+
+    def tearDown(self):
+        flexmock_teardown()
 
     def test_find_method(self):
         builder = Builder(self.get_mock_query_builder())
@@ -161,9 +165,31 @@ class BuilderTestCase(EloquentTestCase):
             ['*']
         )
 
-    # TODO: get loads models and hydrates eager relations
+    def test_get_loads_models_and_hydrates_eager_relations(self):
+        flexmock(Builder)
+        builder = Builder(self.get_mock_query_builder())
+        builder.should_receive('get_models').with_args(['foo']).and_return(['bar'])
+        builder.should_receive('eager_load_relations').with_args(['bar']).and_return(['bar', 'baz'])
+        builder.set_model(self.get_mock_model())
+        builder.get_model().new_collection = mock.MagicMock(return_value=Collection(['bar', 'baz']))
 
-    # TODO: get doesn't hydrate eager relations when no results are returned
+        results = builder.get(['foo'])
+        self.assertEqual(['bar', 'baz'], results.all())
+
+        builder.get_model().new_collection.assert_called_with(['bar', 'baz'])
+
+    def test_get_does_not_eager_relations_when_no_results_are_returned(self):
+        flexmock(Builder)
+        builder = Builder(self.get_mock_query_builder())
+        builder.should_receive('get_models').with_args(['foo']).and_return(['bar'])
+        builder.should_receive('eager_load_relations').with_args(['bar']).and_return([])
+        builder.set_model(self.get_mock_model())
+        builder.get_model().new_collection = mock.MagicMock(return_value=Collection([]))
+
+        results = builder.get(['foo'])
+        self.assertEqual([], results.all())
+
+        builder.get_model().new_collection.assert_called_with([])
 
     def test_pluck_with_model_found(self):
         builder = Builder(self.get_mock_query_builder())
