@@ -121,7 +121,7 @@ Using Where Not Between
 
 .. code-block:: python
 
-    users = db.table('users').where_not_between('age', [25, 35]).get()~
+    users = db.table('users').where_not_between('age', [25, 35]).get()
 
 Using Where In
 ~~~~~~~~~~~~~~

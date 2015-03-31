@@ -329,6 +329,8 @@ Eloquent makes managing and working with relationships easy. It supports many ty
 
 * :ref:`OneToOne`
 * :ref:`OneToMany`
+* :ref:`ManyToMany`
+* :ref:`HasManyThrough`
 
 .. _OneToOne:
 
@@ -447,6 +449,103 @@ To define the inverse of the relationship on the ``Comment`` model, we use the `
             return self.belongs_to(Post)
 
 
+.. _ManyToMany:
+
+Many To Many
+------------
+
+Many-to-many relations are a more complicated relationship type.
+An example of such a relationship is a user with many roles, where the roles are also shared by other users.
+For example, many users may have the role of "Admin". Three database tables are needed for this relationship:
+``users``, ``roles``, and ``roles_users``.
+The ``roles_users`` table is derived from the alphabetical order of the related table names,
+and should have the ``user_id`` and ``role_id`` columns.
+
+We can define a many-to-many relation using the ``belongs_to_many`` method:
+
+.. code-block:: python
+
+    class User(Model):
+
+        @property
+        def roles(self):
+            return self.belongs_to_many(Role)
+
+Now, we can retrieve the roles through the ``User`` model:
+
+.. code-block:: python
+
+    roles = User.find(1).roles
+
+If you want to use an unconventional table name for your pivot table, you can pass it as the second argument
+to the ``belongs_to_many`` method:
+
+.. code-block:: python
+
+    return self.belongs_to_many(Role, 'user_role')
+
+You can also override the conventional associated keys:
+
+.. code-block:: python
+
+    return self.belongs_to_many(Role, 'user_role', 'user_id', 'foo_id')
+
+Of course, you also can define the inverse og the relationship on the ``Role`` model:
+
+.. code-block:: python
+
+    class Role(Model):
+
+        @property
+        def users(self):
+            return self.belongs_to_many(Role)
+
+
+.. _HasManyThrough:
+
+Has Many Through
+----------------
+
+The "has many through" relation provides a convenient short-cut
+for accessing distant relations via an intermediate relation.
+For example, a ``Country`` model might have many ``Post`` through a ``User`` model.
+The tables for this relationship would look like this:
+
+.. code-block:: yaml
+
+    countries:
+        id: integer
+        name: string
+
+    users:
+        id: integer
+        country_id: integer
+        name: string
+
+    posts:
+        id: integer
+        user_id: integer
+        title: string
+
+Even though the ``posts`` table does not contain a ``country_id`` column, the ``has_many_through`` relation
+will allow access a country's posts via ``country.posts``:
+
+.. code-block:: python
+
+    class Country(Model):
+
+        @property
+        def posts(self):
+            return self.has_many_through(Post, User)
+
+If you want to manually specify the keys of the relationship,
+you can pass them as the third and fourth arguments to the method:
+
+.. code-block:: python
+
+    return self.has_many_through(Post, User, 'country_id', 'user_id')
+
+
 Querying relations
 ==================
 
@@ -505,6 +604,126 @@ you may call the ``comments`` method and continue chaining conditions:
 
     Relationships that return many results will return an instance of the ``Collection`` class.
 
+
+Inserting related models
+========================
+
+You will often need to insert new related models, like inserting a new comment for a post.
+Instead of manually setting the ``post_id`` foreign key, you can insert the new comment from its parent ``Post``model
+directly:
+
+.. code-block:: python
+
+    comment = Comment(message='A new comment')
+
+    post = Post.find(1)
+
+    comment = post.comments().save(comment)
+
+If you need to save multiple comments:
+
+.. code-block:: python
+
+    comments = [
+        Comment(message='Comment 1'),
+        Comment(message='Comment 2'),
+        Comment(message='Comment 3')
+    ]
+
+    post = Post.find(1)
+
+    post.comments().save_many(comments)
+
+Associating models (Belongs To)
+-------------------------------
+
+When updatings a ``belongs_to`` relationship, you can use the associate method:
+
+.. code-block:: python
+
+    account = Account.find(1)
+
+    user.account().associate(account)
+
+    user.save()
+
+Inserting related models (Many to Many)
+---------------------------------------
+
+You can also insert related models when working with many-to-many relationship.
+For example, with ``User`` and ``Roles`` models:
+
+Attaching many to many models
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    user = User.find(1)
+    role = Roles.find(3)
+
+    user.roles().attach(role)
+
+    # or
+    user.roles().attach(3)
+
+
+You can also pass a dictionary of attributes that should be stored on the pivot table for the relation:
+
+.. code-block:: python
+
+    user.roles().attach(3, {'expires': expires})
+
+The opposite of ``attach`` is ``detach``:
+
+.. code-block:: python
+
+    user.roles().detach(3)
+
+Both ``attach`` and ``detach`` also take list of IDs as input:
+
+.. code-block:: python
+
+    user = User.find(1)
+
+    user.roles().detach([1, 2, 3])
+
+    user.roles().attach([{1: {'attribute1': 'value1'}}, 2, 3])
+
+
+Using sync to attach many to many models
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also use the ``sync`` method to attach related models. The ``sync`` method accepts a list of IDs
+to place on the pivot table. After this operation, only the IDs in the list will be on the pivot table:
+
+.. code-block:: python
+
+    user.roles().sync([1, 2, 3])
+
+
+Adding pivot data when syncing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also associate other pivot table values with the given IDs:
+
+.. code-block:: python
+
+    user.roles().sync([{1: {'expires': True}}])
+
+Sometimes you might want to create a new related model and attach it in a single command.
+For that, you can use the save method:
+
+.. code-block:: python
+
+    role = Role(name='Editor')
+
+    User.find(1).roles().save(role)
+
+You can also pass attributes to place on the pivot table:
+
+.. code-block:: python
+
+    User.find(1).roles().save(role, {'expires': True})
 
 Timestamps
 ==========

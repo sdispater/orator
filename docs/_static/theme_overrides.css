@@ -173,6 +173,7 @@ p {
 }
 
 pre, pre code, .rst-content tt {
+    color: #03A9F4;
     background-color: #FAFAFA;
     font-size: 14px;
 }
@@ -257,6 +258,51 @@ p > code,
     display: inline;
 }
 
+.btn-neutral,
+.btn-neutral:visited {
+    color: #808080 !important;
+    font: 400 12px/20px Montserrat,Arial,sans-serif;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 4px;
+    box-shadow: none;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s;
+}
+
+.btn-neutral:hover {
+    background-color: rgba(0, 188, 212, 0.6) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    /*color: rgba(0, 168, 192, 1) !important;*/
+}
+
+.btn-neutral:focus {
+    background-color: rgba(0, 188, 212, 0.6) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    box-shadow: none;
+    padding: 6px 14px;
+}
+
+.btn-neutral span.fa {
+    transition: all 0.3s;
+}
+
+.btn-neutral:hover span.fa-arrow-circle-left {
+    padding-right: 5px;
+}
+
+.btn-neutral:hover span.fa-arrow-circle-right {
+    padding-left: 5px;
+}
+
+.btn-neutral span.fa-arrow-circle-left:before {
+    content: ''
+}
+
+.btn-neutral span.fa-arrow-circle-right:before {
+    content: ''
+}
+
 
 /* Solarized Light
 
@@ -326,10 +372,10 @@ green     #859900  operators, other keywords
 .highlight .nv { color: #268bd2 } /* Name.Variable */
 .highlight .ow { color: #859900 } /* Operator.Word */
 .highlight .w { color: #586e75 } /* Text.Whitespace */
-.highlight .mf { color: #2aa198 } /* Literal.Number.Float */
-.highlight .mh { color: #2aa198 } /* Literal.Number.Hex */
-.highlight .mi { color: #2aa198 } /* Literal.Number.Integer */
-.highlight .mo { color: #2aa198 } /* Literal.Number.Oct */
+.highlight .mf { color: #ff9800 } /* Literal.Number.Float */
+.highlight .mh { color: #ff9800 } /* Literal.Number.Hex */
+.highlight .mi { color: #ff9800 } /* Literal.Number.Integer */
+.highlight .mo { color: #ff9800 } /* Literal.Number.Oct */
 .highlight .sb { color: #93a1a1 } /* Literal.String.Backtick */
 .highlight .sc { color: #2aa198 } /* Literal.String.Char */
 .highlight .sd { color: #586e75 } /* Literal.String.Doc */
@@ -346,3 +392,17 @@ green     #859900  operators, other keywords
 .highlight .vg { color: #268bd2 } /* Name.Variable.Global */
 .highlight .vi { color: #268bd2 } /* Name.Variable.Instance */
 .highlight .il { color: #2aa198 } /* Literal.Number.Integer.Long */
+
+.highlight .s { color: rgb(0, 188, 212) } /* Literal.String */
+.highlight .s1 { color: rgb(0, 188, 212) } /* Literal.String */
+.highlight .k { color: #8bc34a; font-weight: normal; } /* Keyword */
+.highlight .kn { color: #8bc34a; font-weight: normal; } /* Keyword */
+.highlight .ow { color: #8bc34a; font-weight: normal } /* Operator.Word */
+.highlight .nc { color: rgb(3, 169, 244) } /* Name.Class */
+.highlight .nf { color: rgb(3, 169, 244); font-weight: normal; } /* Name.Function */
+.highlight .bp { color: rgb(3, 169, 244) } /* Name.Builtin.Pseudo */
+.highlight .nd { color: #ff5252 } /* Name.Decorator */
+.highlight .o { color: #7A7A7A } /* Operator */
+.highlight .n { color: #7A7A7A }
+
+
