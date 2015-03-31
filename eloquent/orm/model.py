@@ -792,7 +792,7 @@ class Model(object):
         if not self.save():
             return False
 
-        for models in self.__relations:
+        for models in self.__relations.values():
             if isinstance(models, Collection):
                 models = models.all()
             else:
@@ -1035,7 +1035,7 @@ class Model(object):
             self._new_base_query_builder()
         )
 
-        return builder.set_model(self).with_(self._with)
+        return builder.set_model(self).with_(*self._with)
 
     def new_orm_builder(self, query):
         """
@@ -1506,7 +1506,7 @@ class Model(object):
         if not isinstance(relations, Relation):
             raise RuntimeError('Relationship method must return an object of type Relation')
 
-        self.__relations[method] = DynamicProperty(relations.get_results(), relations)
+        self.__relations[method] = DynamicProperty(relations.get_results, relations)
 
         return self.__relations[method]
 

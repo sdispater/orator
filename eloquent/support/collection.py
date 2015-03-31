@@ -115,6 +115,16 @@ class Collection(object):
         else:
             return default
 
+    def lists(self, value, key=None):
+        """
+        Get a list with the values of a given key
+
+        :rtype: list
+        """
+        results = map(lambda x: x[value], self._items)
+
+        return list(results)
+
     def _get_items(self, items):
         if isinstance(items, Collection):
             items = items.all()

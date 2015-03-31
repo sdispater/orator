@@ -21,7 +21,7 @@ class Builder(object):
         self._query = query
 
         self._model = None
-        self._eager_load = []
+        self._eager_load = {}
         self._macros = []
 
         self._on_delete = None
@@ -364,26 +364,73 @@ class Builder(object):
         :return: The models
         :rtype: list
         """
-        # TODO
+        for name, constraints in self._eager_load.items():
+            if name.find('.') == -1:
+                models = self._load_relation(models, name, constraints)
+
         return models
 
-    def load_relation(self):
+    def _load_relation(self, models, name, constraints):
         """
         Eagerly load the relationship on a set of models.
-        """
-        # TODO
 
-    def get_relation(self):
+        :rtype: list
+        """
+        relation = self.get_relation(name)
+
+        relation.add_eager_constraints(models)
+
+        relation.merge_query(constraints)
+
+        models = relation.init_relation(models, name)
+
+        results = relation.get_eager()
+
+        return relation.match(models, results, name)
+
+    def get_relation(self, relation):
         """
         Get the relation instance for the given relation name.
-        """
-        # TODO
 
-    def _nested_relations(self):
+        :rtype: eloquent.orm.relations.Relation
+        """
+        from .relations import Relation
+
+        query = Relation.no_constraints(lambda: getattr(self.get_model(), relation)())
+
+        nested = self._nested_relations(relation)
+
+        if len(nested) > 0:
+            query.get_query().with_(nested)
+
+        return query
+
+    def _nested_relations(self, relation):
         """
         Get the deeply nested relations for a given top-level relation.
+
+        :rtype: dict
         """
-        # TODO
+        nested = {}
+
+        for name, constraints in self._eager_load.items():
+            if self._is_nested(name, relation):
+                nested[name[len(relation + '.')]:] = constraints
+
+        return nested
+
+    def _is_nested(self, name, relation):
+        """
+        Determine if the relationship is nested.
+
+        :type name: str
+        :type relation: str
+
+        :rtype: bool
+        """
+        dots = name.find('.')
+
+        return dots and name.startswith(relation + '.')
 
     def where(self, column, operator=Null(), value=None, boolean='and'):
         """
@@ -429,16 +476,68 @@ class Builder(object):
         """
         return self.where(column, operator, value, 'or')
 
-    def with_(self, relations):
+    def with_(self, *relations):
         """
         Set the relationships that should be eager loaded.
 
         :return: The current Builder instance
         :rtype: Builder
         """
-        # TODO
+        if not relations:
+            return self
+
+        eagers = self._parse_relations(list(relations))
+
+        self._eager_load.update(eagers)
 
         return self
+
+    def _parse_relations(self, relations):
+        """
+        Parse a list of relations into individuals.
+
+        :param relations: The relation to parse
+        :type relations: list
+
+        :rtype: dict
+        """
+        results = {}
+
+        for relation in relations:
+            if isinstance(relation, dict):
+                name = list(relation.keys())[0]
+                constraints = relation[name]
+            else:
+                name = relation
+                constraints = self.__class__(self.get_query().new_query())
+
+            results = self._parse_nested(name, results)
+
+            results[name] = constraints
+
+        return results
+
+    def _parse_nested(self, name, results):
+        """
+        Parse the nested relationship in a relation.
+
+        :param name: The name of the relationship
+        :type name: str
+
+        :type results: dict
+
+        :rtype: dict
+        """
+        progress = []
+
+        for segment in name.split('.'):
+            progress.append(segment)
+
+            last = '.'.join(progress)
+            if last not in results:
+                results[last] = self.__class__(self.get_query().new_query())
+
+        return results
 
     def get_query(self):
         """

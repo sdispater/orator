@@ -15,20 +15,30 @@ class DynamicProperty(object):
     >>> user.roles().first() # Will return the first role
     """
 
-    def __init__(self, results, relation):
-        self._results = results
+    def __init__(self, results_getter, relation):
+        self._results_getter = results_getter
+        self._results = None
         self._relation = relation
 
     def get_results(self):
         return self._results
 
     def __getitem__(self, item):
+        if not self._results:
+            self._results = self._results_getter()
+
         return self._results[item]
 
     def __iter__(self):
+        if not self._results:
+            self._results = self._results_getter()
+
         return iter(self._results)
 
     def __getattr__(self, item):
+        if not self._results:
+            self._results = self._results_getter()
+
         return getattr(self._results, item)
 
     def __call__(self, *args, **kwargs):

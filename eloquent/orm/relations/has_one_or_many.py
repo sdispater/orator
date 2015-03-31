@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..builder import Builder
 from ..collection import Collection
 from .relation import Relation
 
@@ -9,7 +8,7 @@ class HasOneOrMany(Relation):
 
     def __init__(self, query, parent, foreign_key, local_key):
         """
-        :type query: Builder
+        :type query: eloquent.orm.Builder
 
         :param parent: The parent model
         :type parent: Model

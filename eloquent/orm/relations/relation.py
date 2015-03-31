@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..builder import Builder
 from ...query.expression import QueryExpression
 from ..collection import Collection
 
@@ -12,7 +11,7 @@ class Relation(object):
     def __init__(self, query, parent):
         """
         :param query: A Builder instance
-        :type query: Builder
+        :type query: orm.eloquent.Builder
 
         :param parent: The parent model
         :type parent: Model
@@ -108,7 +107,18 @@ class Relation(object):
 
         return query.where(self.get_has_compare_key(), '=', QueryExpression(key))
 
-    # TODO: no_constraints
+    @classmethod
+    def no_constraints(cls, callback):
+        """
+        Runs a callback with constraints disabled on the relation.
+        """
+        cls._constraints = False
+
+        results = callback()
+
+        cls._constraints = True
+
+        return results
 
     def get_keys(self, models, key=None):
         """
@@ -126,6 +136,9 @@ class Relation(object):
 
     def get_base_query(self):
         return self._query.get_query()
+
+    def merge_query(self, query):
+        self._query.merge_wheres(query.wheres, query.get_query().get_raw_bindings()['where'])
 
     def get_parent(self):
         return self._parent
