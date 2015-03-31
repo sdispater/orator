@@ -46,6 +46,8 @@ class Model(object):
 
     __casts__ = {}
 
+    __touches__ = []
+
     _with = []
 
     _booted = {}
@@ -66,7 +68,6 @@ class Model(object):
         self.__original = {}
         self.__attributes = {}
         self.__relations = {}
-        self.__touches = []
 
         self._boot_if_not_booted()
 
@@ -452,7 +453,7 @@ class Model(object):
         # TODO
 
     @classmethod
-    def with_(cls, relations):
+    def with_(cls, *relations):
         """
         Begin querying a model with eager loading
 
@@ -462,7 +463,9 @@ class Model(object):
         :return: A Builder instance
         :rtype: Builder
         """
-        # TODO
+        instance = cls()
+
+        return instance.new_query().with_(*relations)
 
     def has_one(self, related, foreign_key=None, local_key=None):
         """
@@ -912,7 +915,7 @@ class Model(object):
         """
         Touch the owning relations of the model.
         """
-        for relation in self.__touches:
+        for relation in self.__touches__:
             if hasattr(self, relation):
                 _relation = getattr(self, relation)
                 _relation().touch()
@@ -929,7 +932,7 @@ class Model(object):
 
         :rtype: bool
         """
-        return relation in self.__touches
+        return relation in self.__touches__
 
     def _set_keys_for_save_query(self, query):
         """
