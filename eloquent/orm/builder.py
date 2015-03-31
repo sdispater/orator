@@ -310,7 +310,7 @@ class Builder(object):
 
         column = self._model.get_updated_at_column()
 
-        values.update({column: self._model.fresh_timestamp().naive})
+        values.update({column: self._model.fresh_timestamp()})
 
         return values
 
@@ -482,13 +482,18 @@ class Builder(object):
         return self
 
     def __dynamic(self, method):
+        attribute = getattr(self._query, method)
+
         def call(*args, **kwargs):
-            result = getattr(self._query, method)(*args, **kwargs)
+            result = attribute(*args, **kwargs)
 
             if method in self._passthru:
                 return result
             else:
                 return self
+
+        if not callable(attribute):
+            return attribute
 
         return call
 

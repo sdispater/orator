@@ -169,10 +169,15 @@ class Relation(object):
         return self._parent.new_query().get_query().get_grammar().wrap(value)
 
     def __dynamic(self, method):
+        attribute = getattr(self._query, method)
+
         def call(*args, **kwargs):
-            result = getattr(self._query, method)(*args, **kwargs)
+            result = attribute(*args, **kwargs)
 
             return result
+
+        if not callable(attribute):
+            return attribute
 
         return call
 

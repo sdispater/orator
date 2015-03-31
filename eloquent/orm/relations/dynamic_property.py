@@ -22,6 +22,12 @@ class DynamicProperty(object):
     def get_results(self):
         return self._results
 
+    def __getitem__(self, item):
+        return self._results[item]
+
+    def __iter__(self):
+        return iter(self._results)
+
     def __getattr__(self, item):
         return getattr(self._results, item)
 

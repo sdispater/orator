@@ -9,7 +9,7 @@ from ..exceptions.orm import MassAssignmentError
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
-from .relations import Relation, HasOne, HasMany, BelongsTo
+from .relations import Relation, HasOne, HasMany, BelongsTo, BelongsToMany
 from .relations.dynamic_property import DynamicProperty
 
 
@@ -52,6 +52,8 @@ class Model(object):
 
     __resolver = None
 
+    many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
+
     CREATED_AT = 'created_at'
     UPDATED_AT = 'updated_at'
 
@@ -64,6 +66,7 @@ class Model(object):
         self.__original = {}
         self.__attributes = {}
         self.__relations = {}
+        self.__touches = []
 
         self._boot_if_not_booted()
 
@@ -544,6 +547,61 @@ class Model(object):
 
         return HasMany(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
 
+    def belongs_to_many(self, related, table=None, foreign_key=None, other_key=None, relation=None):
+        """
+        Define a many-to-many relationship.
+
+        :param related: The related model:
+        :type related: Model
+
+        :param table: The pivot table
+        :type table: str
+
+        :param foreign_key: The foreign key
+        :type foreign_key: str
+
+        :param other_key: The other key
+        :type other_key: str
+
+        :type relation: str
+
+        :rtype: BelongsToMany
+        """
+        if relation is None:
+            relation = inspect.stack()[1][3]
+
+        if not foreign_key:
+            foreign_key = self.get_foreign_key()
+
+        instance = related()
+
+        if not other_key:
+            other_key = instance.get_foreign_key()
+
+        if table is None:
+            table = self.joining_table(instance)
+
+        query = instance.new_query()
+
+        return BelongsToMany(query, self, table, foreign_key, other_key, relation)
+
+    def joining_table(self, related):
+        """
+        Get the joining table name for a many-to-many relation
+
+        :param related: The related model
+        :type related: Model
+
+        :rtype: str
+        """
+        base = self.get_table()
+
+        related = related.get_table()
+
+        models = sorted([related, base])
+
+        return '_'.join(models)
+
     @classmethod
     def destroy(cls, *ids):
         """
@@ -701,7 +759,23 @@ class Model(object):
         """
         Save the model and all of its relationship.
         """
-        # TODO
+        if not self.save():
+            return False
+
+        for models in self.__relations:
+            if isinstance(models, Collection):
+                models = models.all()
+            else:
+                models = [models]
+
+            for model in models:
+                if not model:
+                    continue
+
+                if not model.push():
+                    return False
+
+        return True
 
     def save(self, options=None):
         """
@@ -811,7 +885,24 @@ class Model(object):
         """
         Touch the owning relations of the model.
         """
-        # TODO
+        for relation in self.__touches:
+            if hasattr(self, relation):
+                _relation = getattr(self, relation)
+                _relation().touch()
+
+                if _relation is not None:
+                    _relation.touch_owners()
+
+    def touches(self, relation):
+        """
+        Determine if a model touches a given relation.
+
+        :param relation: The relation to check.
+        :type relation: str
+
+        :rtype: bool
+        """
+        return relation in self.__touches
 
     def _set_keys_for_save_query(self, query):
         """
@@ -901,7 +992,7 @@ class Model(object):
 
         :return: arrow.Arrow
         """
-        return arrow.get()
+        return arrow.get().naive
 
     def new_query(self):
         """
@@ -955,6 +1046,28 @@ class Model(object):
             models = []
 
         return Collection(models)
+
+    def new_pivot(self, parent, attributes, table, exists):
+        """
+        Create a new pivot model instance.
+
+        :param parent: The parent model
+        :type parent: Model
+
+        :param attributes: The pivot attributes
+        :type attributes: dict
+
+        :param table: the pivot table
+        :type table: str
+
+        :param exists: Whether the pivot exists or not
+        :type exists: bool
+
+        :rtype: Pivot
+        """
+        from .relations.pivot import Pivot
+
+        return Pivot(parent, attributes, table, exists)
 
     def get_table(self):
         """
@@ -1317,7 +1430,6 @@ class Model(object):
         if in_attributes:
             return self._get_attribute_value(key)
 
-        # TODO: relations
         if key in self.__relations:
             return self.__relations[key]
 
@@ -1536,7 +1648,7 @@ class Model(object):
 
             instance = self.new_instance(attributes)
 
-            # TODO: set relations
+            instance.set_relations(dict(**self.__relations))
 
             return instance
 
@@ -1558,7 +1670,7 @@ class Model(object):
         :param sync: Whether to sync the attributes or not
         :type sync: bool
         """
-        self.__attributes = attributes
+        self.__attributes = dict(attributes)
 
         if sync:
             self.sync_original()
@@ -1770,6 +1882,6 @@ class Model(object):
 
     def __delattr__(self, item):
         try:
+            super(Model, self).__delattr__(item)
+        except AttributeError:
             del self.__attributes[item]
-        except KeyError:
-            raise AttributeError(item)
