@@ -9,7 +9,7 @@ from ..exceptions.orm import MassAssignmentError
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
-from .relations import Relation, HasOne, HasMany, BelongsTo, BelongsToMany
+from .relations import Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough
 from .relations.dynamic_property import DynamicProperty
 
 
@@ -464,7 +464,6 @@ class Model(object):
         """
         # TODO
 
-    # TODO: Relations
     def has_one(self, related, foreign_key=None, local_key=None):
         """
         Define a one to one relationship.
@@ -526,7 +525,7 @@ class Model(object):
         """
         Define a one to many relationship.
 
-        :param related: The related model:
+        :param related: The related model
         :type related: Model class
 
         :param foreign_key: The foreign key
@@ -546,6 +545,34 @@ class Model(object):
             local_key = self.get_key_name()
 
         return HasMany(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+
+    def has_many_through(self, related, through, first_key=None, second_key=None):
+        """
+        Define a has-many-through relationship.
+
+        :param related: The related model
+        :type related: Model class
+
+        :param through: The through model
+        :type through: Model class
+
+        :param first_key: The first key
+        :type first_key: str
+
+        :param second_key: The second_key
+        :type second_key: str
+
+        :rtype: HasManyThrough
+        """
+        through = through()
+
+        if not first_key:
+            first_key = self.get_foreign_key()
+
+        if not second_key:
+            second_key = through.get_foreign_key()
+
+        return HasManyThrough(related().new_query(), self, through, first_key, second_key)
 
     def belongs_to_many(self, related, table=None, foreign_key=None, other_key=None, relation=None):
         """
