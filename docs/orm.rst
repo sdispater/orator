@@ -725,6 +725,82 @@ You can also pass attributes to place on the pivot table:
 
     User.find(1).roles().save(role, {'expires': True})
 
+
+Touching parent timestamps
+==========================
+
+When a model ``belongs_to`` another model, like a ``Comment`` belonging to a ``Post``, it is often helpful
+to update the parent's timestamp when the chil model is updated. For instance, when a ``Comment`` model is updated,
+you may want to automatically touch the ``updated_at`` timestamp of the owning ``Post``. For this to actually happen,
+you just have to add a ``__touches__`` property containing the names of the relationships:
+
+.. code-block:: python
+
+    class Comment(Model):
+
+        __touches__ = ['posts']
+
+        @property
+        def post(self):
+            return self.belongs_to(Post)
+
+Now, when you update a ``Comment``, the owning ``Post`` will have its ``updated_at`` column updated.
+
+
+Working with pivot table
+========================
+
+Working with many-to-many reationships requires the presence of an intermediate table. Eloquent makes it easy to
+interact with this table. Let's take the ``User`` and ``Roles`` models and see how you can access the ``pivot`` table:
+
+.. code-block:: python
+
+    user = User.find(1)
+
+    for role in user.roles:
+        print(role.pivot.created_at)
+
+Note that each retrieved ``Role`` model is automatically assigned a ``pivot`` attribute. This attribute contains e model
+instance representing the intermediate table, and can be used as any other model.
+
+By default, only the keys will be present on the ``pivot`` object. If your pivot table contains extra attributes,
+you must specify them when defining the relationship:
+
+.. code-block:: python
+
+    return self.belongs_to_many(Role).with_pivot('foo', 'bar')
+
+Now the ``foo`` and ``bar`` attributes will be accessible on the ``pivot`` object for the ``Role`` model.
+
+If you want your pivot table to have automatically maintained ``created_at`` and ``updated_at`` timestamps,
+use the ``with_timestamps`` method on the relationship definition:
+
+.. code-block:: python
+
+    return self.belongs_to_many(Role).with_timestamps()
+
+
+Deleting records on a pivot table
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To delete all records on the pivot table for a model, you can use the ``detach`` method:
+
+.. code-block:: python
+
+    User.find(1).roles().detach()
+
+
+Updating a record on the pivot table
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes you may need to update your pivot table, but not detach it.
+If you wish to update your pivot table in place you may use ``update_existing_pivot`` method like so:
+
+.. code-block:: python
+
+    User.find(1).roles().update_existing_pivot(role_id, attributes)
+
+
 Timestamps
 ==========
 
