@@ -1037,6 +1037,10 @@ class Model(object):
 
         return builder.set_model(self).with_(*self._with)
 
+    @classmethod
+    def query(cls):
+        return cls().new_query()
+
     def new_orm_builder(self, query):
         """
         Create a new orm query builder for the model
