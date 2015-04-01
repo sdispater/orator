@@ -605,6 +605,100 @@ you may call the ``comments`` method and continue chaining conditions:
     Relationships that return many results will return an instance of the ``Collection`` class.
 
 
+Eager loading
+=============
+
+Eager loading exists to alleviate the N + 1 query problem. For example, consider a ``Book`` that is related
+to an ``Author``:
+
+.. code-block:: python
+
+    class Book(Model):
+
+        @property
+        def author(self):
+            return self.belongs_to(Author)
+
+Now, consider the following code:
+
+.. code-block:: python
+
+    for book in Book.all():
+        print(book.author.name)
+
+This loop will execute 1 query to retrieve all the books on the table, then another query for each book
+to retrieve the author. So, if we have 25 books, this loop will run 26 queries.
+
+To drastically reduce the number of queries you can use eager loading. The relationships that should be
+eager loaded can be specified via the ``with_`` method.
+
+.. code-block:: python
+
+    for book in Book.with_('author').get():
+        print(book.author.name)
+
+In this loop, only two queries will be executed:
+
+.. code-block:: sql
+
+    SELECT * FROM books
+
+    SELECT * FROM authors WHERE id IN (1, 2, 3, 4, 5, ...)
+
+You can eager load multiple relationships at one time:
+
+.. code-block:: python
+
+    books = Book.with_('author', 'publisher').get()
+
+You can even eager load nested relationships:
+
+.. code-block:: python
+
+    books = Book.with_('author.contacts').get()
+
+In this example, the ``author`` relationship will be eager loaded as well as the author's ``contacts``
+relation.
+
+Eager load constraints
+----------------------
+
+Sometimes you may wish to eager load a relationship but also specify a condition for the eager load.
+Here's an example:
+
+.. code-block:: python
+
+    users = User.with_(
+        {
+            'posts': Post.query().where('title', 'like', '%first%'))
+        }
+    ).get()
+
+In this example, we're eager loading the user's posts only if the post's title contains the word "first".
+
+Lazy eager loading
+------------------
+
+It is also possible to eagerly load related models directly from an already existing model collection.
+This may be useful when dynamically deciding whether to load related models or not, or in combination with caching.
+
+.. code-block:: python
+
+    books = Book.all()
+
+    books.load('author', 'publisher')
+
+You can also pass conditions:
+
+.. code-block:: python
+
+    books.load(
+        {
+            'author': Author.query().where('name', 'like', '%foo%')
+        }
+    )
+
+
 Inserting related models
 ========================
 
