@@ -27,3 +27,13 @@ class Null(object):
 
     def __eq__(self, other):
         return other is None
+
+
+def decode(s, encodings=('utf8', 'ascii', 'latin1')):
+    for encoding in encodings:
+        try:
+            return s.decode(encoding)
+        except UnicodeDecodeError:
+            pass
+
+    return s.decode('utf8', 'ignore')
