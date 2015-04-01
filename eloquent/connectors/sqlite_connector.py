@@ -30,7 +30,7 @@ class DictCursor(object):
 class SQLiteConnector(Connector):
 
     def connect(self, config):
-        connection = self.get_api().connect(config['database'])
+        connection = self.get_api().connect(**self.get_config(config))
         connection.isolation_level = None
         connection.row_factory = DictCursor
 

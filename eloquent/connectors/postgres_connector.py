@@ -14,7 +14,7 @@ class PostgresConnector(Connector):
     def connect(self, config):
         connection = self.get_api().connect(
             connection_factory=psycopg2.extras.DictConnection,
-            **dict(filter(lambda x: x[0] != 'driver', config.items()))
+            **self.get_config(config)
         )
         connection.autocommit = True
 

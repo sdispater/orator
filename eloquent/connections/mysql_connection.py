@@ -33,3 +33,9 @@ class MySqlConnection(Connection):
             self._connection.autocommit(True)
         else:
             self._transactions -= 1
+
+    def _get_cursor_query(self, query, bindings):
+        if not hasattr(self._cursor, '_last_executed'):
+            return super(MySqlConnection, self)._get_cursor_query(query, bindings)
+
+        return self._cursor._last_executed

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from ..utils import PY2
 from .connection import Connection
 from ..query.grammars.postgres_grammar import PostgresQueryGrammar
 from ..query.processors.postgres_processor import PostgresQueryProcessor
@@ -33,3 +34,12 @@ class PostgresConnection(Connection):
             self._connection.autocommit = True
         else:
             self._transactions -= 1
+
+    def _get_cursor_query(self, query, bindings):
+        if not hasattr(self._cursor, 'query'):
+            return super(PostgresConnection, self)._get_cursor_query(query, bindings)
+
+        if PY2:
+            return self._cursor.query
+
+        return self._cursor.query.decode()

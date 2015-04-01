@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import logging
 from contextlib import contextmanager
 from .connection_interface import ConnectionInterface
 from ..query.grammars.grammar import QueryGrammar
@@ -8,6 +9,9 @@ from ..query.builder import QueryBuilder
 from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
 from ..exceptions.query import QueryException
+
+
+query_logger = logging.getLogger('eloquent.connection.queries')
 
 
 class Connection(ConnectionInterface):
@@ -46,7 +50,7 @@ class Connection(ConnectionInterface):
 
         self._pretending = False
 
-        self._logging_queries = False
+        self._logging_queries = config.get('log_queries', False)
 
         self._query_grammar = self.get_default_query_grammar()
 
@@ -284,6 +288,8 @@ class Connection(ConnectionInterface):
             if s in message:
                 return True
 
+        return False
+
     def disconnect(self):
         if self._connection:
             self._connection.close()
@@ -307,8 +313,26 @@ class Connection(ConnectionInterface):
         if not self._logging_queries:
             return
 
+        query = self._get_cursor_query(query, bindings)
+
+        if query:
+            log = 'Executed %s' % (query,)
+
+            if time_:
+                log += ' in %sms' % time_
+
+            query_logger.debug(log,
+                               extra={
+                                   'query': query,
+                                   'bindings': bindings,
+                                   'elapsed_time': time_
+                               })
+
     def _get_elapsed_time(self, start):
         return round((time.time() - start) * 1000, 2)
+
+    def _get_cursor_query(self, query, bindings):
+        return query, bindings
 
     def get_connection(self):
         return self._connection

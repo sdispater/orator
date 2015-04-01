@@ -19,9 +19,7 @@ class MySqlConnector(Connector):
         config['autocommit'] = True
         config['cursorclass'] = cursor_class
 
-        return self.get_api().connect(
-            **dict(filter(lambda x: x[0] != 'driver', config.items()))
-        )
+        return self.get_api().connect(**self.get_config(config))
 
     def get_api(self):
         return mysql
