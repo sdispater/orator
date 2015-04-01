@@ -875,7 +875,7 @@ use the ``with_timestamps`` method on the relationship definition:
 
 
 Deleting records on a pivot table
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
 
 To delete all records on the pivot table for a model, you can use the ``detach`` method:
 
@@ -885,7 +885,7 @@ To delete all records on the pivot table for a model, you can use the ``detach``
 
 
 Updating a record on the pivot table
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 Sometimes you may need to update your pivot table, but not detach it.
 If you wish to update your pivot table in place you may use ``update_existing_pivot`` method like so:

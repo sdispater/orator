@@ -172,6 +172,10 @@ p {
     color: #7A7A7A;
 }
 
+b, strong {
+   font-weight: 500;
+}
+
 pre, pre code, .rst-content tt {
     color: #03A9F4;
     background-color: #FAFAFA;
@@ -395,6 +399,7 @@ green     #859900  operators, other keywords
 
 .highlight .s { color: rgb(0, 188, 212) } /* Literal.String */
 .highlight .s1 { color: rgb(0, 188, 212) } /* Literal.String */
+.highlight .si { color: #4db6ac } /* Literal.String */
 .highlight .k { color: #8bc34a; font-weight: normal; } /* Keyword */
 .highlight .kn { color: #8bc34a; font-weight: normal; } /* Keyword */
 .highlight .ow { color: #8bc34a; font-weight: normal } /* Operator.Word */
