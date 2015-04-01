@@ -415,7 +415,7 @@ class Builder(object):
 
         for name, constraints in self._eager_load.items():
             if self._is_nested(name, relation):
-                nested[name[len(relation + '.')]:] = constraints
+                nested[name[len(relation + '.'):]] = constraints
 
         return nested
 
