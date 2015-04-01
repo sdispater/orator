@@ -30,7 +30,7 @@ class DatabaseManager(ConnectionResolverInterface):
         :type name: str
 
         :return: A Connection instance
-        :rtype: Connection
+        :rtype: eloquent.connections.Connection
         """
         name, type = self._parse_connection_name(name)
 
@@ -97,8 +97,8 @@ class DatabaseManager(ConnectionResolverInterface):
         fresh = self._make_connection(name)
 
         return self._connections[name]\
-            .set_api(fresh.get_api())\
-            .set_read_api(fresh.get_read_api())
+            .set_connection(fresh.get_connection())\
+            .set_read_connection(fresh.get_read_connection())
 
     def _make_connection(self, name):
         config = self._get_config(name)

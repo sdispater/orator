@@ -19,3 +19,4 @@ nosetests.xml
 .idea/*
 
 test.py
+test_models.py

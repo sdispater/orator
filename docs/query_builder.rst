@@ -1,3 +1,5 @@
+.. _QueryBuilder:
+
 Query Builder
 =============
 
@@ -32,6 +34,17 @@ Retrieving all row from a table
 
     for user in users:
         print(user['name'])
+
+
+Chunking results from a table
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    for users in db.table('users').chunk(100):
+        for user in users:
+            # ...
+
 
 Retrieving a single row from a table
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,7 +121,7 @@ Using Where Not Between
 
 .. code-block:: python
 
-    users = db.table('users').where_not_between('age', [25, 35]).get()~
+    users = db.table('users').where_not_between('age', [25, 35]).get()
 
 Using Where In
 ~~~~~~~~~~~~~~

@@ -342,9 +342,9 @@ class QueryBuilder(object):
         # and can add them each as a where clause. We will maintain the boolean we
         # received when the method was called and pass it into the nested where.
         if isinstance(column, dict):
-            def nested(query):
-                for key, value_ in column.items():
-                    query.where(key, '=', value)
+            nested = self.new_query()
+            for key, value in column.items():
+                nested.where(key, '=', value)
 
             return self.where_nested(nested, boolean)
 
@@ -1023,6 +1023,26 @@ class QueryBuilder(object):
             self.get_bindings(),
             not self._use_write_connection
         )
+
+    def chunk(self, count):
+        """
+        Chunk the results of the query
+
+        :param count: The chunk size
+        :type count: int
+
+        :return: The current chunk
+        :rtype: list
+        """
+        page = 1
+        results = self.for_page(page, count).get()
+
+        while len(results) > 0:
+            yield results
+
+            page += 1
+
+            results = self.for_page(page, count).get()
 
     def lists(self, column, key=None):
         """

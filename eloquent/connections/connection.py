@@ -285,6 +285,12 @@ class Connection(ConnectionInterface):
                 return True
 
     def disconnect(self):
+        if self._connection:
+            self._connection.close()
+
+        if self._read_connection:
+            self._read_connection.close()
+
         self.set_connection(None).set_read_connection(None)
 
     def reconnect(self):

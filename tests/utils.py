@@ -5,6 +5,8 @@ from eloquent.connections.connection_interface import ConnectionInterface
 from eloquent.query.processors.processor import QueryProcessor
 from eloquent.database_manager import DatabaseManager
 from eloquent.connectors.connection_factory import ConnectionFactory
+from eloquent.query.builder import QueryBuilder
+from eloquent.orm.model import Model
 
 
 class MockConnection(ConnectionInterface):
@@ -46,5 +48,23 @@ class MockFactory(ConnectionFactory):
 
     def prepare_mock(self):
         self.make = mock.MagicMock(return_value=MockConnection().prepare_mock())
+
+        return self
+
+
+class MockQueryBuilder(QueryBuilder):
+
+    def prepare_mock(self):
+        self.from__ = 'foo_table'
+
+        return self
+
+
+class MockModel(Model):
+
+    def prepare_mock(self):
+        self.get_key_name = mock.MagicMock(return_value='foo')
+        self.get_table = mock.MagicMock(return_value='foo_table')
+        self.get_qualified_key_name = mock.MagicMock(return_value='foo_table.foo')
 
         return self

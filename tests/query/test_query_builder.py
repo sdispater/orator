@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from .. import EloquentTestCase
 from .. import mock
 
@@ -1512,6 +1514,49 @@ class QueryBuilderTestCase(EloquentTestCase):
         builder.select_sub(builder.new_query().from_('two').select('baz').where('subkey', '=', 'subval'), 'sub')
         self.assertEqual(expected_sql, builder.to_sql())
         self.assertEqual(expected_bindings, builder.get_bindings())
+
+    def test_chunk(self):
+        builder = self.get_builder()
+        results = [
+            {'foo': 'bar'},
+            {'foo': 'baz'},
+            {'foo': 'bam'},
+            {'foo': 'boom'}
+        ]
+
+        def select(query, bindings, _):
+            index = int(re.search('OFFSET (\d+)', query).group(1))
+            limit = int(re.search('LIMIT (\d+)', query).group(1))
+
+            if index >= len(results):
+                return []
+
+            return results[index:index + limit]
+
+        builder.get_connection().select.side_effect = select
+
+        builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results_)
+
+        i = 0
+        for users in builder.from_('users').chunk(1):
+            self.assertEqual(users[0], results[i])
+
+            i += 1
+
+        builder = self.get_builder()
+        results = [
+            {'foo': 'bar'},
+            {'foo': 'baz'},
+            {'foo': 'bam'},
+            {'foo': 'boom'}
+        ]
+
+        builder.get_connection().select.side_effect = select
+
+        builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results_)
+
+        for users in builder.from_('users').chunk(2):
+            self.assertEqual(2, len(users))
 
     def get_mysql_builder(self):
         grammar = MySqlQueryGrammar()

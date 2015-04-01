@@ -103,7 +103,27 @@ class Collection(object):
         """
         pass
 
+    def first(self, default=None):
+        """
+        Get the first item of the collection.
 
+        :param default: The default value
+        :type default: mixed
+        """
+        if len(self._items) > 0:
+            return self._items[0]
+        else:
+            return default
+
+    def lists(self, value, key=None):
+        """
+        Get a list with the values of a given key
+
+        :rtype: list
+        """
+        results = map(lambda x: x[value], self._items)
+
+        return list(results)
 
     def _get_items(self, items):
         if isinstance(items, Collection):
@@ -114,3 +134,17 @@ class Collection(object):
             items = items.to_dict()
 
         return items
+
+    def to_dict(self):
+        return list(map(lambda value: value.to_dict() if hasattr(value, 'to_dict') else value,
+                        self._items))
+
+    def __len__(self):
+        return len(self._items)
+
+    def __iter__(self):
+        for item in self._items:
+            yield item
+
+    def __getitem__(self, item):
+        return self._items[item]
