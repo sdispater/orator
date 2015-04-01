@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import threading
 from .connections.connection_resolver_interface import ConnectionResolverInterface
 from .connectors.connection_factory import ConnectionFactory
 from .exceptions import ArgumentError
 
 
-class DatabaseManager(ConnectionResolverInterface):
+class BaseDatabaseManager(ConnectionResolverInterface):
 
     def __init__(self, config, factory=ConnectionFactory()):
         """
@@ -158,3 +159,8 @@ class DatabaseManager(ConnectionResolverInterface):
             return object.__getattribute__(self, item)
         except AttributeError as e:
             return getattr(self.connection(), item)
+
+
+class DatabaseManager(BaseDatabaseManager, threading.local):
+
+    pass

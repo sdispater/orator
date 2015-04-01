@@ -20,3 +20,4 @@ nosetests.xml
 
 test.py
 test_models.py
+test_threading.py
