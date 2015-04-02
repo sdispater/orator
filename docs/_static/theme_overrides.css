@@ -163,6 +163,10 @@ a, a:visited {
     color: #00BCD4;
 }
 
+a:hover {
+    text-decoration: underline !important;
+}
+
 a > em {
     font-style: normal;
 }
@@ -216,7 +220,8 @@ p > code,
 }
 
 .rst-content .note,
-.rst-content .warning {
+.rst-content .warning,
+.rst-content .versionadded{
     padding: 0px 40px;
     margin: 30px 0px;
     background: #FFFFFF;
@@ -240,6 +245,21 @@ p > code,
 .rst-content .warning > p {
     padding: 12px 12px 12px 0;
     color: #FF9800 !important;
+}
+
+.rst-content .versionadded {
+    color: #f06292 !important;
+}
+
+.rst-content .versionadded > p {
+    color: #f06292 !important;
+}
+
+.rst-content .versionadded > p:before {
+    font-family: FontAwesome;
+    content: '';
+    position: relative;
+    left: -20px;
 }
 
 .note code {
@@ -409,5 +429,3 @@ green     #859900  operators, other keywords
 .highlight .nd { color: #ff5252 } /* Name.Decorator */
 .highlight .o { color: #7A7A7A } /* Operator */
 .highlight .n { color: #7A7A7A }
-
-

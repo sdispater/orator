@@ -331,6 +331,8 @@ Eloquent makes managing and working with relationships easy. It supports many ty
 * :ref:`OneToMany`
 * :ref:`ManyToMany`
 * :ref:`HasManyThrough`
+* :ref:`PolymorphicRelations`
+* :ref:`ManyToManyPolymorphicRelations`
 
 .. _OneToOne:
 
@@ -546,6 +548,149 @@ you can pass them as the third and fourth arguments to the method:
     return self.has_many_through(Post, User, 'country_id', 'user_id')
 
 
+.. _PolymorphicRelations:
+
+Polymorphic relations
+---------------------
+
+.. versionadded:: 0.3
+
+Polymorphic relations allow a model to belong to more than one other model, on a single association.
+For example, you might have a ``Photo`` model that belongs to either a ``Staff`` model or an ``Order`` model.
+
+.. code-block:: python
+
+    class Photo(Model):
+
+        @property
+        def imageable(self):
+            return self.morph_to()
+
+    class Staff(Model):
+
+        @property
+        def photos(self):
+            return self.morph_many(Photo, 'imageable')
+
+    class Order(Model):
+
+        @property
+        def photos(self):
+            return self.morph_many(Photo, 'imageable')
+
+Retrieving a polymorphic relation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Now, we can retrieve the photos for either a staff member or an order:
+
+.. code-block:: python
+
+    staff = Staff.find(1)
+
+    for photo in staff.photos:
+        # ...
+
+Retrieving the owner of a polymorphic relation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also, and this is where polymorphic relations shine, access the staff or
+order model from the ``Photo`` model:
+
+.. code-block:: python
+
+    photo = Photo.find(1)
+
+    imageable = photo.imageable
+
+The ``imageable`` relation on the ``Photo`` model will return either a ``Staff`` or ``Order`` instance,
+depending on which type of model owns the photo.
+
+Polymorphic relation table structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To help understand how this works, let's explore the database structure for a polymorphic relation:
+
+.. code-block:: text
+
+    staff
+        id - integer
+        name - string
+
+    orders
+        id - integer
+        price - integer
+
+    photos
+        id - integer
+        path - string
+        imageable_id - integer
+        imageable_type - string
+
+The key fields to notice here are the ``imageable_id`` and ``imageable_type`` on the ``photos`` table.
+The ID will contain the ID value of, in this example, the owning staff or order,
+while the type will contain the class name of the owning model.
+This is what allows the ORM to determine which type of owning model
+to return when accessing the ``imageable`` relation.
+
+
+.. _ManyToManyPolymorphicRelations:
+
+Many To Many polymorphic relations
+----------------------------------
+
+.. versionadded:: 0.3
+
+Polymorphic Many To Many Relation Table Structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to traditional polymorphic relations, you can also specify many-to-many polymorphic relations.
+For example, a blog ``Post`` and ``Video`` model could share a polymorphic relation to a ``Tag`` model.
+First, let's examine the table structure:
+
+.. code-block:: text
+
+    posts
+        id - integer
+        name - string
+
+    videos
+        id - integer
+        name - string
+
+    tags
+        id - integer
+        name - string
+
+    taggables
+        tag_id - integer
+        taggable_id - integer
+        taggable_type - string
+
+The ``Post`` and ``Video`` model will both have a ``morph_to_many`` relationship via a ``tags`` method:
+
+.. code-block:: python
+
+    class Post(Model):
+
+        @property
+        def tags(self):
+            return self.morph_to_many(Tag, 'taggable')
+
+The ``Tag`` model can define a method for each of its relationships:
+
+.. code-block:: python
+
+    class Tag(Model):
+
+        @property
+        def posts(self):
+            return self.morphed_by_many(Post, 'taggable')
+
+        @property
+        def videos(self):
+            return self.morphed_by_many(Video, 'taggable')
+
+
 Querying relations
 ==================
 
@@ -703,7 +848,7 @@ Inserting related models
 ========================
 
 You will often need to insert new related models, like inserting a new comment for a post.
-Instead of manually setting the ``post_id`` foreign key, you can insert the new comment from its parent ``Post``model
+Instead of manually setting the ``post_id`` foreign key, you can insert the new comment from its parent ``Post`` model
 directly:
 
 .. code-block:: python
