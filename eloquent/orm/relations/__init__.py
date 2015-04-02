@@ -9,3 +9,4 @@ from .has_many_through import HasManyThrough
 from .morph_one import MorphOne
 from .morph_many import MorphMany
 from .morph_to import MorphTo
+from .morph_to_many import MorphToMany

@@ -11,7 +11,7 @@ from .builder import Builder
 from .collection import Collection
 from .relations import (
     Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough,
-    MorphOne, MorphMany, MorphTo
+    MorphOne, MorphMany, MorphTo, MorphToMany
 )
 from .relations.dynamic_property import DynamicProperty
 
@@ -749,6 +749,77 @@ class Model(object):
         query = instance.new_query()
 
         return BelongsToMany(query, self, table, foreign_key, other_key, relation)
+
+    def morph_to_many(self, related, name, table=None, foreign_key=None, other_key=None, inverse=False):
+        """
+        Define a polymorphic many-to-many relationship.
+
+        :param related: The related model:
+        :type related: Model
+
+        :param name: The relation name
+        :type name: str
+
+        :param table: The pivot table
+        :type table: str
+
+        :param foreign_key: The foreign key
+        :type foreign_key: str
+
+        :param other_key: The other key
+        :type other_key: str
+
+        :rtype: MorphToMany
+        """
+        caller = inspect.stack()[1][3]
+
+        if caller in self.__relations:
+            return self.__relations[caller]
+
+        if not foreign_key:
+            foreign_key = name + '_id'
+
+        instance = related()
+
+        if not other_key:
+            other_key = instance.get_foreign_key()
+
+        query = instance.new_query()
+
+        if not table:
+            table = inflection.pluralize(name)
+
+        return MorphToMany(query, self, name, table,
+                           foreign_key, other_key, caller, inverse)
+
+    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None):
+        """
+        Define a polymorphic many-to-many relationship.
+
+        :param related: The related model:
+        :type related: Model
+
+        :param name: The relation name
+        :type name: str
+
+        :param table: The pivot table
+        :type table: str
+
+        :param foreign_key: The foreign key
+        :type foreign_key: str
+
+        :param other_key: The other key
+        :type other_key: str
+
+        :rtype: MorphToMany
+        """
+        if not foreign_key:
+            foreign_key = self.get_foreign_key()
+
+        if not other_key:
+            other_key = name + '_id'
+
+        return self.morph_to_many(related, name, table, foreign_key, other_key, True)
 
     def joining_table(self, related):
         """
