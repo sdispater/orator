@@ -8,3 +8,4 @@ from .belongs_to_many import BelongsToMany
 from .has_many_through import HasManyThrough
 from .morph_one import MorphOne
 from .morph_many import MorphMany
+from .morph_to import MorphTo
