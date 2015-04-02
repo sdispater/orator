@@ -9,7 +9,10 @@ from ..exceptions.orm import MassAssignmentError
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
-from .relations import Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough
+from .relations import (
+    Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough,
+    MorphOne, MorphMany
+)
 from .relations.dynamic_property import DynamicProperty
 
 
@@ -47,6 +50,8 @@ class Model(object):
     __casts__ = {}
 
     __touches__ = []
+
+    __morph_class__ = None
 
     _with = []
 
@@ -492,6 +497,37 @@ class Model(object):
 
         return HasOne(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
 
+    def morph_one(self, related, name, type_column=None, id_column=None, local_key=None):
+        """
+        Define a polymorphic one to one relationship.
+
+        :param related: The related model:
+        :type related: Model class
+
+        :param type_column: The name of the type column
+        :type type_column: str
+
+        :param id_column: The name of the id column
+        :type id_column: str
+
+        :param local_key: The local key
+        :type local_key: str
+
+        :rtype: HasOne
+        """
+        instance = related()
+
+        type_column, id_column = self.get_morphs(name, type_column, id_column)
+
+        table = instance.get_table()
+
+        if not local_key:
+            local_key = self.get_key_name()
+
+        return MorphOne(instance.new_query(), self,
+                        '%s.%s' % (table, type_column),
+                        '%s.%s' % (table, id_column), local_key)
+
     def belongs_to(self, related, foreign_key=None, other_key=None, relation=None):
         """
         Define an inverse one to one or many relationship.
@@ -576,6 +612,37 @@ class Model(object):
             second_key = through.get_foreign_key()
 
         return HasManyThrough(related().new_query(), self, through, first_key, second_key)
+
+    def morph_many(self, related, name, type_column=None, id_column=None, local_key=None):
+        """
+        Define a polymorphic one to many relationship.
+
+        :param related: The related model:
+        :type related: Model class
+
+        :param type_column: The name of the type column
+        :type type_column: str
+
+        :param id_column: The name of the id column
+        :type id_column: str
+
+        :param local_key: The local key
+        :type local_key: str
+
+        :rtype: HasOne
+        """
+        instance = related()
+
+        type_column, id_column = self.get_morphs(name, type_column, id_column)
+
+        table = instance.get_table()
+
+        if not local_key:
+            local_key = self.get_key_name()
+
+        return MorphMany(instance.new_query(), self,
+                         '%s.%s' % (table, type_column),
+                         '%s.%s' % (table, id_column), local_key)
 
     def belongs_to_many(self, related, table=None, foreign_key=None, other_key=None, relation=None):
         """
@@ -1163,6 +1230,27 @@ class Model(object):
         :rtype: bool
         """
         return self.__timestamps__
+
+    def get_morphs(self, name, type, id):
+        """
+        Get the polymorphic relationship columns.
+        """
+        if not type:
+            type = name + '_type'
+
+        if not id:
+            id = name + '_id'
+
+        return type, id
+
+    def get_morph_class(self):
+        """
+        Get the class name for polymorphic relations.
+        """
+        if not self.__morph_class__:
+            return self.__class__.__name__
+
+        return self.__morph_class__
 
     def get_foreign_key(self):
         """
