@@ -694,6 +694,73 @@ The ``Tag`` model can define a method for each of its relationships:
 Querying relations
 ==================
 
+Querying relations when selection
+---------------------------------
+
+When accessing the records for a model, you may wish to limit the results based on the exeistence
+of a relationship. For example, you may wish to retrieve all blog posts that have at least one comment.
+To actually do so, you can use the ``has`` method:
+
+.. code-block:: python
+
+    posts = Post.has('comments').get()
+
+This would execute the following SQL query:
+
+.. code-block:: sql
+
+    SELECT * FROM posts
+    WHERE (
+        SELECT COUNT(*) FROM comments
+        WHERE comments.post_id = posts.id
+    ) >= 1
+
+You can also specify an operator and a count:
+
+.. code-block:: python
+
+    posts = Post.has('comments', '>', 3).get()
+
+This would execute:
+
+.. code-block:: sql
+
+    SELECT * FROM posts
+    WHERE (
+        SELECT COUNT(*) FROM comments
+        WHERE comments.post_id = posts.id
+    ) > 3
+
+Nested ``has`` statements can also be constructed using "dot" notation:
+
+.. code-block:: python
+
+    posts = Post.has('comments.votes').get()
+
+And the corresponding SQL query:
+
+.. code-block:: sql
+
+    SELECT * FROM posts
+    WHERE (
+        SELECT COUNT(*) FROM comments
+        WHERE comments.post_id = posts.id
+        AND (
+            SELECT COUNT(*) FROM votes
+            WHERE votes.comment_id = comments.id
+        ) >= 1
+    ) >= 1
+
+If you need even more power, you can use the ``where_has`` and ``or_where_has`` methods
+to put "where" conditions on your has queries:
+
+.. code-block:: python
+
+    posts = Post.where_has(
+        'comments',
+        lambda q: q.where('content', 'like', 'foo%')
+    ).get()
+
 .. _dynamic_properties:
 
 Dynamic properties
