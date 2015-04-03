@@ -322,9 +322,21 @@ class BuilderTestCase(EloquentTestCase):
 
         self.assertEqual({'foo': builder}, builder.delete())
 
-    # TODO: has nested
+    def test_has_nested(self):
+        builder = OrmBuilderTestModelParentStub.where_has('foo', lambda q: q.has('bar'))
 
-    # TODO: has nested with constraints
+        result = OrmBuilderTestModelParentStub.has('foo.bar').to_sql()
+
+        self.assertEqual(builder.to_sql(), result)
+
+    def test_has_nested_with_constraints(self):
+        model = OrmBuilderTestModelParentStub
+
+        builder = model.where_has('foo', lambda q: q.where_has('bar', lambda q: q.where('baz', 'bam'))).to_sql()
+
+        result = model.where_has('foo.bar', lambda q: q.where('baz', 'bam')).to_sql()
+
+        self.assertEqual(builder, result)
 
     def get_builder(self):
         return Builder(self.get_mock_query_builder())
@@ -345,3 +357,22 @@ class BuilderTestCase(EloquentTestCase):
         ).prepare_mock()
 
         return builder
+
+
+class OrmBuilderTestModelFarRelatedStub(Model):
+
+    pass
+
+
+class OrmBuilderTestModelCloseRelated(Model):
+
+    @property
+    def bar(self):
+        return self.has_many(OrmBuilderTestModelFarRelatedStub)
+
+
+class OrmBuilderTestModelParentStub(Model):
+
+    @property
+    def foo(self):
+        return self.belongs_to(OrmBuilderTestModelCloseRelated)
