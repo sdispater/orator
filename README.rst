@@ -555,7 +555,7 @@ You can also specify more advance join clauses:
     db.table('users').join(clause).get()
 
 If you would like to use a "where" style clause on your joins,
-you may use the where and orWhere methods on a join.
+you may use the ``where`` and ``or_where`` methods on a join.
 Instead of comparing two columns, these methods will compare the column against a value:
 
 
