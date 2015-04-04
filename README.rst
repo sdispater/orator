@@ -159,7 +159,7 @@ You can specify which database connection to use when querying a model by using 
 
     user = User.on('connection-name').find(1)
 
-If you are using :ref:`read_write_connections`, you can force the query to use the "write" connection
+If you are using read / write connections, you can force the query to use the "write" connection
 with the following method:
 
 .. code-block:: python
