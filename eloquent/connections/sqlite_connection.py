@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from ..utils import PY2, decode
 from .connection import Connection
 from ..query.processors.sqlite_processor import SQLiteQueryProcessor
 
@@ -29,3 +30,11 @@ class SQLiteConnection(Connection):
             self._connection.isolation_level = None
         else:
             self._transactions -= 1
+
+    def prepare_bindings(self, bindings):
+        bindings = super(SQLiteConnection, self).prepare_bindings(bindings)
+
+        if PY2:
+            return map(lambda x: decode(x) if isinstance(x, str) else x, bindings)
+
+        return bindings

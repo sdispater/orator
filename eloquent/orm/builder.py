@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from ..exceptions.orm import ModelNotFound
-from ..utils import Null
+from ..utils import Null, basestring
+from ..query.expression import QueryExpression
 
 
 class Builder(object):
@@ -380,7 +381,10 @@ class Builder(object):
 
         relation.add_eager_constraints(models)
 
-        relation.merge_query(constraints)
+        if callable(constraints):
+            constraints(relation)
+        else:
+            relation.merge_query(constraints)
 
         models = relation.init_relation(models, name)
 
@@ -415,7 +419,7 @@ class Builder(object):
 
         for name, constraints in self._eager_load.items():
             if self._is_nested(name, relation):
-                nested[name[len(relation + '.')]:] = constraints
+                nested[name[len(relation + '.'):]] = constraints
 
         return nested
 
@@ -475,6 +479,218 @@ class Builder(object):
         :rtype: Builder
         """
         return self.where(column, operator, value, 'or')
+
+    def has(self, relation, operator='>=', count=1, boolean='and', extra=None):
+        """
+        Add a relationship count condition to the query.
+
+        :param relation: The relation to count
+        :type relation: str
+
+        :param operator: The operator
+        :type operator: str
+
+        :param count: The count
+        :type count: int
+
+        :param boolean: The boolean value
+        :type boolean: str
+
+        :param extra: The extra query
+        :type extra: Builder or callable
+
+        :type: Builder
+        """
+        if relation.find('.') >= 0:
+            return self._has_nested(relation, operator, count, boolean, extra)
+
+        relation = self._get_has_relation_query(relation)
+
+        query = relation.get_relation_count_query(relation.get_related().new_query(), self)
+
+        # TODO: extra query
+        if extra:
+            if callable(extra):
+                extra(query)
+
+        return self._add_has_where(query, relation, operator, count, boolean)
+
+    def _has_nested(self, relations, operator='>=', count=1, boolean='and', extra=None):
+        """
+        Add nested relationship count conditions to the query.
+
+        :param relations: nested relations
+        :type relations: str
+
+        :param operator: The operator
+        :type operator: str
+
+        :param count: The count
+        :type count: int
+
+        :param boolean: The boolean value
+        :type boolean: str
+
+        :param extra: The extra query
+        :type extra: Builder or callable
+
+        :rtype: Builder
+        """
+        relations = relations.split('.')
+
+        def closure(q):
+            if len(relations) > 1:
+                q.where_has(relations.pop(0), closure)
+            else:
+                q.has(relations.pop(0), operator, count, boolean, extra)
+
+        return self.where_has(relations.pop(0), closure)
+
+    def doesnt_have(self, relation, boolean='and', extra=None):
+        """
+        Add a relationship count to the query.
+
+        :param relation: The relation to count
+        :type relation: str
+
+        :param boolean: The boolean value
+        :type boolean: str
+
+        :param extra: The extra query
+        :type extra: Builder or callable
+
+        :rtype: Builder
+        """
+        return self.has(relation, '<', 1, boolean, extra)
+
+    def where_has(self, relation, extra, operator='>=', count=1):
+        """
+        Add a relationship count condition to the query with where clauses.
+
+        :param relation: The relation to count
+        :type relation: str
+
+        :param extra: The extra query
+        :type extra: Builder or callable
+
+        :param operator: The operator
+        :type operator: str
+
+        :param count: The count
+        :type count: int
+
+        :rtype: Builder
+        """
+        return self.has(relation, operator, count, 'and', extra)
+
+    def where_doesnt_have(self, relation, extra=None):
+        """
+        Add a relationship count condition to the query with where clauses.
+
+        :param relation: The relation to count
+        :type relation: str
+
+        :param extra: The extra query
+        :type extra: Builder or callable
+
+        :rtype: Builder
+        """
+        return self.doesnt_have(relation, 'and', extra)
+
+    def or_has(self, relation, operator='>=', count=1):
+        """
+        Add a relationship count condition to the query with an "or".
+
+        :param relation: The relation to count
+        :type relation: str
+
+        :param operator: The operator
+        :type operator: str
+
+        :param count: The count
+        :type count: int
+
+        :rtype: Builder
+        """
+        return self.has(relation, operator, count, 'or')
+
+    def or_where_has(self, relation, extra, operator='>=', count=1):
+        """
+        Add a relationship count condition to the query with where clauses and an "or".
+
+        :param relation: The relation to count
+        :type relation: str
+
+        :param extra: The extra query
+        :type extra: Builder or callable
+
+        :param operator: The operator
+        :type operator: str
+
+        :param count: The count
+        :type count: int
+
+        :rtype: Builder
+        """
+        return self.has(relation, operator, count, 'or', extra)
+
+    def _add_has_where(self, has_query, relation, operator, count, boolean):
+        """
+        Add the "has" condition where clause to the query.
+
+        :param has_query: The has query
+        :type has_query: Builder
+
+        :param relation: The relation to count
+        :type relation: eloquent.orm.relations.Relation
+
+        :param operator: The operator
+        :type operator: str
+
+        :param count: The count
+        :type count: int
+
+        :param boolean: The boolean value
+        :type boolean: str
+
+        :rtype: Builder
+        """
+        self._merge_wheres_to_has(has_query, relation)
+
+        if isinstance(count, basestring) and count.isdigit():
+            count = QueryExpression(count)
+
+        return self.where(QueryExpression('(%s)' % has_query.to_sql()), operator, count, boolean)
+
+    def _merge_wheres_to_has(self, has_query, relation):
+        """
+        Merge the "wheres" from the relation query to a has query.
+
+        :param has_query: The has query
+        :type has_query: Builder
+
+        :param relation: The relation to count
+        :type relation: eloquent.orm.relations.Relation
+        """
+        relation_query = relation.get_base_query()
+
+        has_query.merge_wheres(relation_query.wheres, relation_query.get_bindings())
+
+        self._query.merge_bindings(has_query.get_query())
+
+    def _get_has_relation_query(self, relation):
+        """
+        Get the "has" relation base query
+
+        :type relation: str
+
+        :rtype: Builder
+        """
+        from .relations import Relation
+
+        return Relation.no_constraints(
+            lambda: getattr(self.get_model(), relation)()
+        )
 
     def with_(self, *relations):
         """
@@ -555,6 +771,26 @@ class Builder(object):
         :type query: QueryBuilder
         """
         self._query = query
+
+    def get_eager_loads(self):
+        """
+        Get the relationships being eager loaded.
+
+        :rtype: dict
+        """
+        return self._eager_load
+
+    def set_eager_loads(self, eager_load):
+        """
+        Sets the relationships to eager load.
+
+        :type eager_load: dict
+
+        :rtype: Builder
+        """
+        self._eager_load = eager_load
+
+        return self
 
     def get_model(self):
         """

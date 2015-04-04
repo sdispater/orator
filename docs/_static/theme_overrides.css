@@ -1,8 +1,9 @@
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,400italic,500,700);
 @import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
+@import url(http://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600);
 
 body {
-    font-family: "Roboto", sans-serif;
+    font: 400 14px/28px "Roboto",sans-serif;
 }
 
 .wy-body-for-nav {
@@ -57,10 +58,16 @@ article ul li {
     border-right: 0;
 }
 
+.wy-menu-vertical li.current > a {
+    font-size: 14px;
+    border-right: 0;
+}
+
 .wy-menu-vertical a,
 .wy-menu-vertical a:visited {
     color: #788195;
     line-height: 24px;
+    font-size: 14px;
 }
 
 .wy-menu-vertical a:hover {
@@ -172,14 +179,20 @@ p {
     color: #7A7A7A;
 }
 
+b, strong {
+   font-weight: 500;
+}
+
 pre, pre code, .rst-content tt {
-    color: #03A9F4;
-    background-color: #FAFAFA;
-    font-size: 14px;
+    font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
+    color: #CB6077;
+    background-color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 pre, code, .rst-content tt {
-	font-family: "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
+	font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
 	font-weight: 400;
     border-radius: 3px;
     font-size: 1em;
@@ -191,20 +204,30 @@ div[class^="highlight"] {
 }
 
 .highlight > pre, div[class^="highlight"] pre {
+    font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
 	border: 1px solid #F2F2F2;
     font-size: 13px;
     padding: 4%;
+    color: #7A7A7A;
+    background-color: #FAFAFA;
 }
 
 code {
-    background: #FAFAFA;
+    font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
+    color: #CB6077;
+    background-color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 p > code,
 .rst-content tt {
-    color: #03A9F4;
-    padding: 0.3em 0.5em;
+    color: #CB6077;
+    padding: 0;
     display: inline;
+    font-weight: 500;
+    border: 0;
+    background-color: #FFFFFF;
 }
 
 .rst-content .admonition-title {
@@ -212,7 +235,8 @@ p > code,
 }
 
 .rst-content .note,
-.rst-content .warning {
+.rst-content .warning,
+.rst-content .versionadded{
     padding: 0px 40px;
     margin: 30px 0px;
     background: #FFFFFF;
@@ -238,10 +262,24 @@ p > code,
     color: #FF9800 !important;
 }
 
+.rst-content .versionadded {
+    color: #BEB55B !important;
+}
+
+.rst-content .versionadded > p {
+    color: #BEB55B !important;
+}
+
+.rst-content .versionadded > p:before {
+    font-family: FontAwesome;
+    content: '';
+    position: relative;
+    left: -20px;
+}
+
 .note code {
-    background-color: rgba(49, 112, 143, 0.07);
-    border-color: rgba(49, 112, 143, 0.1);
-    padding: 0.3em 0.5em;
+    border: 0;
+    padding: 0;
     display: inline;
 }
 
@@ -252,9 +290,8 @@ p > code,
 
 .warning code,
 .warning tt {
-    background-color: rgba(255, 152, 0, 0.07);
-    border-color: rgba(255, 152, 0, 0.1);
-    padding: 0.3em 0.5em;
+    border: 0;
+    padding: 0;
     display: inline;
 }
 
@@ -393,16 +430,21 @@ green     #859900  operators, other keywords
 .highlight .vi { color: #268bd2 } /* Name.Variable.Instance */
 .highlight .il { color: #2aa198 } /* Literal.Number.Integer.Long */
 
-.highlight .s { color: rgb(0, 188, 212) } /* Literal.String */
-.highlight .s1 { color: rgb(0, 188, 212) } /* Literal.String */
-.highlight .k { color: #8bc34a; font-weight: normal; } /* Keyword */
-.highlight .kn { color: #8bc34a; font-weight: normal; } /* Keyword */
-.highlight .ow { color: #8bc34a; font-weight: normal } /* Operator.Word */
-.highlight .nc { color: rgb(3, 169, 244) } /* Name.Class */
-.highlight .nf { color: rgb(3, 169, 244); font-weight: normal; } /* Name.Function */
-.highlight .bp { color: rgb(3, 169, 244) } /* Name.Builtin.Pseudo */
-.highlight .nd { color: #ff5252 } /* Name.Decorator */
+.highlight .s { color: #7BBDA4 } /* Literal.String */
+.highlight .s1 { color: #7BBDA4 } /* Literal.String */
+.highlight .si { color: #A89BB9 } /* Literal.String */
+.highlight .m { color: #F4BC87 } /* Literal.Number */
+.highlight .mf { color: #F4BC87 } /* Literal.Number */
+.highlight .mh { color: #F4BC87 } /* Literal.Number */
+.highlight .mi { color: #F4BC87 } /* Literal.Number */
+.highlight .mo { color: #F4BC87 } /* Literal.Number */
+.highlight .k { color: #BEB55B; font-weight: normal; } /* Keyword */
+.highlight .kn { color: #BEB55B; font-weight: normal; } /* Keyword */
+.highlight .ow { color: #BEB55B; font-weight: normal } /* Operator.Word */
+.highlight .nc { color: #D28B71; font-weight: 500 } /* Name.Class */
+.highlight .nf { color: #8AB3B5; font-weight: normal; } /* Name.Function */
+.highlight .bp { color: #CB6077 } /* Name.Builtin.Pseudo */
+.highlight .nd { color: #BB9584 } /* Name.Decorator */
 .highlight .o { color: #7A7A7A } /* Operator */
 .highlight .n { color: #7A7A7A }
-
-
+.highlight .c { color: #B8AFAD; font-style: normal; }

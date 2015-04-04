@@ -125,6 +125,31 @@ class Collection(object):
 
         return list(results)
 
+    def map(self, callback):
+        """
+        Run a map over each of the item.
+
+        :param callback: The map function
+        :type callback: callable
+
+        :rtype: Collection
+        """
+        if isinstance(self._items, dict):
+            return Collection(list(map(callback, self._items.values())))
+
+        return Collection(list(map(callback, self._items)))
+
+    def unique(self):
+        """
+        Return only unique items from the collection list.
+
+        :rtype: Collection
+        """
+        seen = set()
+        seen_add = seen.add
+
+        return Collection([x for x in self._items if not (x in seen or seen_add(x))])
+
     def _get_items(self, items):
         if isinstance(items, Collection):
             items = items.all()

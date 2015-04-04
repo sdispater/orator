@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import threading
+try:
+    from Queue import Queue
+except ImportError:
+    from queue import Queue
+
 from .. import EloquentTestCase
 from .. import mock
+from ..orm.models import User
 
 from eloquent.query.builder import QueryBuilder
 from eloquent.connections.connection import Connection
@@ -45,3 +52,45 @@ class ConnectionTestCase(EloquentTestCase):
         connection.begin_transaction.assert_called_once()
         connection.rollback.assert_called_once()
         self.assertFalse(connection.commit.called)
+
+
+class ConnectionThreadLocalTest(EloquentTestCase):
+
+    threads = 4
+
+    def test_create_thread_local(self):
+        self.init_database()
+
+        def create_user_thread(low, hi):
+            for _ in range(low, hi):
+                User.create(name='u%d' % i)
+
+            User.get_connection_resolver().disconnect()
+
+        threads = []
+        for i in range(self.threads):
+            threads.append(threading.Thread(target=create_user_thread, args=(i*10, i * 10 + 10)))
+
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+
+        self.assertEqual(User.select().count(), self.threads * 10)
+
+    def test_read_thread_local(self):
+        self.init_database()
+
+        data_queue = Queue()
+
+        def reader_thread(q, num):
+            for _ in range(num):
+                data_queue.put(User.select().count())
+
+        threads = []
+
+        for i in range(self.threads):
+            threads.append(threading.Thread(target=reader_thread, args=(data_queue, 20)))
+
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+
+        self.assertEqual(data_queue.qsize(), self.threads * 20)

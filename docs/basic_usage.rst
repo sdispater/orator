@@ -183,3 +183,70 @@ If you need to disconnect from the given database, use the ``disconnect`` method
 .. code-block:: python
 
     db.disconnect('foo')
+
+
+Query logging
+-------------
+
+Eloquent can log all queries that are executed.
+By default, this is turned off to avoid unnecessary overhead, but if you want to activate it
+you can either add a ``log_queries`` key to the config dictionary:
+
+.. code-block:: python
+
+    config = {
+        'mysql': {
+            'driver': 'mysql',
+            'host': 'localhost',
+            'database': 'database',
+            'username': 'root',
+            'password': '',
+            'prefix': '',
+            'log_queries': True
+        }
+    }
+
+or activate it later on:
+
+.. code-block:: python
+
+    db.connection().enable_query_log()
+
+Now, the logger ``eloquent.connection.queries`` will be logging queries at **debug** level:
+
+.. code-block:: text
+
+    Executed SELECT COUNT(*) AS aggregate FROM "users" in 1.18ms
+
+    Executed INSERT INTO "users" ("email", "name", "updated_at") VALUES ('foo@bar.com', 'foo', '2015-04-01T22:59:25.810216'::timestamp) RETURNING "id" in 3.6ms
+
+.. note::
+
+    These log messages above are those logged for **MySQL** and **PostgreSQL** connections which support
+    displaying full request sent to the database.
+    For **SQLite** connections, the format is as follows:
+
+    .. code-block:: text
+
+        Executed ('SELECT COUNT(*) AS aggregate FROM "users"', []) in 0.12ms
+
+
+Customizing log messages
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each log record sent by the logger comes with the ``query`` and ``elapsed_time`` keywords so that
+you can customize the log message:
+
+.. code-block:: python
+
+    import logging
+
+    logger = logging.getLogger('eloquent.connection.queries')
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('It took %(elapsed_time)sms to execute the query %(query)s')
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)

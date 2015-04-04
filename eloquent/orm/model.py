@@ -9,7 +9,10 @@ from ..exceptions.orm import MassAssignmentError
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
-from .relations import Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough
+from .relations import (
+    Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough,
+    MorphOne, MorphMany, MorphTo, MorphToMany
+)
 from .relations.dynamic_property import DynamicProperty
 
 
@@ -48,9 +51,12 @@ class Model(object):
 
     __touches__ = []
 
+    __morph_class__ = None
+
     _with = []
 
     _booted = {}
+    _registered = []
 
     __resolver = None
 
@@ -482,6 +488,11 @@ class Model(object):
 
         :rtype: HasOne
         """
+        name = inspect.stack()[1][3]
+
+        if name in self.__relations:
+            return self.__relations[name]
+
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
@@ -491,6 +502,42 @@ class Model(object):
             local_key = self.get_key_name()
 
         return HasOne(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+
+    def morph_one(self, related, name, type_column=None, id_column=None, local_key=None):
+        """
+        Define a polymorphic one to one relationship.
+
+        :param related: The related model:
+        :type related: Model class
+
+        :param type_column: The name of the type column
+        :type type_column: str
+
+        :param id_column: The name of the id column
+        :type id_column: str
+
+        :param local_key: The local key
+        :type local_key: str
+
+        :rtype: HasOne
+        """
+        name = inspect.stack()[1][3]
+
+        if name in self.__relations:
+            return self.__relations[name]
+
+        instance = related()
+
+        type_column, id_column = self.get_morphs(name, type_column, id_column)
+
+        table = instance.get_table()
+
+        if not local_key:
+            local_key = self.get_key_name()
+
+        return MorphOne(instance.new_query(), self,
+                        '%s.%s' % (table, type_column),
+                        '%s.%s' % (table, id_column), local_key)
 
     def belongs_to(self, related, foreign_key=None, other_key=None, relation=None):
         """
@@ -512,6 +559,9 @@ class Model(object):
         if relation is None:
             relation = inspect.stack()[1][3]
 
+        if relation in self.__relations:
+            return self.__relations[relation]
+
         if foreign_key is None:
             foreign_key = '%s_id' % inflection.underscore(relation)
 
@@ -523,6 +573,44 @@ class Model(object):
             other_key = instance.get_key_name()
 
         return BelongsTo(query, self, foreign_key, other_key, relation)
+
+    def morph_to(self, name=None, type_column=None, id_column=None):
+        """
+        Define a polymorphic, inverse one-to-one or many relationship.
+
+        :param name: The name of the relation
+        :type name: str
+
+        :param type_column: The type column
+        :type type_column: str
+
+        :param id_column: The id column
+        :type id_column: str
+
+        :rtype: MorphTo
+        """
+        if not name:
+            name = inspect.stack()[1][3]
+
+        if name in self.__relations:
+            return self.__relations[name]
+
+        type_column, id_column = self.get_morphs(name, type_column, id_column)
+
+        if not hasattr(self, type_column):
+            return MorphTo(self.new_query(), self, id_column, None, type_column, name)
+
+        klass = None
+        parent_type = getattr(self, type_column)
+        for cls in Model.__subclasses__():
+            morph_class = cls.__morph_class__ or cls.__name__
+            if morph_class == parent_type:
+                klass = cls
+                break
+
+        instance = klass()
+
+        return MorphTo(instance.new_query(), self, id_column, instance.get_key_name(), type_column, name)
 
     def has_many(self, related, foreign_key=None, local_key=None):
         """
@@ -539,6 +627,11 @@ class Model(object):
 
         :rtype: HasOne
         """
+        name = inspect.stack()[1][3]
+
+        if name in self.__relations:
+            return self.__relations[name]
+
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
@@ -567,6 +660,11 @@ class Model(object):
 
         :rtype: HasManyThrough
         """
+        name = inspect.stack()[1][3]
+
+        if name in self.__relations:
+            return self.__relations[name]
+
         through = through()
 
         if not first_key:
@@ -576,6 +674,40 @@ class Model(object):
             second_key = through.get_foreign_key()
 
         return HasManyThrough(related().new_query(), self, through, first_key, second_key)
+
+    def morph_many(self, related, name, type_column=None, id_column=None, local_key=None):
+        """
+        Define a polymorphic one to many relationship.
+
+        :param related: The related model:
+        :type related: Model class
+
+        :param type_column: The name of the type column
+        :type type_column: str
+
+        :param id_column: The name of the id column
+        :type id_column: str
+
+        :param local_key: The local key
+        :type local_key: str
+
+        :rtype: MorphMany
+        """
+        instance = related()
+
+        if name in self.__relations:
+            return self.__relations[name]
+
+        type_column, id_column = self.get_morphs(name, type_column, id_column)
+
+        table = instance.get_table()
+
+        if not local_key:
+            local_key = self.get_key_name()
+
+        return MorphMany(instance.new_query(), self,
+                         '%s.%s' % (table, type_column),
+                         '%s.%s' % (table, id_column), local_key)
 
     def belongs_to_many(self, related, table=None, foreign_key=None, other_key=None, relation=None):
         """
@@ -600,6 +732,9 @@ class Model(object):
         if relation is None:
             relation = inspect.stack()[1][3]
 
+        if relation in self.__relations:
+            return self.__relations[relation]
+
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
@@ -614,6 +749,77 @@ class Model(object):
         query = instance.new_query()
 
         return BelongsToMany(query, self, table, foreign_key, other_key, relation)
+
+    def morph_to_many(self, related, name, table=None, foreign_key=None, other_key=None, inverse=False):
+        """
+        Define a polymorphic many-to-many relationship.
+
+        :param related: The related model:
+        :type related: Model
+
+        :param name: The relation name
+        :type name: str
+
+        :param table: The pivot table
+        :type table: str
+
+        :param foreign_key: The foreign key
+        :type foreign_key: str
+
+        :param other_key: The other key
+        :type other_key: str
+
+        :rtype: MorphToMany
+        """
+        caller = inspect.stack()[1][3]
+
+        if caller in self.__relations:
+            return self.__relations[caller]
+
+        if not foreign_key:
+            foreign_key = name + '_id'
+
+        instance = related()
+
+        if not other_key:
+            other_key = instance.get_foreign_key()
+
+        query = instance.new_query()
+
+        if not table:
+            table = inflection.pluralize(name)
+
+        return MorphToMany(query, self, name, table,
+                           foreign_key, other_key, caller, inverse)
+
+    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None):
+        """
+        Define a polymorphic many-to-many relationship.
+
+        :param related: The related model:
+        :type related: Model
+
+        :param name: The relation name
+        :type name: str
+
+        :param table: The pivot table
+        :type table: str
+
+        :param foreign_key: The foreign key
+        :type foreign_key: str
+
+        :param other_key: The other key
+        :type other_key: str
+
+        :rtype: MorphToMany
+        """
+        if not foreign_key:
+            foreign_key = self.get_foreign_key()
+
+        if not other_key:
+            other_key = name + '_id'
+
+        return self.morph_to_many(related, name, table, foreign_key, other_key, True)
 
     def joining_table(self, related):
         """
@@ -1164,6 +1370,27 @@ class Model(object):
         """
         return self.__timestamps__
 
+    def get_morphs(self, name, type, id):
+        """
+        Get the polymorphic relationship columns.
+        """
+        if not type:
+            type = name + '_type'
+
+        if not id:
+            id = name + '_id'
+
+        return type, id
+
+    def get_morph_class(self):
+        """
+        Get the class name for polymorphic relations.
+        """
+        if not self.__morph_class__:
+            return self.__class__.__name__
+
+        return self.__morph_class__
+
     def get_foreign_key(self):
         """
         Get the default foreign key name for the model
@@ -1452,7 +1679,7 @@ class Model(object):
 
         return {x: values[x] for x in values.keys() if x not in self.get_hidden() and not x.startswith('_')}
 
-    def get_attribute(self, key):
+    def get_attribute(self, key, original=None):
         """
         Get an attribute from the model.
 
@@ -1467,10 +1694,10 @@ class Model(object):
         if key in self.__relations:
             return self.__relations[key]
 
-        relation = super(Model, self).__getattribute__(key)
+        relation = original or super(Model, self).__getattribute__(key)
 
         if relation:
-            return self._get_relationship_from_method(key)
+            return self._get_relationship_from_method(key, relation)
 
         raise AttributeError(key)
 
@@ -1496,7 +1723,7 @@ class Model(object):
     def _get_attribute_from_dict(self, key):
         return self.__attributes.get(key)
 
-    def _get_relationship_from_method(self, method):
+    def _get_relationship_from_method(self, method, relations=None):
         """
         Get a relationship value from a method.
 
@@ -1505,7 +1732,7 @@ class Model(object):
 
         :rtype: mixed
         """
-        relations = super(Model, self).__getattribute__(method)
+        relations = relations or super(Model, self).__getattribute__(method)
 
         if not isinstance(relations, Relation):
             raise RuntimeError('Relationship method must return an object of type Relation')
@@ -1900,7 +2127,7 @@ class Model(object):
         try:
             attr = super(Model, self).__getattribute__(item)
             if isinstance(attr, Relation):
-                return self.get_attribute(item)
+                return self.get_attribute(item, attr)
 
             return attr
         except AttributeError:
