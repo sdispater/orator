@@ -3,7 +3,7 @@
 @import url(http://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600);
 
 body {
-    font: 400 13px/28px "Roboto",sans-serif;
+    font: 400 14px/28px "Roboto",sans-serif;
 }
 
 .wy-body-for-nav {
@@ -175,7 +175,7 @@ a > em {
 }
 
 p {
-    font: 400 13px/28px "Roboto",sans-serif;
+    font: 400 14px/28px "Roboto",sans-serif;
     color: #7A7A7A;
 }
 
@@ -184,9 +184,11 @@ b, strong {
 }
 
 pre, pre code, .rst-content tt {
-    color: #8AB3B5;
-    background-color: #FAFAFA;
-    font-size: 14px;
+    font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
+    color: #CB6077;
+    background-color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 pre, code, .rst-content tt {
@@ -207,10 +209,15 @@ div[class^="highlight"] {
     font-size: 13px;
     padding: 4%;
     color: #7A7A7A;
+    background-color: #FAFAFA;
 }
 
 code {
-    background: #FAFAFA;
+    font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
+    color: #CB6077;
+    background-color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 p > code,
@@ -425,7 +432,7 @@ green     #859900  operators, other keywords
 
 .highlight .s { color: #7BBDA4 } /* Literal.String */
 .highlight .s1 { color: #7BBDA4 } /* Literal.String */
-.highlight .si { color: #7BBDA4 } /* Literal.String */
+.highlight .si { color: #A89BB9 } /* Literal.String */
 .highlight .m { color: #F4BC87 } /* Literal.Number */
 .highlight .mf { color: #F4BC87 } /* Literal.Number */
 .highlight .mh { color: #F4BC87 } /* Literal.Number */

@@ -880,13 +880,20 @@ Here's an example:
 
 .. code-block:: python
 
-    users = User.with_(
-        {
-            'posts': Post.query().where('title', 'like', '%first%'))
-        }
-    ).get()
+    users = User.with_({
+        'posts': Post.query().where('title', 'like', '%first%')
+    }).get()
 
 In this example, we're eager loading the user's posts only if the post's title contains the word "first".
+
+When passing a query as a constraint, only the where clause is supported, if you want to be more specific
+you can use a callback:
+
+.. code-block:: python
+
+    users = User.with_({
+        'posts': lambda q: q.where('title', 'like', '%first%').order_by('created_at', 'desc')
+    })
 
 Lazy eager loading
 ------------------
