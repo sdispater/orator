@@ -1,3 +1,14 @@
+### 0.3
+
+(April 3th, 2015)
+
+- Query logging
+- Polymorphic relations
+- Adds support for Model.has() method
+- Adds support for callbacks in eager load conditions
+- Adds support for multi-threaded applications by default
+
+
 ### 0.2
 
 (March 31th, 2015)
