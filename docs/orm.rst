@@ -1231,7 +1231,7 @@ you may use the ``to_dict`` method:
 
 .. code-block:: python
 
-    user = User.with('roles').first()
+    user = User.with_('roles').first()
 
     return user.to_dict()
 

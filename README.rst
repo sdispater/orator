@@ -353,7 +353,7 @@ you may use the ``to_dict`` method:
 
 .. code-block:: python
 
-    user = User.with('roles').first()
+    user = User.with_('roles').first()
 
     return user.to_dict()
 
@@ -658,11 +658,10 @@ Insert records into a table
         'votes': 0
     })
 
-.. note::
 
-    It is important to note that there is two notations available.
-    The reason is quite simple: the dictionary notation, though a little less practical, is here to handle
-    columns names which cannot be passed as keywords arguments.
+It is important to note that there is two notations available.
+The reason is quite simple: the dictionary notation, though a little less practical, is here to handle
+columns names which cannot be passed as keywords arguments.
 
 Inserting records into a table with an auto-incrementing ID
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -698,11 +697,9 @@ Updating records
 
     db.table('users').where('id', 1).update({'votes': 1})
 
-.. note::
-
-    Like the ``insert`` statement, there is two notations available.
-    The reason is quite simple: the dictionary notation, though a little less practical, is here to handle
-    columns names which cannot be passed as keywords arguments.
+Like the ``insert`` statement, there is two notations available.
+The reason is quite simple: the dictionary notation, though a little less practical, is here to handle
+columns names which cannot be passed as keywords arguments.
 
 
 Incrementing or decrementing the value of a column
@@ -763,6 +760,8 @@ The query builder provides a quick and easy way to "union" two queries:
 
 The ``union_all`` method is also available.
 
+
+.. _read_write_connections:
 
 Read / Write connections
 ========================
@@ -837,11 +836,8 @@ You can also commit a transaction via the ``commit`` method:
 
     db.commit()
 
-
-.. warning::
-
-    By default, all underlying DBAPI connections are set to be in autocommit mode
-    meaning that you don't need to explicitly commit after each operation.
+By default, all underlying DBAPI connections are set to be in autocommit mode
+meaning that you don't need to explicitly commit after each operation.
 
 
 Accessing connections
