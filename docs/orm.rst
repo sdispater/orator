@@ -305,7 +305,7 @@ Deleting an existing model by key
 
     User.destroy(1, 2, 3)
 
-You can alsoe run a delete query on a set of models:
+You can also run a delete query on a set of models:
 
 .. code-block:: python
 
