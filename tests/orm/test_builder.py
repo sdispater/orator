@@ -5,6 +5,7 @@ from .. import EloquentTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
 
 from eloquent.query.grammars.grammar import QueryGrammar
+from eloquent.query.builder import QueryBuilder
 from eloquent.orm.builder import Builder
 from eloquent.orm.model import Model
 from eloquent.exceptions.orm import ModelNotFound
@@ -264,15 +265,73 @@ class BuilderTestCase(EloquentTestCase):
             records, 'foo_connection'
         )
 
-    # TODO: eager_load_relations loads top level relationship
+    def test_eager_load_relations_load_top_level_relationships(self):
+        flexmock(Builder)
+        builder = Builder(flexmock(QueryBuilder(None, None, None)))
+        nop1 = lambda: None
+        nop2 = lambda: None
+        builder.set_eager_loads({'foo': nop1, 'foo.bar': nop2})
+        builder.should_receive('_load_relation').with_args(['models'], 'foo', nop1).and_return(['foo'])
 
-    # TODO: relationship eager load process
+        results = builder.eager_load_relations(['models'])
+        self.assertEqual(['foo'], results)
 
-    # TODO: get relation properly set nested relationship
+    def test_eager_load_accept_queries(self):
+        model = OrmBuilderTestModelCloseRelated()
+        flexmock(Builder)
+        builder = Builder(flexmock(QueryBuilder(None, None, None)))
+        nop1 = OrmBuilderTestModelFarRelatedStub.where('id', 5)
+        builder.set_eager_loads({'foo': nop1})
+        relation = flexmock()
+        relation.should_receive('add_eager_constraints').once().with_args(['models'])
+        relation.should_receive('init_relation').once().with_args(['models'], 'foo').and_return(['models'])
+        relation.should_receive('get_eager').once().and_return(['results'])
+        relation.should_receive('match').once()\
+            .with_args(['models'], ['results'], 'foo').and_return(['foo'])
+        builder.should_receive('get_relation').once().with_args('foo').and_return(relation)
+        relation.should_receive('merge_query').with_args(nop1).and_return(relation)
 
-    # TODO: get relation properly set nested relationship with similar names
+        results = builder.eager_load_relations(['models'])
+        self.assertEqual(['foo'], results)
 
-    # TODO: eager load parsing sets proper relationships
+    def test_relationship_eager_load_process(self):
+        proof = flexmock()
+        flexmock(Builder)
+        builder = Builder(flexmock(QueryBuilder(None, None, None)))
+
+        def callback(q):
+            proof.foo = q
+
+        builder.set_eager_loads({'orders': callback})
+        relation = flexmock()
+        relation.should_receive('add_eager_constraints').once().with_args(['models'])
+        relation.should_receive('init_relation').once().with_args(['models'], 'orders').and_return(['models'])
+        relation.should_receive('get_eager').once().and_return(['results'])
+        relation.should_receive('match').once()\
+            .with_args(['models'], ['results'], 'orders').and_return(['models.matched'])
+        builder.should_receive('get_relation').once().with_args('orders').and_return(relation)
+        results = builder.eager_load_relations(['models'])
+
+        self.assertEqual(['models.matched'], results)
+        self.assertEqual(relation, proof.foo)
+
+    def test_get_relation_properly_sets_nested_relationships(self):
+        flexmock(Builder)
+        builder = Builder(flexmock(QueryBuilder(None, None, None)))
+        model = flexmock(Model())
+        relation = flexmock()
+        model.set_relation('orders', relation)
+        builder.set_model(model)
+        relation_query = flexmock()
+        relation.should_receive('get_query').and_return(relation_query)
+        relation_query.should_receive('with_').once().with_args({'lines': None, 'lines.details': None})
+        builder.set_eager_loads({
+            'orders': None,
+            'orders.lines': None,
+            'orders.lines.details': None
+        })
+
+        relation = builder.get_relation('orders')
 
     def test_query_passthru(self):
         builder = self.get_builder()

@@ -381,7 +381,10 @@ class Builder(object):
 
         relation.add_eager_constraints(models)
 
-        relation.merge_query(constraints)
+        if callable(constraints):
+            constraints(relation)
+        else:
+            relation.merge_query(constraints)
 
         models = relation.init_relation(models, name)
 
@@ -768,6 +771,26 @@ class Builder(object):
         :type query: QueryBuilder
         """
         self._query = query
+
+    def get_eager_loads(self):
+        """
+        Get the relationships being eager loaded.
+
+        :rtype: dict
+        """
+        return self._eager_load
+
+    def set_eager_loads(self, eager_load):
+        """
+        Sets the relationships to eager load.
+
+        :type eager_load: dict
+
+        :rtype: Builder
+        """
+        self._eager_load = eager_load
+
+        return self
 
     def get_model(self):
         """
