@@ -3,12 +3,20 @@
 from ..utils import PY2, decode
 from .connection import Connection
 from ..query.processors.sqlite_processor import SQLiteQueryProcessor
+from ..query.grammars.sqlite_grammar import SQLiteQueryGrammar
+from ..schema.grammars.sqlite_grammar import SQLiteSchemaGrammar
 
 
 class SQLiteConnection(Connection):
 
+    def get_default_query_grammar(self):
+        return self.with_table_prefix(SQLiteQueryGrammar())
+
     def get_default_post_processor(self):
         return SQLiteQueryProcessor()
+
+    def get_default_schema_grammar(self):
+        return self.with_table_prefix(SQLiteSchemaGrammar())
 
     def begin_transaction(self):
         self._connection.isolation_level = 'DEFERRED'

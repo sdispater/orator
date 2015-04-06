@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ..expression import QueryExpression
+from ..query.expression import QueryExpression
 
 
-class BaseQueryGrammar(object):
+class Grammar(object):
 
     def __init__(self):
         self._table_prefix = ''

@@ -8,6 +8,7 @@ from ..query.grammars.grammar import QueryGrammar
 from ..query.builder import QueryBuilder
 from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
+from ..schema.builder import SchemaBuilder
 from ..exceptions.query import QueryException
 
 
@@ -66,11 +67,23 @@ class Connection(ConnectionInterface):
     def get_default_query_grammar(self):
         return QueryGrammar()
 
+    def use_default_schema_grammar(self):
+        self._schema_grammar = self.get_default_schema_grammar()
+
+    def get_default_schema_grammar(self):
+        pass
+
     def use_default_post_processor(self):
         self._post_processor = self.get_default_post_processor()
 
     def get_default_post_processor(self):
         return QueryProcessor()
+
+    def get_schema_builder(self):
+        if not self._schema_grammar:
+            self.use_default_schema_grammar()
+
+        return SchemaBuilder(self)
 
     def table(self, table):
         """

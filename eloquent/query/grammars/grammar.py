@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import re
-from .base import BaseQueryGrammar
+from ...support.grammar import Grammar
 from ..builder import QueryBuilder
 from ...utils import basestring
 
 
-class QueryGrammar(BaseQueryGrammar):
+class QueryGrammar(Grammar):
 
     _select_components = [
         'aggregate_',
