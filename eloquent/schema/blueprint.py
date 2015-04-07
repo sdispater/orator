@@ -672,6 +672,9 @@ class Blueprint(object):
         return self._add_command(type, index=index, columns=columns)
 
     def _create_index_name(self, type, columns):
+        if not isinstance(columns, list):
+            columns = [columns]
+
         index = '%s_%s_%s' % (self._table, '_'.join(columns), type)
 
         return index.lower().replace('-', '_').replace('.', '_')
