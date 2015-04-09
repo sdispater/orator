@@ -3,6 +3,9 @@
 from ...support.grammar import Grammar
 from ...support.fluent import Fluent
 from ...query.expression import QueryExpression
+from ...dbal.column import Column
+from ...dbal.table_diff import TableDiff
+from ...dbal.comparator import Comparator
 from ..blueprint import Blueprint
 
 
@@ -23,6 +26,49 @@ class SchemaGrammar(Grammar):
 
         :rtype: list
         """
+        schema = connection.get_schema_manager()
+
+        table = self.get_table_prefix() + blueprint.get_table()
+
+        column = connection.get_column(table, command.from_)
+
+        table_diff = self._get_renamed_diff(blueprint, command, column, schema)
+
+        return schema.get_database_platform().get_alter_table_sql(table_diff)
+
+    def _get_renamed_diff(self, blueprint, command, column, schema):
+        """
+        Get a new column instance with the new column name.
+
+        :param blueprint: The blueprint
+        :type blueprint: Blueprint
+
+        :param command: The command
+        :type command: Fluent
+
+        :param column: The column
+        :type column: eloquent.dbal.Column
+
+        :param schema: The schema
+        :type schema: eloquent.dbal.SchemaManager
+
+        :rtype: eloquent.dbal.TableDiff
+        """
+        table_diff = self._get_table_diff(blueprint, schema)
+
+        return self._set_renamed_columns(table_diff, command, column)
+
+    def _set_renamed_columns(self, table_diff, command, column):
+        """
+        Set the renamed columns on the table diff.
+
+        :rtype: eloquent.dbal.TableDiff
+        """
+        new_column = Column(command.to, column.get_type(), column.to_dict())
+
+        table_diff.renamed_columns = {command.from_: new_column}
+
+        return table_diff
 
     def compile_foreign(self, blueprint, command, _):
         """
@@ -141,3 +187,126 @@ class SchemaGrammar(Grammar):
             return "'%s'" % int(value)
 
         return "'%s'" % value
+
+    def _get_table_diff(self, blueprint, schema):
+        table = self.get_table_prefix() + blueprint.get_table()
+
+        table_diff = TableDiff(table)
+
+        table_diff.from_table = schema.list_table_details(table)
+
+        return table_diff
+
+    def compile_change(self, blueprint, command, connection):
+        """
+        Compile a change column command into a series of SQL statement.
+
+        :param blueprint: The blueprint
+        :type blueprint: Blueprint
+
+        :param command: The command
+        :type command: Fluent
+
+        :param connection: The connection
+        :type connection: eloquent.connections.Connection
+
+        :rtype: list
+        """
+        schema = connection.get_schema_manager()
+
+        table_diff = self._get_changed_diff(blueprint, schema)
+
+        if table_diff:
+            sql = schema.get_database_platform().get_alter_table_sql(table_diff)
+
+            if isinstance(sql, list):
+                return sql
+
+            return [sql]
+
+        return []
+
+    def _get_changed_diff(self, blueprint, schema):
+        """
+        Get the table diffrence for the given changes.
+
+        :param blueprint: The blueprint
+        :type blueprint: Blueprint
+
+        :param schema: The schema
+        :type schema: eloquent.dbal.SchemaManager
+
+        :rtype: eloquent.dbal.TableDiff
+        """
+        table = schema.list_table_details(self.get_table_prefix() + blueprint.get_table())
+
+        return Comparator().diff_table(table, self._get_table_with_column_changes(blueprint, table))
+
+    def _get_table_with_column_changes(self, blueprint, table):
+        """
+        Get a copy of the given table after making the column changes.
+
+        :param blueprint: The blueprint
+        :type blueprint: Blueprint
+
+        :type table: eloquent.dbal.table.Table
+
+        :rtype: eloquent.dbal.table.Table
+        """
+        table = table.clone()
+
+        for fluent in blueprint.get_changed_columns():
+            column = self._get_column_for_change(table, fluent)
+
+            for key, value in fluent.get_attributes().items():
+                option = self._map_fluent_option(key)
+
+                if option is not None:
+                    method = 'set_%s' % option
+
+                    if hasattr(column, method):
+                        getattr(column, method)(self._map_fluent_value(option, value))
+
+        return table
+
+    def _get_column_for_change(self, table, fluent):
+        """
+        Get the column instance for a column change.
+
+        :type table: eloquent.dbal.table.Table
+
+        :rtype: eloquent.dbal.column.Column
+        """
+        return table.change_column(
+            fluent.name, self._get_column_change_options(fluent)
+        ).get_column(fluent.name)
+
+    def _get_column_change_options(self, fluent):
+        """
+        Get the column change options.
+        """
+        options = {
+            'name': fluent.name,
+            'type': fluent.type,
+            'default': fluent.get_default()
+        }
+
+        return options
+
+    def _map_fluent_option(self, attribute):
+        if attribute in ['type', 'name']:
+            return
+        elif attribute == 'nullable':
+            return 'notnull'
+        elif attribute == 'total':
+            return 'precision'
+        elif attribute == 'places':
+            return 'scale'
+        else:
+            return
+
+    def _map_fluent_value(self, option, value):
+        if option == 'notnull':
+            return not value
+
+        return value

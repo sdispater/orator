@@ -76,6 +76,9 @@ class Grammar(object):
     def get_date_format(self):
         return 'Y-m-d H:i:s'
 
+    def get_table_prefix(self):
+        return self._table_prefix
+
     def set_table_prefix(self, prefix):
         self._table_prefix = prefix
 

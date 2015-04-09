@@ -9,6 +9,7 @@ from ..query.builder import QueryBuilder
 from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
 from ..schema.builder import SchemaBuilder
+from ..dbal.schema_manager import SchemaManager
 from ..exceptions.query import QueryException
 
 
@@ -438,6 +439,14 @@ class Connection(ConnectionInterface):
         grammar.set_table_prefix(self._table_prefix)
 
         return grammar
+
+    def get_column(self, table, column):
+        schema = self.get_schema_manager()
+
+        return schema.list_table_details(table).get_column(column)
+
+    def get_schema_manager(self):
+        return SchemaManager(self)
 
     def __enter__(self):
         self.begin_transaction()

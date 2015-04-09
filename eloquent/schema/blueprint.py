@@ -38,7 +38,7 @@ class Blueprint(object):
         :type connection: eloquent.connections.Connection
 
         :param grammar: The grammar to user
-        :type grammar: eloquent.query.grammars.QueryGrammar
+        :type grammar: eloquent.schema.grammars.SchemaGrammar
 
         :rtype: list
         """
@@ -52,7 +52,10 @@ class Blueprint(object):
             if hasattr(grammar, method):
                 sql = getattr(grammar, method)(self, command, connection)
                 if sql is not None:
-                    statements.append(sql)
+                    if isinstance(sql, list):
+                        statements += sql
+                    else:
+                        statements.append(sql)
 
         return statements
 
@@ -113,6 +116,8 @@ class Blueprint(object):
         """
         self._add_command('drop')
 
+        return self
+
     def drop_if_exists(self):
         """
         Indicates that the table should be dropped if it exists.
@@ -145,7 +150,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_command('rename_column', **{'from': from_, 'to': to})
+        return self._add_command('rename_column', **{'from_': from_, 'to': to})
 
     def drop_primary(self, index=None):
         """
@@ -763,4 +768,4 @@ class Blueprint(object):
         return list(filter(lambda column: not column.get('change'), self._columns))
 
     def get_changed_columns(self):
-        return list(filter(lambda column: column.change, self._columns))
+        return list(filter(lambda column: column.get('change'), self._columns))

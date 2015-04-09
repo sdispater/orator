@@ -38,9 +38,11 @@ class Fluent(object):
     def __dynamic(self, method):
         def call(*args, **kwargs):
             if len(args):
-                self.__attributes[method] = args
+                self.__attributes[method] = args[0]
             else:
                 self.__attributes[method] = True
+
+            return self
 
         return call
 
