@@ -52,7 +52,7 @@ class Column(object):
         return self
 
     def set_precision(self, precision):
-        if isinstance(precision, basestring) and not precision.is_digit():
+        if precision is None or isinstance(precision, basestring) and not precision.is_digit():
             precision = 10
 
         self._precision = int(precision)
@@ -60,7 +60,7 @@ class Column(object):
         return self
 
     def set_scale(self, scale):
-        if isinstance(scale, basestring) and not scale.is_digit():
+        if scale is None or isinstance(scale, basestring) and not scale.is_digit():
             scale = 0
 
         self._scale = int(scale)
@@ -83,6 +83,9 @@ class Column(object):
         self._autoincrement = flag
 
         return self
+
+    def set_type(self, type):
+        self._type = type
 
     def get_name(self):
         return self._name
@@ -107,6 +110,7 @@ class Column(object):
             'notnull': self._notnull,
             'length': self._length,
             'precision': self._precision,
+            'scale': self._scale,
             'fixed': self._fixed,
             'unsigned': self._unsigned,
             'autoincrement': self._autoincrement

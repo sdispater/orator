@@ -85,6 +85,8 @@ class SchemaBuilder(object):
 
         :param table: The table
         :type table: str
+
+        :rtype: Blueprint
         """
         try:
             blueprint = self._create_blueprint(table)

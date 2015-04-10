@@ -26,7 +26,8 @@ class SchemaManager(object):
         cursor = self._connection.get_connection().cursor()
         options = self._platform.get_column_options()
         table_columns = []
-        for column_info in cursor.execute(sql).fetchall():
+        cursor.execute(sql)
+        for column_info in cursor.fetchall():
             column = Column(column_info['name'], column_info['type'], column_info)
 
             column.set_platform_options({x: column_info[x] for x in options})
@@ -47,7 +48,8 @@ class SchemaManager(object):
         sql = self._platform.get_list_table_foreign_keys_sql(table)
 
         cursor = self._connection.get_connection().cursor()
-        table_foreign_keys = cursor.execute(sql).fetchall()
+        cursor.execute(sql)
+        table_foreign_keys = cursor.fetchall()
 
         return table_foreign_keys
 
@@ -61,6 +63,21 @@ class SchemaManager(object):
         indexes = self.list_table_indexes(table_name)
 
         return Table(table_name, columns, indexes, foreign_keys)
+
+    def _get_portable_table_columns_list(self, table, table_columns):
+        columns_list = {}
+
+        for table_column in table_columns:
+            column = self._get_portable_table_column_definition(table_column)
+
+            if column:
+                name = column.get_name().lower()
+                columns_list[name] = column
+
+        return columns_list
+
+    def _get_portable_table_column_definition(self, table_column):
+        raise NotImplementedError
 
     def get_database_platform(self):
         raise NotImplementedError

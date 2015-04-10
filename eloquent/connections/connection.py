@@ -81,6 +81,11 @@ class Connection(ConnectionInterface):
         return QueryProcessor()
 
     def get_schema_builder(self):
+        """
+        Retturn the underlying schema builder.
+
+        :rtype: eloquent.schema.SchemaBuilder
+        """
         if not self._schema_grammar:
             self.use_default_schema_grammar()
 

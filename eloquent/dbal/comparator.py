@@ -159,6 +159,26 @@ class Comparator(object):
                 or (properties2['default'] is None and properties1['default'] is not None):
             changed_properties.append('default')
 
+        if properties1['type'] == 'string' and properties1['type'] != 'guid'\
+                or properties1['type'] in ['binary', 'blob']:
+            length1 = properties1['length'] or 255
+            length2 = properties2['length'] or 255
+
+            if length1 != length2:
+                changed_properties.append('length')
+
+            if properties1['fixed'] != properties2['fixed']:
+                changed_properties.append('fixed')
+        elif properties1['type'] in ['decimal', 'float', 'double precision']:
+            precision1 = properties1['precision'] or 10
+            precision2 = properties2['precision'] or 10
+
+            if precision1 != precision2:
+                changed_properties.append('precision')
+
+            if properties1['scale'] != properties2['scale']:
+                changed_properties.append('scale')
+
         return list(set(changed_properties))
 
 

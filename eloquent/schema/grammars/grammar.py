@@ -88,16 +88,18 @@ class SchemaGrammar(Grammar):
 
         columns = self.columnize(command.columns)
 
-        on_columns = self.columnize(command.references)
+        on_columns = self.columnize(command.references
+                                    if isinstance(command.references, list)
+                                    else [command.references])
 
-        sql = 'ALTER TABLE %s ADD CONSTRAINT %s' % (table, command.index)
+        sql = 'ALTER TABLE %s ADD CONSTRAINT %s ' % (table, command.index)
 
         sql += 'FOREIGN KEY (%s) REFERENCES %s (%s)' % (columns, on, on_columns)
 
-        if getattr(command, 'on_delete', None):
+        if command.get('on_delete'):
             sql += ' ON DELETE %s' % command.on_delete
 
-        if getattr(command, 'on_update', None):
+        if command.get('on_update'):
             sql += ' ON UPDATE %s' % command.on_update
 
         return sql
@@ -288,8 +290,11 @@ class SchemaGrammar(Grammar):
         options = {
             'name': fluent.name,
             'type': fluent.type,
-            'default': fluent.get_default()
+            'default': fluent.get('default')
         }
+
+        if fluent.type in ['string']:
+            options['length'] = fluent.length
 
         return options
 

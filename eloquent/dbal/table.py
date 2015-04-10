@@ -16,6 +16,7 @@ class Table(object):
         indexes = indexes or []
         fk_constraints = fk_constraints or []
 
+        columns = columns.values() if isinstance(columns, dict) else columns
         for column in columns:
             self._add_column(column)
 
