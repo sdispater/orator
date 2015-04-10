@@ -547,6 +547,17 @@ class Blueprint(object):
         """
         return self._add_column('json', column)
 
+    def date(self, column):
+        """
+        Create a new date column on the table.
+
+        :param column: The column
+        :type column: str
+
+        :rtype: Fluent
+        """
+        return self._add_column('date', column)
+
     def datetime(self, column):
         """
         Create a new datetime column on the table.
