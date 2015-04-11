@@ -4,6 +4,7 @@
 
 body {
     font: 400 14px/28px "Roboto",sans-serif;
+    color: #7A7A7A;
 }
 
 .wy-body-for-nav {
@@ -107,6 +108,40 @@ article ul li {
 }
 
 .wy-side-nav-search > a:hover {
+    background: none;
+}
+
+.rst-content table.docutils,
+.rst-content table.field-list {
+    border: medium none;
+    width: 100%;
+}
+
+.rst-content table.docutils thead th,
+.rst-content table.field-list thead th
+{
+    font-family: "Montserrat", serif;
+    text-transform: uppercase;
+    color: #7A7A7A;
+    font-weight: 500;
+}
+
+.rst-content table.docutils thead th,
+.rst-content table.field-list thead th,
+.rst-content table.docutils tbody td,
+.rst-content table.field-list tbody td
+{
+    border-top: 0;
+    border-bottom: 1px solid rgba(230, 230, 230, 0.7);
+    border-left: 0;
+    border-right: 0;
+    padding: 20px;
+    white-space: pre-wrap;
+}
+
+.wy-table-odd td,
+.wy-table-striped tr:nth-child(2n-1) td,
+.rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td {
     background: none;
 }
 
@@ -452,3 +487,19 @@ green     #859900  operators, other keywords
 .highlight .nn { color: #A89BB9 } /* Name.Namespace */
 .highlight .nx { color: #A89BB9 } /* Name.Other */
 .highlight .py { color: #A89BB9 } /* Name.Property */
+
+/* Inline code */
+
+code.code {
+    border: 1px solid #F2F2F2;
+    font-weight: normal;
+    display: inline;
+    padding: 0.3em 0.5em;
+    background-color: #FAFAFA;
+}
+code.code .name { color: #7A7A7A }
+code.code .operator { color: #7A7A7A }
+code.code .punctuation { color: #7A7A7A }
+code.code .string { color: #7BBDA4 }
+code.code .number { color: #F4BC87 }
+code.code .integer { color: #F4BC87 }
