@@ -143,6 +143,9 @@ class BaseDatabaseManager(ConnectionResolverInterface):
         return config
 
     def get_default_connection(self):
+        if len(self._config) == 1:
+            return list(self._config.keys())[0]
+
         return self._config['default']
 
     def set_default_connection(self, name):

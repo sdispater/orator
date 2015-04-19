@@ -17,7 +17,7 @@ class Collection(object):
         else:
             items = self._get_items(items)
 
-        if not isinstance(items, (list, dict)):
+        if not isinstance(items, (list, dict, tuple)):
             self._items = [items]
         else:
             self._items = items
