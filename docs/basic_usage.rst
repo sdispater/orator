@@ -18,7 +18,7 @@ and passing it to a ``DatabaseManager`` instance.
             'driver': 'mysql',
             'host': 'localhost',
             'database': 'database',
-            'username': 'root',
+            'user': 'root',
             'password': '',
             'prefix': ''
         }
@@ -26,6 +26,22 @@ and passing it to a ``DatabaseManager`` instance.
 
     db = DatabaseManager(config)
 
+
+If you have multiple databases configured you can specify which one is the default:
+
+.. code-block:: python
+
+    config = {
+        'default': 'mysql',
+        'mysql': {
+            'driver': 'mysql',
+            'host': 'localhost',
+            'database': 'database',
+            'user': 'root',
+            'password': '',
+            'prefix': ''
+        }
+    }
 
 .. _read_write_connections:
 
