@@ -45,6 +45,16 @@ class ConnectionTestCase(EloquentTestCase):
             'CREATE TABLE users'
         )
 
+    def test_default_database_with_one_database(self):
+        manager = MockManager({
+            'sqlite': {
+                'driver': 'sqlite',
+                'database': ':memory:'
+            }
+        }).prepare_mock()
+
+        self.assertEqual('sqlite', manager.get_default_connection())
+
     def _get_manager(self):
         manager = MockManager({
             'default': 'sqlite',
