@@ -1931,7 +1931,7 @@ class Model(object):
         :param sync: Whether to sync the attributes or not
         :type sync: bool
         """
-        self.__attributes = dict(attributes)
+        self.__attributes = dict(attributes.items())
 
         if sync:
             self.sync_original()

@@ -233,14 +233,14 @@ class BuilderTestCase(EloquentTestCase):
 
     def test_lists_without_model_getters(self):
         builder = self.get_builder()
-        builder.get_query().lists = mock.MagicMock(return_value=['bar', 'baz'])
+        builder.get_query().get = mock.MagicMock(return_value=[{'name': 'bar'}, {'name': 'baz'}])
         builder.set_model(self.get_mock_model())
         builder.get_model().has_get_mutator = mock.MagicMock(return_value=False)
 
         result = builder.lists('name')
         self.assertEqual(['bar', 'baz'], result)
 
-        builder.get_query().lists.assert_called_once_with('name', '')
+        builder.get_query().get.assert_called_once_with(['name'])
 
     def test_get_models_hydrates_models(self):
         builder = Builder(self.get_mock_query_builder())

@@ -195,7 +195,7 @@ pre, code, .rst-content tt {
 	font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
 	font-weight: 400;
     border-radius: 3px;
-    font-size: 1em;
+    font-size: 13px;
     margin: 0px 2px;
 }
 
@@ -448,3 +448,7 @@ green     #859900  operators, other keywords
 .highlight .o { color: #7A7A7A } /* Operator */
 .highlight .n { color: #7A7A7A }
 .highlight .c { color: #B8AFAD; font-style: normal; }
+.highlight .nl { color: #A89BB9 } /* Name.Label */
+.highlight .nn { color: #A89BB9 } /* Name.Namespace */
+.highlight .nx { color: #A89BB9 } /* Name.Other */
+.highlight .py { color: #A89BB9 } /* Name.Property */

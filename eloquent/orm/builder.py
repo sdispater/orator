@@ -184,7 +184,7 @@ class Builder(object):
 
             results = self.for_page(page, count).get()
 
-    def lists(self, column, key=''):
+    def lists(self, column, key=None):
         """
         Get a list with the values of a given column
 
