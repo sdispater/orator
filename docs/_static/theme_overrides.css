@@ -490,16 +490,16 @@ green     #859900  operators, other keywords
 
 /* Inline code */
 
-code.code {
+tt.code, code.code {
     border: 1px solid #F2F2F2;
     font-weight: normal;
     display: inline;
     padding: 0.3em 0.5em;
     background-color: #FAFAFA;
 }
-code.code .name { color: #7A7A7A }
-code.code .operator { color: #7A7A7A }
-code.code .punctuation { color: #7A7A7A }
-code.code .string { color: #7BBDA4 }
-code.code .number { color: #F4BC87 }
-code.code .integer { color: #F4BC87 }
+tt.code .name, code.code .name { color: #7A7A7A }
+tt.code .operator, code.code .operator { color: #7A7A7A }
+tt.code .punctuation, code.code .punctuation { color: #7A7A7A }
+tt.code .string, code.code .string { color: #7BBDA4 }
+tt.code .number, code.code .number { color: #F4BC87 }
+tt.code .integer, code.code .integer { color: #F4BC87 }
