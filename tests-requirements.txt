@@ -1,3 +1,5 @@
 pytest
 pytest-mock
 flexmock
+psycopg2
+mysqlclient

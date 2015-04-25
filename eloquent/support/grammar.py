@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ..expression import QueryExpression
+from ..query.expression import QueryExpression
 
 
-class BaseQueryGrammar(object):
+class Grammar(object):
 
     def __init__(self):
         self._table_prefix = ''
@@ -76,8 +76,13 @@ class BaseQueryGrammar(object):
     def get_date_format(self):
         return 'Y-m-d H:i:s'
 
+    def get_table_prefix(self):
+        return self._table_prefix
+
     def set_table_prefix(self, prefix):
         self._table_prefix = prefix
+
+        return self
 
     def get_marker(self):
         return '?'

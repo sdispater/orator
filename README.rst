@@ -30,7 +30,7 @@ The different dbapi packages are not part of the package dependencies,
 so you must install them in order to connect to corresponding databases:
 
 * Postgres: ``pyscopg2``
-* MySQL: ``PyMySQL`` or ``MySQL-python``
+* MySQL: ``PyMySQL`` or ``mysqlclient``
 * Sqlite: The ``sqlite3`` module is bundled with Python by default
 
 

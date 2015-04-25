@@ -2117,7 +2117,7 @@ class Model(object):
         cls.__resolver = resolver
 
     @classmethod
-    def unset_connection_resolver(cls, resolver):
+    def unset_connection_resolver(cls):
         """
         Unset the connection resolver instance.
         """

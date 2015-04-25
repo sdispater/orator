@@ -28,7 +28,7 @@ class ConnectionFactory(object):
             config['driver'],
             conn,
             config['database'],
-            config.get('prefix'),
+            config.get('prefix', ''),
             config
         )
 
