@@ -387,6 +387,9 @@ class Connection(ConnectionInterface):
     def get_name(self):
         return self._config.get('name')
 
+    def get_config(self, option):
+        return self._config.get(option)
+
     def get_query_grammar(self):
         return self._query_grammar
 

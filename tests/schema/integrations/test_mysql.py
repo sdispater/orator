@@ -3,12 +3,12 @@
 import os
 from ... import EloquentTestCase
 from eloquent import Model
-from eloquent.connections import PostgresConnection
-from eloquent.connectors.postgres_connector import PostgresConnector
+from eloquent.connections import MySqlConnection
+from eloquent.connectors.mysql_connector import MySqlConnector
 from eloquent.query.expression import QueryExpression
 
 
-class SchemaBuilderPostgresIntegrationTestCase(EloquentTestCase):
+class SchemaBuilderMySqlIntegrationTestCase(EloquentTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -30,15 +30,15 @@ class SchemaBuilderPostgresIntegrationTestCase(EloquentTestCase):
             table.timestamps()
 
         with self.schema().create('friends') as table:
-            table.integer('user_id')
-            table.integer('friend_id')
+            table.unsigned_integer('user_id')
+            table.unsigned_integer('friend_id')
 
             table.foreign('user_id').references('id').on('users')
             table.foreign('friend_id').references('id').on('users')
 
         with self.schema().create('posts') as table:
             table.increments('id')
-            table.integer('user_id')
+            table.unsigned_integer('user_id')
             table.string('name').unique()
             table.timestamps()
 
@@ -74,14 +74,14 @@ class SchemaBuilderPostgresIntegrationTestCase(EloquentTestCase):
 
     def test_add_columns(self):
         with self.schema().table('posts') as table:
-            table.text('content').default('Test')
+            table.text('content')
             table.integer('votes').default(QueryExpression(0))
 
         user = User.find(1)
         post = user.posts().order_by('id', 'asc').first()
 
         self.assertEqual('User 1 Post 1', post.name)
-        self.assertEqual('Test', post.content)
+        self.assertEqual('', post.content)
         self.assertEqual(0, post.votes)
 
     def test_remove_columns(self):
@@ -202,12 +202,12 @@ class DatabaseIntegrationConnectionResolver(object):
         if self._connection:
             return self._connection
 
-        database = os.environ.get('ELOQUENT_POSTGRES_TEST_DATABASE', 'eloquent_test')
-        user = os.environ.get('ELOQUENT_POSTGRES_TEST_USER', 'postgres')
-        password = os.environ.get('ELOQUENT_POSTGRES_TEST_PASSWORD', None)
+        database = os.environ.get('ELOQUENT_MYSQL_TEST_DATABASE', 'eloquent_test')
+        user = os.environ.get('ELOQUENT_MYSQL_TEST_USER', 'root')
+        password = os.environ.get('ELOQUENT_MYSQL_TEST_PASSWORD', None)
 
-        self._connection = PostgresConnection(
-            PostgresConnector().connect({
+        self._connection = MySqlConnection(
+            MySqlConnector().connect({
                 'database': database,
                 'user': user,
                 'password': password

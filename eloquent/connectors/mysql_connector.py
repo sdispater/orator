@@ -20,6 +20,11 @@ from .connector import Connector
 
 class MySqlConnector(Connector):
 
+    RESERVED_KEYWORDS = [
+        'log_queries', 'driver', 'prefix',
+        'engine', 'charset', 'collation'
+    ]
+
     def connect(self, config):
         config = dict(config.items())
         for key, value in keys_fix.items():

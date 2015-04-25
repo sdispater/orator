@@ -7,6 +7,7 @@ class TableDiff(object):
                  changed_columns=None, removed_columns=None, added_indexes=None,
                  changed_indexes=None, removed_indexes=None, from_table=None):
         self.name = table_name
+        self.new_name = False
         self.added_columns = added_columns or {}
         self.changed_columns = changed_columns or {}
         self.removed_columns = removed_columns or {}

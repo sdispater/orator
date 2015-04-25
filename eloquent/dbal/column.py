@@ -34,6 +34,11 @@ class Column(object):
 
         return self
 
+    def set_platform_option(self, name, value):
+        self._platform_options[name] = value
+
+        return self
+
     def get_platform_options(self):
         return self._platform_options
 
@@ -52,7 +57,7 @@ class Column(object):
         return self
 
     def set_precision(self, precision):
-        if precision is None or isinstance(precision, basestring) and not precision.is_digit():
+        if precision is None or isinstance(precision, basestring) and not precision.isdigit():
             precision = 10
 
         self._precision = int(precision)
@@ -60,7 +65,7 @@ class Column(object):
         return self
 
     def set_scale(self, scale):
-        if scale is None or isinstance(scale, basestring) and not scale.is_digit():
+        if scale is None or isinstance(scale, basestring) and not scale.isdigit():
             scale = 0
 
         self._scale = int(scale)

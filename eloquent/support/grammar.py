@@ -82,5 +82,7 @@ class Grammar(object):
     def set_table_prefix(self, prefix):
         self._table_prefix = prefix
 
+        return self
+
     def get_marker(self):
         return '?'

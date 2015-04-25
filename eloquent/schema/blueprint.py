@@ -482,7 +482,7 @@ class Blueprint(object):
         """
         return self._add_column('float', column, total=total, places=places)
 
-    def double(self, column, total=8, places=2):
+    def double(self, column, total=None, places=None):
         """
         Create a new double column on the table.
 

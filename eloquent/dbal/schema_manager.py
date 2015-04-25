@@ -24,17 +24,10 @@ class SchemaManager(object):
         sql = self._platform.get_list_table_columns_sql(table)
 
         cursor = self._connection.get_connection().cursor()
-        options = self._platform.get_column_options()
-        table_columns = []
         cursor.execute(sql)
-        for column_info in cursor.fetchall():
-            column = Column(column_info['name'], column_info['type'], column_info)
+        table_columns = map(lambda x: dict(x.items()), cursor.fetchall())
 
-            column.set_platform_options({x: column_info[x] for x in options})
-
-            table_columns.append(column)
-
-        return table_columns
+        return self._get_portable_table_columns_list(table, table_columns)
 
     def list_table_indexes(self, table):
         sql = self._platform.get_list_table_indexes_sql(table)
@@ -60,9 +53,9 @@ class SchemaManager(object):
         if self._platform.supports_foreign_key_constraints():
             foreign_keys = self.list_table_foreign_keys(table_name)
 
-        indexes = self.list_table_indexes(table_name)
+        #indexes = self.list_table_indexes(table_name)
 
-        return Table(table_name, columns, indexes, foreign_keys)
+        return Table(table_name, columns, [], foreign_keys)
 
     def _get_portable_table_columns_list(self, table, table_columns):
         columns_list = {}

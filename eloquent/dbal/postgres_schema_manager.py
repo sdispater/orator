@@ -9,26 +9,6 @@ from .platforms.postgres_platform import PostgresPlatform
 
 class PostgresSchemaManager(SchemaManager):
 
-    def list_table_columns(self, table):
-        sql = self._platform.get_list_table_columns_sql(table)
-
-        cursor = self._connection.get_connection().cursor()
-        cursor.execute(sql)
-        table_columns = map(lambda x: dict(x.items()), cursor.fetchall())
-
-        return self._get_portable_table_columns_list(table, table_columns)
-
-    def list_table_details(self, table_name):
-        columns = self.list_table_columns(table_name)
-
-        foreign_keys = {}
-        if self._platform.supports_foreign_key_constraints():
-            foreign_keys = self.list_table_foreign_keys(table_name)
-
-        #indexes = self.list_table_indexes(table_name)
-
-        return Table(table_name, columns, [], foreign_keys)
-
     def _get_portable_table_column_definition(self, table_column):
         if table_column['type'].lower() == 'varchar' or table_column['type'] == 'bpchar':
             length = re.sub('.*\(([0-9]*)\).*', '\\1', table_column['complete_type'])

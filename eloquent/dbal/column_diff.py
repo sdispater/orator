@@ -11,3 +11,6 @@ class ColumnDiff(object):
 
     def has_changed(self, property_name):
         return property_name in self.changed_properties
+
+    def get_old_column_name(self):
+        return self.old_column_name
