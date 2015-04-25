@@ -204,7 +204,7 @@ class DatabaseIntegrationConnectionResolver(object):
 
         database = os.environ.get('ELOQUENT_MYSQL_TEST_DATABASE', 'eloquent_test')
         user = os.environ.get('ELOQUENT_MYSQL_TEST_USER', 'root')
-        password = os.environ.get('ELOQUENT_MYSQL_TEST_PASSWORD', None)
+        password = os.environ.get('ELOQUENT_MYSQL_TEST_PASSWORD', '')
 
         self._connection = MySqlConnection(
             MySqlConnector().connect({
