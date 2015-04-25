@@ -151,6 +151,21 @@ To rename a column, you can use use the ``rename_column`` method on the Schema b
 
 .. warning::
 
+    Prior to **MySQL 5.6.6**, foreign keys are **NOT** automatically updated when renaming columns.
+    Therefore, you will need to **drop** the foreign key constraint, **rename** the column and **recreate**
+    the constraint to avoid an error.
+
+    .. code-block:: python
+
+        with schema.table('posts') as table:
+            table.drop_foreign('posts_user_id_foreign')
+            table.rename('user_id', 'author_id')
+            table.foreign('author_id').references('id').on('users')
+
+    In future versions, Eloquent **might** handle this automatically.
+
+.. warning::
+
     The rename column feature, while tested, is still considered in **beta** stage (especially for SQLite).
     Please report any encountered issue or bug on the `Github project <https://github.com/sdispater/eloquent>`_
 
