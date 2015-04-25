@@ -6,6 +6,7 @@ from eloquent import Model
 from eloquent.connections import MySqlConnection
 from eloquent.connectors.mysql_connector import MySqlConnector
 from eloquent.query.expression import QueryExpression
+from eloquent.exceptions.query import QueryException
 
 
 class SchemaBuilderMySqlIntegrationTestCase(EloquentTestCase):
@@ -60,8 +61,13 @@ class SchemaBuilderMySqlIntegrationTestCase(EloquentTestCase):
                 user.posts().save(post)
 
     def tearDown(self):
-        with self.schema().table('posts') as table:
-            table.drop_foreign('posts_user_id_foreign')
+        post = Post.first()
+        if hasattr(post, 'user_id'):
+            with self.schema().table('posts') as table:
+                table.drop_foreign('posts_user_id_foreign')
+        elif hasattr(post, 'my_user_id'):
+            with self.schema().table('posts') as table:
+                table.drop_foreign('posts_my_user_id_foreign')
 
         with self.schema().table('friends') as table:
             table.drop_foreign('friends_user_id_foreign')
@@ -116,7 +122,9 @@ class SchemaBuilderMySqlIntegrationTestCase(EloquentTestCase):
 
     def test_rename_columns_with_foreign_keys(self):
         with self.schema().table('posts') as table:
+            table.drop_foreign('posts_user_id_foreign')
             table.rename_column('user_id', 'my_user_id')
+            table.foreign('my_user_id').references('id').on('users')
 
         self.assertIsNone(self.connection().get_column('posts', 'user_id'))
         self.assertIsNotNone(self.connection().get_column('posts', 'my_user_id'))
