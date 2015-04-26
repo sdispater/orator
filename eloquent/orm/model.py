@@ -97,6 +97,15 @@ class Model(object):
         """
         The booting method of the model.
         """
+        # TODO: mutators
+
+        cls._boot_mixins()
+
+    @classmethod
+    def _boot_mixins(cls):
+        """
+        Boot the mixins
+        """
         # TODO
 
     def fill(self, **attributes):

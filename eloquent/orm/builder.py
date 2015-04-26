@@ -755,6 +755,17 @@ class Builder(object):
 
         return results
 
+    def _call_scope(self, scope, *args, **kwargs):
+        """
+        Call the given model scope.
+
+        :param scope: The scope to call
+        :type scope: str
+        """
+        result = getattr(self._model, scope)(self, *args, **kwargs)
+
+        return result or self
+
     def get_query(self):
         """
         Get the underlying query instance.
@@ -817,9 +828,18 @@ class Builder(object):
         return self
 
     def __dynamic(self, method):
-        attribute = getattr(self._query, method)
+        scope = 'scope_%s' % method
+        is_scope = False
+        if hasattr(self._model, scope):
+            is_scope = True
+            attribute = getattr(self._model, scope)
+        else:
+            attribute = getattr(self._query, method)
 
         def call(*args, **kwargs):
+            if is_scope:
+                return self._call_scope(scope, *args, **kwargs)
+
             result = attribute(*args, **kwargs)
 
             if method in self._passthru:
@@ -836,5 +856,5 @@ class Builder(object):
         try:
             object.__getattribute__(self, item)
         except AttributeError:
-            # TODO: macros and scopes
+            # TODO: macros
             return self.__dynamic(item)

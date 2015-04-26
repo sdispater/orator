@@ -347,7 +347,15 @@ class BuilderTestCase(EloquentTestCase):
 
         builder.get_query().insert.assert_called_once_with(['bar'])
 
-    # TODO: test query scopes
+    def test_query_scopes(self):
+        builder = self.get_builder()
+        builder.get_query().from_ = mock.MagicMock()
+        builder.get_query().where = mock.MagicMock()
+        model = OrmBuilderTestModelScopeStub()
+        builder.set_model(model)
+        result = builder.approved()
+
+        self.assertEqual(result, builder)
 
     def test_simple_where(self):
         builder = self.get_builder()
@@ -421,6 +429,12 @@ class BuilderTestCase(EloquentTestCase):
 class OrmBuilderTestModelFarRelatedStub(Model):
 
     pass
+
+
+class OrmBuilderTestModelScopeStub(Model):
+
+    def scope_approved(self, query):
+        query.where('foo', 'bar')
 
 
 class OrmBuilderTestModelCloseRelated(Model):

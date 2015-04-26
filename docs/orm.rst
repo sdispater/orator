@@ -1142,6 +1142,52 @@ or the ``to_json`` methods, you can override the ``get_date_format`` method:
             return 'DD-MM-YY'
 
 
+Query Scopes
+============
+
+Defining a query scope
+----------------------
+
+Scopes allow you to easily re-use query logic in your models.
+To define a scope, simply prefix a model method with ``scope``:
+
+.. code-block:: python
+
+    class User(Model):
+
+        def scope_popular(query):
+            return query.where('votes', '>', 100)
+
+        def scope_women(query):
+            return query.where_gender('W')
+
+Utilizing a query scope
+-----------------------
+
+.. code-block:: python
+
+    users = User.popular().women().order_by('created_at').get()
+
+Dynamic scopes
+--------------
+
+Sometimes you may wish to define a scope that accepts parameters.
+Just add your parameters to your scope function:
+
+.. code-block:: python
+
+    class User(Model):
+
+        def scope_of_type(query, type):
+            return query.where_type(type)
+
+Then pass the parameter into the scope call:
+
+.. code-block:: python
+
+    users = User.of_type('member').get()
+
+
 Date mutators
 =============
 
