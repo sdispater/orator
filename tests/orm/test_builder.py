@@ -10,6 +10,8 @@ from eloquent.orm.builder import Builder
 from eloquent.orm.model import Model
 from eloquent.exceptions.orm import ModelNotFound
 from eloquent.orm.collection import Collection
+from eloquent.connections import Connection
+from eloquent.query.processors import QueryProcessor
 
 
 class BuilderTestCase(EloquentTestCase):
@@ -264,6 +266,24 @@ class BuilderTestCase(EloquentTestCase):
         model.hydrate.assert_called_once_with(
             records, 'foo_connection'
         )
+
+    def test_macros_are_called_on_builder(self):
+        builder = Builder(QueryBuilder(
+            flexmock(Connection),
+            flexmock(QueryGrammar),
+            flexmock(QueryProcessor)
+        ))
+
+        def foo_bar(builder):
+            builder.foobar = True
+
+            return builder
+
+        builder.macro('foo_bar', foo_bar)
+        result = builder.foo_bar()
+
+        self.assertEqual(result, builder)
+        self.assertTrue(builder.foobar)
 
     def test_eager_load_relations_load_top_level_relationships(self):
         flexmock(Builder)
