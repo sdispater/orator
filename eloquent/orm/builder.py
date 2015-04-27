@@ -23,7 +23,7 @@ class Builder(object):
 
         self._model = None
         self._eager_load = {}
-        self._macros = []
+        self._macros = {}
 
         self._on_delete = None
 
@@ -755,6 +755,17 @@ class Builder(object):
 
         return results
 
+    def _call_scope(self, scope, *args, **kwargs):
+        """
+        Call the given model scope.
+
+        :param scope: The scope to call
+        :type scope: str
+        """
+        result = getattr(self._model, scope)(self, *args, **kwargs)
+
+        return result or self
+
     def get_query(self):
         """
         Get the underlying query instance.
@@ -816,10 +827,47 @@ class Builder(object):
 
         return self
 
+    def macro(self, name, callback):
+        """
+        Extend the builder with the given callback.
+
+        :param name: The extension name
+        :type name: str
+
+        :param callback: The callback
+        :type callback: callable
+        """
+        self._macros[name] = callback
+
+    def get_macro(self, name):
+        """
+        Get the given macro by name
+
+        :param name: The macro name
+        :type name: str
+        :return:
+        """
+        return self._macros.get(name)
+
     def __dynamic(self, method):
-        attribute = getattr(self._query, method)
+        scope = 'scope_%s' % method
+        is_scope = False
+        is_macro = False
+        if hasattr(self._model, scope):
+            is_scope = True
+            attribute = getattr(self._model, scope)
+        elif method in self._macros:
+            is_macro = True
+            attribute = self._macros[method]
+        else:
+            attribute = getattr(self._query, method)
 
         def call(*args, **kwargs):
+            if is_scope:
+                return self._call_scope(scope, *args, **kwargs)
+            if is_macro:
+                return attribute(self, *args, **kwargs)
+
             result = attribute(*args, **kwargs)
 
             if method in self._passthru:
@@ -836,5 +884,5 @@ class Builder(object):
         try:
             object.__getattribute__(self, item)
         except AttributeError:
-            # TODO: macros and scopes
+            # TODO: macros
             return self.__dynamic(item)

@@ -322,6 +322,48 @@ If you want to only update the timestamps on a model, you can use the ``touch`` 
     user.touch()
 
 
+Soft deleting
+=============
+
+When soft deleting a model, it is not actually removed from your database.
+Instead, a ``deleted_at`` timestamp is set on the record.
+To enable soft deletes for a model, make it inherit from the ``SoftDeletes`` mixin:
+
+.. code-block:: python
+
+    from eloquent import Model, SoftDeletes
+
+
+    class User(Model, SoftDeletes):
+
+        __dates__ = ['deleted_at']
+
+To add a ``deleted_at`` column to your table, you may use the ``soft_deletes`` method from a migration (see :ref:`SchemaBuilder`):
+
+.. code-block:: python
+
+    table.soft_deletes()
+
+Now, when you call the ``delete`` method on the model, the ``deleted_at`` column will be
+set to the current timestamp. When querying a model that uses soft deletes,
+the "deleted" models will not be included in query results.
+
+Forcing soft deleted models into results
+----------------------------------------
+
+To force soft deleted models to appear in a result set, use the ``with_trashed`` method on the query:
+
+.. code-block:: python
+
+    users = User.with_trashed().where('account_id', 1).get()
+
+The ``with_trashed`` method may be used on a defined relationship:
+
+.. code-block:: python
+
+    user.posts().with_trashed().get()
+
+
 Relationships
 =============
 
@@ -1140,6 +1182,134 @@ or the ``to_json`` methods, you can override the ``get_date_format`` method:
 
         def get_date_format():
             return 'DD-MM-YY'
+
+
+Query Scopes
+============
+
+Defining a query scope
+----------------------
+
+Scopes allow you to easily re-use query logic in your models.
+To define a scope, simply prefix a model method with ``scope``:
+
+.. code-block:: python
+
+    class User(Model):
+
+        def scope_popular(query):
+            return query.where('votes', '>', 100)
+
+        def scope_women(query):
+            return query.where_gender('W')
+
+Using a query scope
+-----------------------
+
+.. code-block:: python
+
+    users = User.popular().women().order_by('created_at').get()
+
+Dynamic scopes
+--------------
+
+Sometimes you may wish to define a scope that accepts parameters.
+Just add your parameters to your scope function:
+
+.. code-block:: python
+
+    class User(Model):
+
+        def scope_of_type(query, type):
+            return query.where_type(type)
+
+Then pass the parameter into the scope call:
+
+.. code-block:: python
+
+    users = User.of_type('member').get()
+
+
+Global Scopes
+=============
+
+Sometimes you may wish to define a scope that applies to all queries performed on a model.
+In essence, this is how Eloquent's own "soft delete" feature works.
+Global scopes are defined using a combination of mixins and an implementation of the ``Scope`` class.
+
+First, let's define a mixin. For this example, we'll use the ``SoftDeletes`` that ships with Eloquent:
+
+.. code-block:: python
+
+    from eloquent import SoftDeletingScope
+
+
+    class SoftDeletes(object):
+
+        @classmethod
+        def boot_soft_deletes(cls, model_class):
+            """
+            Boot the soft deleting mixin for a model.
+            """
+            model_class.add_global_scope(SoftDeletingScope())
+
+
+If an Eloquent model inherits from a mixin that has a method matching the ``boot_name_of_trait``
+naming convention, that mixin method will be called when the Eloquent model is booted,
+giving you an opportunity to register a global scope, or do anything else you want.
+A scope must be an instance of the ``Scope`` class, which specifies two methods: ``apply`` and ``remove``.
+
+The apply method receives an ``Builder`` query builder object and the ``Model`` it's applied to,
+and is responsible for adding any additional ``where`` clauses that the scope wishes to add.
+The ``remove`` method also receives a ``Builder`` object and ``Model`` and is responsible
+for reversing the action taken by ``apply``.
+In other words, ``remove`` should remove the ``where`` clause (or any other clause) that was added.
+So, for our ``SoftDeletingScope``, it would look something like this:
+
+.. code-block:: python
+
+    from eloquent import Scope
+
+
+    class SoftDeletingScope(Scope):
+
+        def apply(self, builder, model):
+            """
+            Apply the scope to a given query builder.
+
+            :param builder: The query builder
+            :type builder: eloquent.orm.builder.Builder
+
+            :param model: The model
+            :type model: eloquent.orm.Model
+            """
+            builder.where_null(model.get_qualified_deleted_at_column())
+
+        def remove(self, builder, model):
+            """
+            Remove the scope from a given query builder.
+
+            :param builder: The query builder
+            :type builder: eloquent.orm.builder.Builder
+
+            :param model: The model
+            :type model: eloquent.orm.Model
+            """
+            column = model.get_qualified_deleted_at_column()
+
+            query = builder.get_query()
+
+            to_remove_wheres = []
+            for key, where in enumerate(query.wheres):
+                # If the where clause is a soft delete date constraint,
+                # we will remove it from the query and reset the keys
+                # on the wheres. This allows this developer to include
+                # deleted model in a relationship result set that is lazy loaded.
+                if self._is_soft_delete_constraint(where, column):
+                    to_remove_wheres.append(key)
+
+            query.wheres = [where for key, where in enumerate(query.wheres)
+                            if key not in to_remove_wheres]
 
 
 Date mutators
