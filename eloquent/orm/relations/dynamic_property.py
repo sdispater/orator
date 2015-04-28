@@ -20,7 +20,16 @@ class DynamicProperty(object):
         self._results = None
         self._relation = relation
 
-    def get_results(self):
+    def refresh(self):
+        self._results = self._results_getter()
+
+        return self._results
+
+    @property
+    def instance(self):
+        if not self._results:
+            self._results = self._results_getter()
+
         return self._results
 
     def __getitem__(self, item):
@@ -34,6 +43,12 @@ class DynamicProperty(object):
             self._results = self._results_getter()
 
         return iter(self._results)
+
+    def __len__(self):
+        if not self._results:
+            self._results = self._results_getter()
+
+        return len(self._results)
 
     def __getattr__(self, item):
         if not self._results:

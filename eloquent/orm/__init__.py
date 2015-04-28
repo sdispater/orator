@@ -3,3 +3,4 @@
 from .builder import Builder
 from .model import Model
 from .mixins import SoftDeletes
+from .collection import Collection

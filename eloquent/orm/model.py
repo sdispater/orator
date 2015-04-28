@@ -5,7 +5,8 @@ import arrow
 import inflection
 import inspect
 from six import add_metaclass
-from ..exceptions.orm import MassAssignmentError
+from ..utils import basestring
+from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
@@ -552,7 +553,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = related()
+        instance = self._get_related(related)()
 
         if not local_key:
             local_key = self.get_key_name()
@@ -582,7 +583,7 @@ class Model(object):
         if name in self.__relations:
             return self.__relations[name]
 
-        instance = related()
+        instance = self._get_related(related)()
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
@@ -621,7 +622,7 @@ class Model(object):
         if foreign_key is None:
             foreign_key = '%s_id' % inflection.underscore(relation)
 
-        instance = related()
+        instance = self._get_related(related)()
 
         query = instance.new_query()
 
@@ -691,7 +692,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = related()
+        instance = self._get_related(related)()
 
         if not local_key:
             local_key = self.get_key_name()
@@ -729,7 +730,8 @@ class Model(object):
         if not second_key:
             second_key = through.get_foreign_key()
 
-        return HasManyThrough(related().new_query(), self, through, first_key, second_key)
+        return HasManyThrough(self._get_related(related)().new_query(),
+                              self, through, first_key, second_key)
 
     def morph_many(self, related, name, type_column=None, id_column=None, local_key=None):
         """
@@ -749,7 +751,7 @@ class Model(object):
 
         :rtype: MorphMany
         """
-        instance = related()
+        instance = self._get_related(related)()
 
         if name in self.__relations:
             return self.__relations[name]
@@ -794,7 +796,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = related()
+        instance = self._get_related(related)()
 
         if not other_key:
             other_key = instance.get_foreign_key()
@@ -835,7 +837,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = name + '_id'
 
-        instance = related()
+        instance = self._get_related(related)()
 
         if not other_key:
             other_key = instance.get_foreign_key()
@@ -876,6 +878,25 @@ class Model(object):
             other_key = name + '_id'
 
         return self.morph_to_many(related, name, table, foreign_key, other_key, True)
+
+    def _get_related(self, related):
+        """
+        Get the related class.
+
+        :param related: The related model or table
+        :type related: Model or str
+
+        :rtype: Model class
+        """
+        if not isinstance(related, basestring) and issubclass(related, Model):
+            return related
+
+        for cls in Model.__subclasses__():
+            table = cls.__table__ or inflection.tableize(cls.__name__)
+            if table == related:
+                return cls
+
+        raise RelatedClassNotFound(related)
 
     def joining_table(self, related):
         """
@@ -1847,7 +1868,12 @@ class Model(object):
         if not isinstance(relations, Relation):
             raise RuntimeError('Relationship method must return an object of type Relation')
 
-        self.__relations[method] = DynamicProperty(relations.get_results, relations)
+        def results_getter():
+            relations()
+
+            return relations.get_results()
+
+        self.__relations[method] = DynamicProperty(results_getter, relations)
 
         return self.__relations[method]
 

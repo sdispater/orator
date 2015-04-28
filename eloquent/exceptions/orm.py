@@ -14,3 +14,14 @@ class ModelNotFound(RuntimeError):
 
 class MassAssignmentError(RuntimeError):
     pass
+
+
+class RelatedClassNotFound(RuntimeError):
+
+    def __init__(self, related):
+        self._related = related
+
+        self.message = 'The related class for "%s" does not exists' % related
+
+    def __str__(self):
+        return self.message
