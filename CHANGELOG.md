@@ -1,3 +1,11 @@
+### 0.4
+
+(April 28th, 2015)
+
+- Adds Schema Builder
+- Adds scopes support
+- Adds support for related name in relationships declaration
+
 ### 0.3.1
 
 (April 19th, 2015)
