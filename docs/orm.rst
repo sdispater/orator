@@ -1299,17 +1299,16 @@ So, for our ``SoftDeletingScope``, it would look something like this:
 
             query = builder.get_query()
 
-            to_remove_wheres = []
-            for key, where in enumerate(query.wheres):
+            wheres = []
+            for where in query.wheres:
                 # If the where clause is a soft delete date constraint,
                 # we will remove it from the query and reset the keys
-                # on the wheres. This allows this developer to include
+                # on the wheres. This allows the developer to include
                 # deleted model in a relationship result set that is lazy loaded.
-                if self._is_soft_delete_constraint(where, column):
-                    to_remove_wheres.append(key)
+                if not self._is_soft_delete_constraint(where, column):
+                    wheres.append(key)
 
-            query.wheres = [where for key, where in enumerate(query.wheres)
-                            if key not in to_remove_wheres]
+            query.wheres = wheres
 
 
 Date mutators
