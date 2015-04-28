@@ -280,8 +280,15 @@ You can also run updates as queries against a set of models:
 
     affected_rows = User.where('votes', '>', 100).update(status=2)
 
-..
-    TODO: push method
+Saving a model and relationships
+--------------------------------
+
+Sometimes you may wish to save not only a model, but also all of its relationships.
+To do so, you can use the ``push`` method:
+
+.. code-block:: python
+
+    user.push()
 
 
 Deleting an existing model
@@ -557,19 +564,19 @@ The tables for this relationship would look like this:
 
 .. code-block:: yaml
 
-    countries:
-        id: integer
-        name: string
+    countries
+        id - integer
+        name - string
 
     users:
-        id: integer
-        country_id: integer
-        name: string
+        id - integer
+        country_id - integer
+        name - string
 
     posts:
-        id: integer
-        user_id: integer
-        title: string
+        id - integer
+        user_id - integer
+        title - string
 
 Even though the ``posts`` table does not contain a ``country_id`` column, the ``has_many_through`` relation
 will allow access a country's posts via ``country.posts``:
@@ -953,11 +960,9 @@ You can also pass conditions:
 
 .. code-block:: python
 
-    books.load(
-        {
-            'author': Author.query().where('name', 'like', '%foo%')
-        }
-    )
+    books.load({
+       'author': Author.query().where('name', 'like', '%foo%')
+    })
 
 
 Inserting related models
@@ -1180,7 +1185,7 @@ or the ``to_json`` methods, you can override the ``get_date_format`` method:
 
     class User(Model):
 
-        def get_date_format():
+        def get_date_format(self):
             return 'DD-MM-YY'
 
 
@@ -1197,10 +1202,10 @@ To define a scope, simply prefix a model method with ``scope``:
 
     class User(Model):
 
-        def scope_popular(query):
+        def scope_popular(self, query):
             return query.where('votes', '>', 100)
 
-        def scope_women(query):
+        def scope_women(self, query):
             return query.where_gender('W')
 
 Using a query scope
@@ -1220,7 +1225,7 @@ Just add your parameters to your scope function:
 
     class User(Model):
 
-        def scope_of_type(query, type):
+        def scope_of_type(self, query, type):
             return query.where_type(type)
 
 Then pass the parameter into the scope call:
@@ -1306,7 +1311,7 @@ So, for our ``SoftDeletingScope``, it would look something like this:
                 # on the wheres. This allows the developer to include
                 # deleted model in a relationship result set that is lazy loaded.
                 if not self._is_soft_delete_constraint(where, column):
-                    wheres.append(key)
+                    wheres.append(where)
 
             query.wheres = wheres
 
@@ -1330,7 +1335,7 @@ by completely overriding the ``get_dates`` method:
 
     class User(Model):
 
-        def get_dates():
+        def get_dates(self):
             return ['created_at']
 
 When a column is considered a date, you can set its value to a UNIX timestamp, a date string ``YYYY-MM-DD``,
@@ -1342,7 +1347,7 @@ To completely disable date mutations, simply return an empty list from the ``get
 
     class User(Model):
 
-        def get_dates():
+        def get_dates(self):
             return []
 
 
