@@ -13,3 +13,4 @@ but modified to be more pythonic.
     basic_usage
     query_builder
     orm
+    schema_builder

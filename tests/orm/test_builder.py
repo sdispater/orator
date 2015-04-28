@@ -10,6 +10,8 @@ from eloquent.orm.builder import Builder
 from eloquent.orm.model import Model
 from eloquent.exceptions.orm import ModelNotFound
 from eloquent.orm.collection import Collection
+from eloquent.connections import Connection
+from eloquent.query.processors import QueryProcessor
 
 
 class BuilderTestCase(EloquentTestCase):
@@ -265,6 +267,24 @@ class BuilderTestCase(EloquentTestCase):
             records, 'foo_connection'
         )
 
+    def test_macros_are_called_on_builder(self):
+        builder = Builder(QueryBuilder(
+            flexmock(Connection),
+            flexmock(QueryGrammar),
+            flexmock(QueryProcessor)
+        ))
+
+        def foo_bar(builder):
+            builder.foobar = True
+
+            return builder
+
+        builder.macro('foo_bar', foo_bar)
+        result = builder.foo_bar()
+
+        self.assertEqual(result, builder)
+        self.assertTrue(builder.foobar)
+
     def test_eager_load_relations_load_top_level_relationships(self):
         flexmock(Builder)
         builder = Builder(flexmock(QueryBuilder(None, None, None)))
@@ -347,7 +367,15 @@ class BuilderTestCase(EloquentTestCase):
 
         builder.get_query().insert.assert_called_once_with(['bar'])
 
-    # TODO: test query scopes
+    def test_query_scopes(self):
+        builder = self.get_builder()
+        builder.get_query().from_ = mock.MagicMock()
+        builder.get_query().where = mock.MagicMock()
+        model = OrmBuilderTestModelScopeStub()
+        builder.set_model(model)
+        result = builder.approved()
+
+        self.assertEqual(result, builder)
 
     def test_simple_where(self):
         builder = self.get_builder()
@@ -421,6 +449,12 @@ class BuilderTestCase(EloquentTestCase):
 class OrmBuilderTestModelFarRelatedStub(Model):
 
     pass
+
+
+class OrmBuilderTestModelScopeStub(Model):
+
+    def scope_approved(self, query):
+        query.where('foo', 'bar')
 
 
 class OrmBuilderTestModelCloseRelated(Model):

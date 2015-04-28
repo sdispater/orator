@@ -5,7 +5,8 @@ import arrow
 import inflection
 import inspect
 from six import add_metaclass
-from ..exceptions.orm import MassAssignmentError
+from ..utils import basestring
+from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
@@ -46,6 +47,7 @@ class Model(object):
     __visible__ = []
 
     __timestamps__ = True
+    __dates__ = []
 
     __casts__ = {}
 
@@ -56,6 +58,7 @@ class Model(object):
     _with = []
 
     _booted = {}
+    _global_scopes = {}
     _registered = []
 
     __resolver = None
@@ -70,7 +73,6 @@ class Model(object):
         :param attributes: The instance attributes
         """
         self.__exists = False
-        self.__dates = []
         self.__original = {}
         self.__attributes = {}
         self.__relations = {}
@@ -97,7 +99,62 @@ class Model(object):
         """
         The booting method of the model.
         """
-        # TODO
+        # TODO: mutators
+
+        cls._boot_mixins()
+
+    @classmethod
+    def _boot_mixins(cls):
+        """
+        Boot the mixins
+        """
+        for mixin in cls.__bases__:
+            method = 'boot_%s' % inflection.underscore(mixin.__name__)
+            if hasattr(mixin, method):
+                getattr(mixin, method)(cls)
+
+    @classmethod
+    def add_global_scope(cls, scope):
+        """
+        Register a new global scope on the model.
+
+        :param scope: The scope to register
+        :type scope: eloquent.orm.scopes.scope.Scope
+        """
+        if cls not in cls._global_scopes:
+            cls._global_scopes[cls] = {}
+
+        cls._global_scopes[cls][scope.__class__] = scope
+
+    @classmethod
+    def has_global_scope(cls, scope):
+        """
+        Determine if a model has a global scope.
+
+        :param scope: The scope to register
+        :type scope: eloquent.orm.scopes.scope.Scope
+        """
+        return cls.get_global_scope(scope) is not None
+
+    @classmethod
+    def get_global_scope(cls, scope):
+        """
+        Get a global scope registered with the model.
+
+        :param scope: The scope to register
+        :type scope: eloquent.orm.scopes.scope.Scope
+        """
+        for key, value in cls._global_scopes[cls].items():
+            if isinstance(scope, key):
+                return value
+
+    def get_global_scopes(self):
+        """
+        Get the global scopes for this class instance.
+
+        :rtype: dict
+        """
+        return self.__class__._global_scopes.get(self.__class__, {})
 
     def fill(self, **attributes):
         """
@@ -496,7 +553,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = related()
+        instance = self._get_related(related)()
 
         if not local_key:
             local_key = self.get_key_name()
@@ -526,7 +583,7 @@ class Model(object):
         if name in self.__relations:
             return self.__relations[name]
 
-        instance = related()
+        instance = self._get_related(related)()
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
@@ -565,7 +622,7 @@ class Model(object):
         if foreign_key is None:
             foreign_key = '%s_id' % inflection.underscore(relation)
 
-        instance = related()
+        instance = self._get_related(related)()
 
         query = instance.new_query()
 
@@ -635,7 +692,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = related()
+        instance = self._get_related(related)()
 
         if not local_key:
             local_key = self.get_key_name()
@@ -673,7 +730,8 @@ class Model(object):
         if not second_key:
             second_key = through.get_foreign_key()
 
-        return HasManyThrough(related().new_query(), self, through, first_key, second_key)
+        return HasManyThrough(self._get_related(related)().new_query(),
+                              self, through, first_key, second_key)
 
     def morph_many(self, related, name, type_column=None, id_column=None, local_key=None):
         """
@@ -693,7 +751,7 @@ class Model(object):
 
         :rtype: MorphMany
         """
-        instance = related()
+        instance = self._get_related(related)()
 
         if name in self.__relations:
             return self.__relations[name]
@@ -738,7 +796,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = related()
+        instance = self._get_related(related)()
 
         if not other_key:
             other_key = instance.get_foreign_key()
@@ -779,7 +837,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = name + '_id'
 
-        instance = related()
+        instance = self._get_related(related)()
 
         if not other_key:
             other_key = instance.get_foreign_key()
@@ -820,6 +878,25 @@ class Model(object):
             other_key = name + '_id'
 
         return self.morph_to_many(related, name, table, foreign_key, other_key, True)
+
+    def _get_related(self, related):
+        """
+        Get the related class.
+
+        :param related: The related model or table
+        :type related: Model or str
+
+        :rtype: Model class
+        """
+        if not isinstance(related, basestring) and issubclass(related, Model):
+            return related
+
+        for cls in Model.__subclasses__():
+            table = cls.__table__ or inflection.tableize(cls.__name__)
+            if table == related:
+                return cls
+
+        raise RelatedClassNotFound(related)
 
     def joining_table(self, related):
         """
@@ -896,6 +973,9 @@ class Model(object):
         """
         Perform the actual delete query on this model instance.
         """
+        if hasattr(self, '_do_perform_delete_on_model'):
+            return self._do_perform_delete_on_model()
+
         return self.new_query().where(self.get_key_name(), self.get_key()).delete()
 
     # TODO: events
@@ -1237,11 +1317,62 @@ class Model(object):
         :return: A Builder instance
         :rtype: Builder
         """
+        builder = self.new_query_without_scopes()
+
+        return self.apply_global_scopes(builder)
+
+    def new_query_without_scope(self, scope):
+        """
+        Get a new query builder for the model's table without a given scope
+
+        :return: A Builder instance
+        :rtype: Builder
+        """
+        builder = self.new_query()
+        self.get_global_scope(scope).remove(builder, self)
+
+        return builder
+
+    def new_query_without_scopes(self):
+        """
+        Get a new query builder without any scopes.
+
+        :return: A Builder instance
+        :rtype: Builder
+        """
         builder = self.new_orm_builder(
             self._new_base_query_builder()
         )
 
         return builder.set_model(self).with_(*self._with)
+
+    def apply_global_scopes(self, builder):
+        """
+        Apply all of the global scopes to a builder.
+
+        :param builder: A Builder instance
+        :type builder: Builder
+
+        :rtype: Builder
+        """
+        for scope in self.get_global_scopes().values():
+            scope.apply(builder, self)
+
+        return builder
+
+    def remove_global_scopes(self, builder):
+        """
+        Remove all of the global scopes from a builder.
+
+        :param builder: A Builder instance
+        :type builder: Builder
+
+        :rtype: Builder
+        """
+        for scope in self.get_global_scopes().values():
+            scope.remove(builder, self)
+
+        return builder
 
     @classmethod
     def query(cls):
@@ -1737,7 +1868,12 @@ class Model(object):
         if not isinstance(relations, Relation):
             raise RuntimeError('Relationship method must return an object of type Relation')
 
-        self.__relations[method] = DynamicProperty(relations.get_results, relations)
+        def results_getter():
+            relations()
+
+            return relations.get_results()
+
+        self.__relations[method] = DynamicProperty(results_getter, relations)
 
         return self.__relations[method]
 
@@ -1827,7 +1963,7 @@ class Model(object):
         """
         defaults = [self.CREATED_AT, self.UPDATED_AT]
 
-        return self.__dates + defaults
+        return self.__dates__ + defaults
 
     def from_datetime(self, value):
         """
@@ -2117,7 +2253,7 @@ class Model(object):
         cls.__resolver = resolver
 
     @classmethod
-    def unset_connection_resolver(cls, resolver):
+    def unset_connection_resolver(cls):
         """
         Unset the connection resolver instance.
         """

@@ -1,3 +1,18 @@
+### 0.4
+
+(April 28th, 2015)
+
+- Adds Schema Builder
+- Adds scopes support
+- Adds support for related name in relationships declaration
+
+### 0.3.1
+
+(April 19th, 2015)
+
+- Fix MySQLdb compatibiity issues
+- Fix wrong default key value for Builder.lists() method
+
 ### 0.3
 
 (April 3th, 2015)

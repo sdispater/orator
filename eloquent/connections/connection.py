@@ -8,6 +8,8 @@ from ..query.grammars.grammar import QueryGrammar
 from ..query.builder import QueryBuilder
 from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
+from ..schema.builder import SchemaBuilder
+from ..dbal.schema_manager import SchemaManager
 from ..exceptions.query import QueryException
 
 
@@ -66,11 +68,28 @@ class Connection(ConnectionInterface):
     def get_default_query_grammar(self):
         return QueryGrammar()
 
+    def use_default_schema_grammar(self):
+        self._schema_grammar = self.get_default_schema_grammar()
+
+    def get_default_schema_grammar(self):
+        pass
+
     def use_default_post_processor(self):
         self._post_processor = self.get_default_post_processor()
 
     def get_default_post_processor(self):
         return QueryProcessor()
+
+    def get_schema_builder(self):
+        """
+        Retturn the underlying schema builder.
+
+        :rtype: eloquent.schema.SchemaBuilder
+        """
+        if not self._schema_grammar:
+            self.use_default_schema_grammar()
+
+        return SchemaBuilder(self)
 
     def table(self, table):
         """
@@ -368,6 +387,9 @@ class Connection(ConnectionInterface):
     def get_name(self):
         return self._config.get('name')
 
+    def get_config(self, option):
+        return self._config.get(option)
+
     def get_query_grammar(self):
         return self._query_grammar
 
@@ -425,6 +447,14 @@ class Connection(ConnectionInterface):
         grammar.set_table_prefix(self._table_prefix)
 
         return grammar
+
+    def get_column(self, table, column):
+        schema = self.get_schema_manager()
+
+        return schema.list_table_details(table).get_column(column)
+
+    def get_schema_manager(self):
+        return SchemaManager(self)
 
     def __enter__(self):
         self.begin_transaction()

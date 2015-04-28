@@ -225,7 +225,7 @@ class BelongsToMany(Relation):
 
         :rtype: str
         """
-        return 'self_%s' % (hashlib.md5(time.time()).hexdigest())
+        return 'self_%s' % (hashlib.md5(str(time.time()).encode()).hexdigest())
 
     def _get_select_columns(self, columns=None):
         """

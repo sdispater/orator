@@ -4,6 +4,9 @@ from ..utils import PY2
 from .connection import Connection
 from ..query.grammars.postgres_grammar import PostgresQueryGrammar
 from ..query.processors.postgres_processor import PostgresQueryProcessor
+from ..schema.grammars import PostgresSchemaGrammar
+from ..dbal.platforms.postgres_platform import PostgresPlatform
+from ..dbal.postgres_schema_manager import PostgresSchemaManager
 
 
 class PostgresConnection(Connection):
@@ -13,6 +16,15 @@ class PostgresConnection(Connection):
 
     def get_default_post_processor(self):
         return PostgresQueryProcessor()
+
+    def get_default_schema_grammar(self):
+        return self.with_table_prefix(PostgresSchemaGrammar())
+
+    def get_database_platform(self):
+        return PostgresPlatform()
+
+    def get_schema_manager(self):
+        return PostgresSchemaManager(self)
 
     def begin_transaction(self):
         self._connection.autocommit = False

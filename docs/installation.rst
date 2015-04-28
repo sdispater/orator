@@ -17,5 +17,5 @@ You can install Eloquent in 2 different ways:
     so you must install them in order to connect to corresponding databases:
 
     * PostgreSQL: ``pyscopg2``
-    * MySQL: ``PyMySQL`` or ``MySQL-python``
+    * MySQL: ``PyMySQL`` or ``mysqlclient``
     * SQLite: The ``sqlite3`` module is bundled with Python by default
