@@ -63,6 +63,9 @@ class DatabaseMigrationRepositoryTestCase(EloquentTestCase):
 
             migration = 'foo'
 
+            def __getitem__(self, item):
+                return self.migration
+
         repo.delete(Migration())
 
     def test_get_next_batch_number_returns_last_batch_number_plus_one(self):

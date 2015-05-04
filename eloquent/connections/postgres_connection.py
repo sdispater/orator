@@ -48,6 +48,12 @@ class PostgresConnection(Connection):
             self._transactions -= 1
 
     def _get_cursor_query(self, query, bindings):
+        if self._pretending:
+            if PY2:
+                return self._cursor.mogrify(query, bindings)
+
+            return self._cursor.mogrify(query, bindings).decode()
+
         if not hasattr(self._cursor, 'query'):
             return super(PostgresConnection, self)._get_cursor_query(query, bindings)
 

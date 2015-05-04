@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from .migration import Migration
+
 
 class DatabaseMigrationRepository(object):
 
@@ -48,9 +50,9 @@ class DatabaseMigrationRepository(object):
         """
         Remove a migration from the log.
 
-        :type migration: eloquent.migrations.migration.Migration
+        :type migration: dict
         """
-        self.table().where('migration', migration.migration).delete()
+        self.table().where('migration', migration['migration']).delete()
 
     def get_next_batch_number(self):
         """
@@ -66,7 +68,7 @@ class DatabaseMigrationRepository(object):
 
         :rtype: int
         """
-        return self.table().max('batch')
+        return self.table().max('batch') or 0
 
     def create_repository(self):
         """

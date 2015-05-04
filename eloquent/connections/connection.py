@@ -84,7 +84,7 @@ class Connection(ConnectionInterface):
         """
         Retturn the underlying schema builder.
 
-        :rtype: eloquent.schema.SchemaBuilder
+        :rtype: eloquent.schema.builder.SchemaBuilder
         """
         if not self._schema_grammar:
             self.use_default_schema_grammar()
@@ -276,7 +276,6 @@ class Connection(ConnectionInterface):
             )
 
         t = self._get_elapsed_time(start)
-
         self.log_query(query, bindings, t)
 
         return result
@@ -351,6 +350,9 @@ class Connection(ConnectionInterface):
         return round((time.time() - start) * 1000, 2)
 
     def _get_cursor_query(self, query, bindings):
+        if self._pretending:
+            return query, bindings
+
         return query, bindings
 
     def get_connection(self):

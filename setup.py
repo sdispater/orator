@@ -1,8 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import os
 from setuptools import setup, find_packages
 
-__version__ = '0.4'
+
+def get_version():
+    basedir = os.path.dirname(__file__)
+    with open(os.path.join(basedir, 'eloquent/version.py')) as f:
+        variables = {}
+        exec(f.read(), variables)
+
+        version = variables.get('VERSION')
+        if version:
+            return version
+
+    raise RuntimeError('No version info found.')
+
+
+__version__ = get_version()
 
 setup(
     name='eloquent',

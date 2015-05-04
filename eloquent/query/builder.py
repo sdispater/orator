@@ -1243,7 +1243,9 @@ class QueryBuilder(object):
             return True
 
         if not isinstance(_values, list):
-            values.update(_values)
+            if _values is not None:
+                values.update(_values)
+
             values = [values]
         else:
             values = _values
