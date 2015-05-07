@@ -33,6 +33,7 @@ setup(
     install_requires=['simplejson', 'arrow', 'inflection', 'six'],
     tests_require=['pytest', 'mock', 'flexmock'],
     test_suite='nose.collector',
+    scripts=['bin/eloquent'],
     classifiers=[
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
