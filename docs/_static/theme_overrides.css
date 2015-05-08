@@ -1,10 +1,12 @@
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,400italic,500,700);
 @import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
 @import url(http://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600);
+@import url(http://fonts.googleapis.com/css?family=Lato:400,700);
 
 body {
     font: 400 14px/28px "Roboto",sans-serif;
     color: #7A7A7A;
+    text-rendering: optimizelegibility;
 }
 
 .wy-body-for-nav {
@@ -38,77 +40,145 @@ article ul li {
 }
 
 .wy-nav-side {
-    background: #2B303B;
+    background: #293134;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
 }
 
 .wy-side-nav-search {
-    background-color: rgb(39, 43, 53);
+    font-family: "Lato", "Roboto", sans-serif;
+    font-size: 15px;
+    background-color: #2F393C;
+}
+
+.wy-menu-vertical ul {
+    font-family: "Lato", "Roboto", sans-serif;
+    margin-right: 1em;
 }
 
 .wy-menu-vertical li.current {
-    background: rgb(33, 37, 45);
+    background: #293134;
 }
 
 .wy-menu-vertical li.on a, .wy-menu-vertical li.current > a {
-    background: #2B303B;
+    background: #293134;
     border: 0;
+}
+
+.wy-menu-vertical li a {
+    opacity: 0.6;
+}
+
+.wy-menu-vertical li a, .wy-menu-vertical li.current > a {
+    padding: 0.3045em 2em;
+    border-radius: 0 5px 5px 0;
 }
 
 .wy-menu-vertical li.current a {
     font-size: 13px;
     border-right: 0;
+    opacity: 1;
+    padding: 0.3045em 3em;
 }
 
 .wy-menu-vertical li.current > a {
     font-size: 14px;
     border-right: 0;
+    padding-left: 2em;
+}
+
+.wy-menu-vertical li.toctree-l2.current > a {
+    background: none;
+    padding: 0.3045em 3em;
+    font-size: 13px;
+}
+
+.wy-menu-vertical li.toctree-l2.current > a::before {
+    font-family: "FontAwesome";
+    content: "";
+    color: #EC7600;
+    font-size: 8px;
+    position: absolute;
+    top: 0.6045em;
+    left: 3em;
+}
+
+.wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a  {
+    background: none;
+    padding: 0 4em;
+    font-size: 12px;
 }
 
 .wy-menu-vertical a,
 .wy-menu-vertical a:visited {
-    color: #788195;
+    color: #81969A;
     line-height: 24px;
     font-size: 14px;
 }
 
 .wy-menu-vertical a:hover {
-    color: #FFFFFF;
-    background: none;
+    color: #81969A;
+    background: #2F393C;
 }
 
 .wy-menu-vertical li.current a,
 .wy-menu-vertical li.current a:visited {
-    color: #788195;
+    color: #81969A;
 }
 
 .wy-menu-vertical li.current a:hover {
-    color: #FFFFFF;
-    background: none;
+    color: #81969A;
+    background: #2F393C;
 }
 
 .wy-menu-vertical li.current > a {
-    color: #FFFFFF !important;
+    color: #81969A !important;
 }
 
 .wy-menu-vertical li.current > a:hover {
-    background: #2B303B !important;
+    background: #293134 !important;
 }
 
 .wy-side-nav-search input[type="text"] {
-    border: 1px solid #2B303B;
-    background: rgb(23, 27, 35);
+    border: 0;
+    background: none;
     box-shadow: none;
     color: #FFFFFF;
-    border-radius: 4px;
+    font-size: 13px;
+    width: 90%;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(129, 150, 154, 0.7);
+    opacity: 0.7;
+    padding: 6px 0;
 }
 
 .wy-side-nav-search > a,
 .wy-side-nav-search > a:visited {
-    color: #FFFFFF;
+    color: #81969A;
 }
 
 .wy-side-nav-search > a:hover {
     background: none;
+}
+
+.wy-menu-vertical li span.toctree-expand::before {
+    content: "";
+    opacity: 0.3;
+    color: #81969A;
+    font-size: 10px;
+    position: relative;
+    top: 2px;
+}
+
+.wy-menu-vertical li.on a span.toctree-expand::before,
+.wy-menu-vertical li.current > a span.toctree-expand::before {
+    content: "";
+    color: #EC7600;
+    opacity: 1;
+}
+
+.wy-menu-vertical li.current ul li a span.toctree-expand {
+    display: none;
 }
 
 .rst-content table.docutils,
@@ -218,7 +288,7 @@ b, strong {
    font-weight: 500;
 }
 
-pre, pre code, .rst-content tt {
+pre, pre code, .rst-content tt, code.docutils {
     font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
     color: #CB6077;
     background-color: #FFFFFF;
@@ -226,7 +296,7 @@ pre, pre code, .rst-content tt {
     font-weight: 500;
 }
 
-pre, code, .rst-content tt {
+pre, code, .rst-content ttc {
 	font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
 	font-weight: 400;
     border-radius: 3px;
@@ -256,7 +326,8 @@ code {
 }
 
 p > code,
-.rst-content tt {
+.rst-content tt,
+p > code.docutils {
     color: #CB6077;
     padding: 0;
     display: inline;
