@@ -21,3 +21,8 @@ nosetests.xml
 test.py
 test_models.py
 test_threading.py
+test_schema.py
+app.py
+/migrations
+
+Makefile

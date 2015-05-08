@@ -60,7 +60,7 @@ class MySqlConnection(Connection):
             self._transactions -= 1
 
     def _get_cursor_query(self, query, bindings):
-        if not hasattr(self._cursor, '_last_executed'):
+        if not hasattr(self._cursor, '_last_executed') or self._pretending:
             return super(MySqlConnection, self)._get_cursor_query(query, bindings)
 
         if PY2:

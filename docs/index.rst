@@ -14,3 +14,4 @@ but modified to be more pythonic.
     query_builder
     orm
     schema_builder
+    migrations
