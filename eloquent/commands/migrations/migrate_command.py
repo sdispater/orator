@@ -61,12 +61,9 @@ class MigrateCommand(BaseCommand):
         migrator.set_connection(database)
 
         if not migrator.repository_exists():
-            command = self.get_application().find('migrate:install')
-
             options = [
-                ('command', command.get_name()),
                 ('--database', database),
                 ('--config', i.get_option('config'))
             ]
 
-            command.run(ListInput(options), o)
+            self.call('migrate:install', options, o)

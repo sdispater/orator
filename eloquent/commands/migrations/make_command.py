@@ -14,7 +14,7 @@ class MigrateMakeCommand(BaseCommand):
         self.set_name('migrate:make')
         self.set_description('Create a new migration file')
         self.add_argument('name', InputArgument.REQUIRED, 'The name of the migration.')
-        self.add_option('create', 'C', InputOption.VALUE_OPTIONAL,
+        self.add_option('create', 'C', InputOption.VALUE_NONE,
                         'The table to be created.')
         self.add_option('table', 't', InputOption.VALUE_OPTIONAL,
                         'The table to migrate.')
@@ -32,14 +32,16 @@ class MigrateMakeCommand(BaseCommand):
 
         name = i.get_argument('name')
         table = i.get_option('table')
-        create = i.get_option('create')
+        create = bool(i.get_option('create'))
 
-        if not table and create is not None:
+        if not table and create is not False:
             table = create
 
-        self._write_migration(creator, name, table, create, o)
+        file_ = self._write_migration(creator, name, table, create)
 
-    def _write_migration(self, creator, name, table, create, o):
+        o.writeln('<info>Create migration: <comment>%s</comment></info>' % file_)
+
+    def _write_migration(self, creator, name, table, create):
         """
         Write the migration file to disk.
         """
@@ -47,4 +49,4 @@ class MigrateMakeCommand(BaseCommand):
 
         file_ = os.path.basename(creator.create(name, path, table, create))
 
-        o.writeln('<info>Create migration: <comment>%s</comment></info>' % file_)
+        return file_

@@ -45,7 +45,7 @@ class ResetCommand(BaseCommand):
 
         self._prepare_database(migrator, database, i, o)
 
-        pretend = i.get_option('pretend')
+        pretend = bool(i.get_option('pretend'))
 
         path = i.get_option('path')
 
