@@ -10,7 +10,7 @@ class InstallCommand(BaseCommand):
     def configure(self):
         super(InstallCommand, self).configure()
 
-        self.set_name('migrate:install')
+        self.set_name('migrations:install')
         self.set_description('Create the migration repository')
         self.add_option('database', 'd', InputOption.VALUE_OPTIONAL,
                         'The database connection to use')

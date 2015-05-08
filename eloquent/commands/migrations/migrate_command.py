@@ -11,7 +11,7 @@ class MigrateCommand(BaseCommand):
     def configure(self):
         super(MigrateCommand, self).configure()
 
-        self.set_name('migrate')
+        self.set_name('migrations:run')
         self.set_description('Run the database migrations')
         self.add_option('database', 'd', InputOption.VALUE_OPTIONAL,
                         'The database connection to use')
@@ -66,4 +66,4 @@ class MigrateCommand(BaseCommand):
                 ('--config', i.get_option('config'))
             ]
 
-            self.call('migrate:install', options, o)
+            self.call('migrations:install', options, o)

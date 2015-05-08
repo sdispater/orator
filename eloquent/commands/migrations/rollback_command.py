@@ -11,7 +11,7 @@ class RollbackCommand(BaseCommand):
     def configure(self):
         super(RollbackCommand, self).configure()
 
-        self.set_name('migrate:rollback')
+        self.set_name('migrations:rollback')
         self.set_description('Rollback the last database migration')
         self.add_option('database', 'd', InputOption.VALUE_OPTIONAL,
                         'The database connection to use')

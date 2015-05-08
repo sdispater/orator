@@ -11,7 +11,7 @@ class MigrateMakeCommand(BaseCommand):
     def configure(self):
         super(MigrateMakeCommand, self).configure()
 
-        self.set_name('migrate:make')
+        self.set_name('migrations:make')
         self.set_description('Create a new migration file')
         self.add_argument('name', InputArgument.REQUIRED, 'The name of the migration.')
         self.add_option('create', 'C', InputOption.VALUE_NONE,

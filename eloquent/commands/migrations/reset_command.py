@@ -11,7 +11,7 @@ class ResetCommand(BaseCommand):
     def configure(self):
         super(ResetCommand, self).configure()
 
-        self.set_name('migrate:reset')
+        self.set_name('migrations:reset')
         self.set_description('Rollback all database migrations')
         self.add_option('database', 'd', InputOption.VALUE_OPTIONAL,
                         'The database connection to use')

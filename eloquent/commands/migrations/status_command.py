@@ -10,7 +10,7 @@ class StatusCommand(BaseCommand):
     def configure(self):
         super(StatusCommand, self).configure()
 
-        self.set_name('migrate:status')
+        self.set_name('migrations:status')
         self.set_description('Show a list of migrations up/down')
         self.add_option('database', 'd', InputOption.VALUE_OPTIONAL,
                         'The database connection to use')
