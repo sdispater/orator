@@ -466,7 +466,7 @@ class Model(object):
         :type columns: list
 
         :return: Either a Model instance or a Collection
-        :rtype: Model or Collection
+        :rtype: Model
         """
         instance = cls()
 
