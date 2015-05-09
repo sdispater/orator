@@ -8,7 +8,14 @@ class accessor(object):
     def __init__(self, accessor_, attribute=None):
         self.accessor = accessor_
         self.mutator_ = None
-        self.attribute = attribute or self.accessor.__name__
+        if attribute is not None:
+            self.attribute = attribute
+        else:
+            if isinstance(accessor_, property):
+                self.attribute = accessor_.fget.__name__
+            else:
+                self.attribute = self.accessor.__name__
+
         self.expr = accessor_
         if accessor_ is not None:
             update_wrapper(self, accessor_)
