@@ -78,6 +78,50 @@ and whether the migration will be creating a new table:
 
     eloquent migrations:make create_users_table -c databases.py --table=users --create
 
+These commands would respectively create the following migrations:
+
+ .. code-block:: python
+
+    from eloquent.migrations import Migration
+
+
+    class AddVotesToUsersTable(Migration):
+
+        def up(self):
+            """
+            Run the migrations.
+            """
+            with self.schema.table('users') as table:
+                pass
+
+        def down(self):
+            """
+            Revert the migrations.
+            """
+            with self.schema.table('users') as table:
+                pass
+
+ .. code-block:: python
+
+    from eloquent.migrations import Migration
+
+
+    class CreateTableUsers(Migration):
+
+        def up(self):
+            """
+            Run the migrations.
+            """
+            with self.schema.create('users') as table:
+                table.increments('id')
+                table.timestamps()
+
+        def down(self):
+            """
+            Revert the migrations.
+            """
+            self.schema.drop('users')
+
 
 Running Migrations
 ==================
