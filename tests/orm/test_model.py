@@ -14,6 +14,7 @@ from eloquent.query.grammars import QueryGrammar
 from eloquent.query.processors import QueryProcessor
 from eloquent.orm.builder import Builder
 from eloquent.orm.model import Model
+from eloquent.orm.utils import mutator, accessor
 from eloquent.exceptions.orm import ModelNotFound, MassAssignmentError
 from eloquent.orm.collection import Collection
 from eloquent.connections import Connection
@@ -33,7 +34,10 @@ class OrmModelTestCase(EloquentTestCase):
         del model.name
         self.assertFalse(hasattr(model, 'name'))
 
-        # TODO: mutators
+        model.list_items = {'name': 'john'}
+        self.assertEqual({'name': 'john'}, model.list_items)
+        attributes = model.get_attributes()
+        self.assertEqual(json.dumps({'name': 'john'}), attributes['list_items'])
 
     def test_dirty_attributes(self):
         model = OrmModelStub(foo='1', bar=2, baz=3)
@@ -47,7 +51,15 @@ class OrmModelTestCase(EloquentTestCase):
         self.assertTrue(model.is_dirty('baz'))
         self.assertTrue(model.is_dirty('foo', 'bar', 'baz'))
 
-    # TODO: test calculated attributes
+    def test_calculated_attributes(self):
+        model = OrmModelStub()
+        model.password = 'secret'
+        attributes = model.get_attributes()
+
+        self.assertFalse('password' in attributes)
+        self.assertEqual('******', model.password)
+        self.assertEqual('5ebe2294ecd0e0f08eab7690d2a6ee69', attributes['password_hash'])
+        self.assertEqual('5ebe2294ecd0e0f08eab7690d2a6ee69', model.password_hash)
 
     def test_new_instance_returns_instance_wit_attributes_set(self):
         model = OrmModelStub()
@@ -471,16 +483,24 @@ class OrmModelTestCase(EloquentTestCase):
         model.age = None
         model.password = 'password1'
         model.set_hidden(['password'])
-
-        # TODO: relations
+        model.set_relation('names', Collection([OrmModelStub(bar='baz'), OrmModelStub(bam='boom')]))
+        model.set_relation('partner', OrmModelStub(name='jane'))
+        model.set_relation('group', None)
+        model.set_relation('multi', Collection())
 
         d = model.to_dict()
 
         self.assertIsInstance(d, dict)
         self.assertEqual('foo', d['name'])
+        self.assertEqual('baz', d['names'][0]['bar'])
+        self.assertEqual('boom', d['names'][1]['bam'])
+        self.assertEqual('jane', d['partner']['name'])
+        self.assertIsNone(d['group'])
+        self.assertEqual([], d['multi'])
         self.assertIsNone(d['age'])
+        self.assertNotIn('password', d)
 
-        # TODO: relations
+        # TODO: appends
 
     def test_to_dict_includes_default_formatted_timestamps(self):
         model = Model()
@@ -520,9 +540,21 @@ class OrmModelTestCase(EloquentTestCase):
 
         self.assertEqual({'name': 'John'}, d)
 
-    # TODO: hidden also hides relationship
+    def test_hidden_can_also_exclude_relationships(self):
+        model = OrmModelStub()
+        model.name = 'John'
+        model.set_relation('foo', ['bar'])
+        model.set_hidden(['foo', 'list_items', 'password'])
+        d = model.to_dict()
 
-    # TODO: to_dict uses mutators
+        self.assertEqual({'name': 'John'}, d)
+
+    def test_to_dict_uses_mutators(self):
+        model = OrmModelStub()
+        model.list_items = [1, 2, 3]
+        d = model.to_dict()
+
+        self.assertEqual([1, 2, 3], d['list_items'])
 
     def test_hidden_are_ignored_when_visible(self):
         model = OrmModelStub(name='john', age=28, id='foo')
@@ -588,7 +620,15 @@ class OrmModelTestCase(EloquentTestCase):
 
         self.assertEqual('orm_model_no_table_stubs', model.get_table())
 
-    # TODO: mutators cache
+    def test_mutator_cache_is_populated(self):
+        model = OrmModelStub()
+
+        expected_attributes = sorted([
+            'list_items',
+            'password'
+        ])
+
+        self.assertEqual(expected_attributes, sorted(list(model._get_mutated_attributes().keys())))
 
     def test_clone_model_makes_a_fresh_copy(self):
         model = OrmModelStub()
@@ -742,17 +782,21 @@ class OrmModelStub(Model):
 
     __guarded__ = []
 
-    def get_list_items_attribute(self, value):
-        return json.loads(value)
+    @accessor
+    def list_items(self):
+        return json.loads(self.get_raw_attribute('list_items'))
 
-    def set_list_items_attribute(self, value):
-        self._attributes['list_items'] = json.dumps(value)
+    @list_items.mutator
+    def set_list_items(self, value):
+        self.set_raw_attribute('list_items', json.dumps(value))
 
-    def get_password_attribute(self, _):
+    @mutator
+    def password(self, value):
+        self.set_raw_attribute('password_hash', hashlib.md5(value.encode()).hexdigest())
+
+    @password.accessor
+    def get_password(self):
         return '******'
-
-    def set_password_attribute(self, value):
-        self._attributes['password_hash'] = hashlib.md5(value).hexdigest()
 
     def public_increment(self, column, amount=1):
         return self._increment(column, amount)

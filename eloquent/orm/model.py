@@ -15,6 +15,7 @@ from .relations import (
     MorphOne, MorphMany, MorphTo, MorphToMany
 )
 from .relations.dynamic_property import DynamicProperty
+from .utils import mutator, accessor
 
 
 class MetaModel(type):
@@ -61,6 +62,9 @@ class Model(object):
     _global_scopes = {}
     _registered = []
 
+    _accessor_cache = {}
+    _mutator_cache = {}
+
     __resolver = None
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
@@ -99,7 +103,14 @@ class Model(object):
         """
         The booting method of the model.
         """
-        # TODO: mutators
+        cls._accessor_cache[cls] = {}
+        cls._mutator_cache[cls] = {}
+
+        for name, method in cls.__dict__.items():
+            if isinstance(method, accessor):
+                cls._accessor_cache[cls][method.attribute] = method
+            elif isinstance(method, mutator):
+                cls._mutator_cache[cls][method.attribute] = method
 
         cls._boot_mixins()
 
@@ -1747,10 +1758,19 @@ class Model(object):
 
             attributes[key] = self._format_date(self.as_datetime(attributes[key]))
 
-        # TODO: mutators
+        mutated_attributes = self._get_mutated_attributes()
 
+        for key in mutated_attributes:
+            if key not in attributes:
+                continue
+
+            attributes[key] = self._mutate_attribute_for_dict(key)
+
+        # Next we will handle any casts that have been setup for this model and cast
+        # the values to their appropriate type. If the attribute has a mutator we
+        # will not perform the cast on those attributes to avoid any confusion.
         for key, value in self.__casts__.items():
-            if key not in attributes:  # TODO: check mutators
+            if key not in attributes or key in mutated_attributes:
                 continue
 
             attributes[key] = self._cast_attribute(key, attributes[key])
@@ -1785,7 +1805,7 @@ class Model(object):
             elif value is None:
                 relation = value
 
-            if relation or value is None:
+            if relation is not None or value is None:
                 attributes[key] = relation
 
         return attributes
@@ -1832,6 +1852,15 @@ class Model(object):
 
         raise AttributeError(key)
 
+    def get_raw_attribute(self, key):
+        """
+        Get the raw underlying attribute.
+
+        :param key: The attribute to get
+        :type key: str
+        """
+        return self.__attributes[key]
+
     def _get_attribute_value(self, key):
         """
         Get a plain attribute.
@@ -1840,8 +1869,6 @@ class Model(object):
         :type key: str
         """
         value = self._get_attribute_from_dict(key)
-
-        # TODO: mutators
 
         if self._has_cast(key):
             value = self._cast_attribute(key, value)
@@ -1888,6 +1915,20 @@ class Model(object):
         """
         return hasattr(self, 'get_%s_attribute' % inflection.underscore(key))
 
+    def _mutate_attribute_for_dict(self, key):
+        """
+        Get the value of an attribute using its mutator for dict conversion.
+
+        :param key: The attribute name
+        :type key: str
+        """
+        value = getattr(self, key)
+
+        if hasattr(value, 'to_dict'):
+            return value.to_dict()
+
+        return value
+
     def _has_cast(self, key):
         """
         Determine whether an attribute should be casted to a native type.
@@ -1898,6 +1939,21 @@ class Model(object):
         :rtype: bool
         """
         return key in self.__casts__
+
+    def _has_set_mutator(self, key):
+        """
+        Determine whether an attribute has a set mutator.
+
+        :param key: The attribute
+        :type key: str
+
+        :rtype: bool
+        """
+        klass = self.__class__
+        if key not in self._mutator_cache[klass]:
+            return False
+
+        return self._mutator_cache[klass][key].mutator is not None
 
     def _is_json_castable(self, key):
         """
@@ -2015,8 +2071,6 @@ class Model(object):
         """
         Set a given attribute on the model.
         """
-        # TODO: Set mutators
-
         if key in self.get_dates() and value:
             value = self.from_datetime(value)
 
@@ -2068,6 +2122,24 @@ class Model(object):
         :type sync: bool
         """
         self.__attributes = dict(attributes.items())
+
+        if sync:
+            self.sync_original()
+
+    def set_raw_attribute(self, key, value, sync=False):
+        """
+        Set an attribute. No checking is done.
+
+        :param key: The attribute name
+        :type key: str
+
+        :param value: The attribute value
+        :type value: mixed
+
+        :param sync: Whether to sync the attributes or not
+        :type sync: bool
+        """
+        self.__attributes[key] = value
 
         if sync:
             self.sync_original()
@@ -2259,6 +2331,19 @@ class Model(object):
         """
         cls._resolver = None
 
+    def _get_mutated_attributes(self):
+        """
+        Get the mutated attributes.
+
+        :return: list
+        """
+        klass = self.__class__
+
+        if klass in self._accessor_cache:
+            return self._accessor_cache[klass]
+
+        return []
+
     def __getattribute__(self, item):
         try:
             attr = super(Model, self).__getattribute__(item)
@@ -2271,8 +2356,12 @@ class Model(object):
 
     def __setattr__(self, key, value):
         if key.startswith(('_Model__', '_%s__' % self.__class__.__name__, '__')):
-            super(Model, self).__setattr__(key, value)
-        elif callable(getattr(self, key, None)):
+            return super(Model, self).__setattr__(key, value)
+
+        if self._has_set_mutator(key):
+            return super(Model, self).__setattr__(key, value)
+
+        if callable(getattr(self, key, None)):
             return super(Model, self).__setattr__(key, value)
         else:
             self.set_attribute(key, value)
