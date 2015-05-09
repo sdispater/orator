@@ -46,6 +46,7 @@ class Model(object):
 
     __hidden__ = []
     __visible__ = []
+    __appends__ = []
 
     __timestamps__ = True
     __dates__ = []
@@ -1775,7 +1776,11 @@ class Model(object):
 
             attributes[key] = self._cast_attribute(key, attributes[key])
 
-        # TODO: appends
+        # Here we will grab all of the appended, calculated attributes to this model
+        # as these attributes are not really in the attributes array, but are run
+        # when we need to array or JSON the model for convenience to the coder.
+        for key in self._get_dictable_appends():
+            attributes[key] = self._mutate_attribute_for_dict(key)
 
         return attributes
 
@@ -1786,6 +1791,17 @@ class Model(object):
         :rtype: dict
         """
         return self._get_dictable_items(self.__attributes)
+
+    def _get_dictable_appends(self):
+        """
+        Get all the appendable values that are dictable.
+
+        :rtype: list
+        """
+        if not self.__appends__:
+            return []
+
+        return self._get_dictable_items(dict(zip(self.__appends__, self.__appends__)))
 
     def relations_to_dict(self):
         """
@@ -2226,6 +2242,17 @@ class Model(object):
 
     def set_exists(self, exists):
         self.__exists = exists
+
+    def set_appends(self, appends):
+        """
+        Sets the appendable attributes.
+
+        :param appends: The appendable attributes
+        :type appends: list
+        """
+        self.__appends__ = appends
+
+        return self
 
     def get_relations(self):
         """

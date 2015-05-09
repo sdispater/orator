@@ -500,7 +500,9 @@ class OrmModelTestCase(EloquentTestCase):
         self.assertIsNone(d['age'])
         self.assertNotIn('password', d)
 
-        # TODO: appends
+        model.set_appends(['appendable'])
+        d = model.to_dict()
+        self.assertEqual('appended', d['appendable'])
 
     def test_to_dict_includes_default_formatted_timestamps(self):
         model = Model()
@@ -625,7 +627,8 @@ class OrmModelTestCase(EloquentTestCase):
 
         expected_attributes = sorted([
             'list_items',
-            'password'
+            'password',
+            'appendable'
         ])
 
         self.assertEqual(expected_attributes, sorted(list(model._get_mutated_attributes().keys())))
@@ -797,6 +800,10 @@ class OrmModelStub(Model):
     @password.accessor
     def get_password(self):
         return '******'
+
+    @accessor
+    def appendable(self):
+        return 'appended'
 
     def public_increment(self, column, amount=1):
         return self._increment(column, amount)

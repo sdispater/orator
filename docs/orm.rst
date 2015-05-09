@@ -1530,3 +1530,33 @@ Alternatively, you may use the ``__visible__`` property to define a whitelist:
 .. code-block:: python
 
     __visible__ = ['first_name', 'last_name']
+
+Appendable attributes
+---------------------
+
+Occasionally, you may need to add dictionary attributes that do not have a corresponding column in your database.
+To do so, simply define an ``accessor`` for the value:
+
+.. code-block:: python
+
+    class User(Model):
+
+        @accessor
+        def is_admin(self):
+            return self.get_raw_attribute('admin') == 'yes'
+
+
+Once you have created the accessor, just add the value to the ``__appends__`` property on the model:
+
+.. code-block:: python
+
+    class User(Model):
+
+        __append__ = ['is_admin']
+
+        @accessor
+        def is_admin(self):
+            return self.get_raw_attribute('admin') == 'yes'
+
+Once the attribute has been added to the ``__appends__`` list, it will be included in both the model's dictionary and JSON forms.
+Attributes in the ``__appends__`` list respect the ``__visible__`` and ``__hidden__`` configuration on the model.
