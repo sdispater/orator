@@ -82,7 +82,7 @@ and whether the migration will be creating a new table:
 Running Migrations
 ==================
 
-To run all outstanding migrations, just use the ``migrate`` command:
+To run all outstanding migrations, just use the ``migrations:run`` command:
 
 .. code-block:: bash
 
@@ -108,7 +108,7 @@ Rollback all migrations
 
 
 Getting migrations status
--------------------------
+=========================
 
 To see the status of the migrations, just use the ``migrations:status`` command:
 

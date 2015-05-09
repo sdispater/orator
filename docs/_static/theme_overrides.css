@@ -109,6 +109,10 @@ article ul li {
     font-size: 12px;
 }
 
+.wy-menu-vertical li.toctree-l2.current li.toctree-l3.current ul {
+    display: None;
+}
+
 .wy-menu-vertical a,
 .wy-menu-vertical a:visited {
     color: #81969A;
