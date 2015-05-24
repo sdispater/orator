@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from eloquent.orm import Model
+from orator.orm import Model
 
 
 class User(Model):

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from flexmock import flexmock, flexmock_teardown
-from eloquent.connections import Connection
-from eloquent.schema.grammars import SQLiteSchemaGrammar
-from eloquent.schema.blueprint import Blueprint
-from ... import EloquentTestCase
+from orator.connections import Connection
+from orator.schema.grammars import SQLiteSchemaGrammar
+from orator.schema.blueprint import Blueprint
+from ... import OratorTestCase
 
 
-class SqliteSchemaGrammarTestCase(EloquentTestCase):
+class SqliteSchemaGrammarTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

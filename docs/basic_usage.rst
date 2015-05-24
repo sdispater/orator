@@ -11,7 +11,7 @@ and passing it to a ``DatabaseManager`` instance.
 
 .. code-block:: python
 
-    from eloquent import DatabaseManager
+    from orator import DatabaseManager
 
     config = {
         'mysql': {
@@ -49,7 +49,7 @@ Read / Write connections
 ------------------------
 
 Sometimes you may wish to use one database connection for SELECT statements,
-and another for INSERT, UPDATE, and DELETE statements. Eloquent makes this easy,
+and another for INSERT, UPDATE, and DELETE statements. Orator makes this easy,
 and the proper connections will always be used whether you use raw queries, the query
 builder or the actual ORM
 
@@ -204,7 +204,7 @@ If you need to disconnect from the given database, use the ``disconnect`` method
 Query logging
 -------------
 
-Eloquent can log all queries that are executed.
+Orator can log all queries that are executed.
 By default, this is turned off to avoid unnecessary overhead, but if you want to activate it
 you can either add a ``log_queries`` key to the config dictionary:
 
@@ -228,7 +228,7 @@ or activate it later on:
 
     db.connection().enable_query_log()
 
-Now, the logger ``eloquent.connection.queries`` will be logging queries at **debug** level:
+Now, the logger ``orator.connection.queries`` will be logging queries at **debug** level:
 
 .. code-block:: text
 
@@ -257,7 +257,7 @@ you can customize the log message:
 
     import logging
 
-    logger = logging.getLogger('eloquent.connection.queries')
+    logger = logging.getLogger('orator.connection.queries')
     logger.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter('It took %(elapsed_time)sms to execute the query %(query)s')

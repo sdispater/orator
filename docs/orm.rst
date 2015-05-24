@@ -11,7 +11,7 @@ Before getting started, be sure to have configured a ``DatabaseManager`` as seen
 
 .. code-block:: python
 
-    from eloquent import DatabaseManager
+    from orator import DatabaseManager
 
     config = {
         'mysql': {
@@ -35,7 +35,7 @@ inheriting from the ``Model`` class:
 
 .. code-block:: python
 
-    from eloquent import Model
+    from orator import Model
 
     Model.set_connection_resolver(db)
 
@@ -338,7 +338,7 @@ To enable soft deletes for a model, make it inherit from the ``SoftDeletes`` mix
 
 .. code-block:: python
 
-    from eloquent import Model, SoftDeletes
+    from orator import Model, SoftDeletes
 
 
     class User(Model, SoftDeletes):
@@ -374,7 +374,7 @@ The ``with_trashed`` method may be used on a defined relationship:
 Relationships
 =============
 
-Eloquent makes managing and working with relationships easy. It supports many types of relationships:
+Orator makes managing and working with relationships easy. It supports many types of relationships:
 
 * :ref:`OneToOne`
 * :ref:`OneToMany`
@@ -417,7 +417,7 @@ The SQL performed by this statement will be as follow:
 
     SELECT * FROM phones WHERE user_id = 1
 
-The Eloquent ORM assumes the foreign key of the relationship based on the model name. In this case,
+The Orator ORM assumes the foreign key of the relationship based on the model name. In this case,
 ``Phone`` model is assumed to use a ``user_id`` foreign key. If you want to override this convention,
 you can pass a second argument to the ``has_one`` method. Furthermore, you may pass a third argument
 to the method to specify which local column should be used for the association:
@@ -442,7 +442,7 @@ To define the inverse of the relationship on the ``Phone`` model, you can use th
         def user(self):
             return self.belongs_to(User)
 
-In the example above, the Eloquent ORM will look for a ``user_id`` column on the ``phones`` table. You can
+In the example above, the Orator ORM will look for a ``user_id`` column on the ``phones`` table. You can
 define a different foreign key column, you can pass it as the second argument of the ``belongs_to`` method:
 
 .. code-block:: python
@@ -815,7 +815,7 @@ to put "where" conditions on your has queries:
 Dynamic properties
 ------------------
 
-The Eloquent ORM allows you to access your relations via dynamic properties.
+The Orator ORM allows you to access your relations via dynamic properties.
 It will automatically load the relationship for you. It will then be accessible via
 a dynamic property by the same name as the relation. For example, with the following model ``Post``:
 
@@ -1110,7 +1110,7 @@ Now, when you update a ``Comment``, the owning ``Post`` will have its ``updated_
 Working with pivot table
 ========================
 
-Working with many-to-many reationships requires the presence of an intermediate table. Eloquent makes it easy to
+Working with many-to-many reationships requires the presence of an intermediate table. Orator makes it easy to
 interact with this table. Let's take the ``User`` and ``Roles`` models and see how you can access the ``pivot`` table:
 
 .. code-block:: python
@@ -1239,14 +1239,14 @@ Global Scopes
 =============
 
 Sometimes you may wish to define a scope that applies to all queries performed on a model.
-In essence, this is how Eloquent's own "soft delete" feature works.
+In essence, this is how Orator's own "soft delete" feature works.
 Global scopes are defined using a combination of mixins and an implementation of the ``Scope`` class.
 
-First, let's define a mixin. For this example, we'll use the ``SoftDeletes`` that ships with Eloquent:
+First, let's define a mixin. For this example, we'll use the ``SoftDeletes`` that ships with Orator:
 
 .. code-block:: python
 
-    from eloquent import SoftDeletingScope
+    from orator import SoftDeletingScope
 
 
     class SoftDeletes(object):
@@ -1259,8 +1259,8 @@ First, let's define a mixin. For this example, we'll use the ``SoftDeletes`` tha
             model_class.add_global_scope(SoftDeletingScope())
 
 
-If an Eloquent model inherits from a mixin that has a method matching the ``boot_name_of_trait``
-naming convention, that mixin method will be called when the Eloquent model is booted,
+If an Orator model inherits from a mixin that has a method matching the ``boot_name_of_trait``
+naming convention, that mixin method will be called when the Orator model is booted,
 giving you an opportunity to register a global scope, or do anything else you want.
 A scope must be an instance of the ``Scope`` class, which specifies two methods: ``apply`` and ``remove``.
 
@@ -1273,7 +1273,7 @@ So, for our ``SoftDeletingScope``, it would look something like this:
 
 .. code-block:: python
 
-    from eloquent import Scope
+    from orator import Scope
 
 
     class SoftDeletingScope(Scope):
@@ -1283,10 +1283,10 @@ So, for our ``SoftDeletingScope``, it would look something like this:
             Apply the scope to a given query builder.
 
             :param builder: The query builder
-            :type builder: eloquent.orm.builder.Builder
+            :type builder: orator.orm.builder.Builder
 
             :param model: The model
-            :type model: eloquent.orm.Model
+            :type model: orator.orm.Model
             """
             builder.where_null(model.get_qualified_deleted_at_column())
 
@@ -1295,10 +1295,10 @@ So, for our ``SoftDeletingScope``, it would look something like this:
             Remove the scope from a given query builder.
 
             :param builder: The query builder
-            :type builder: eloquent.orm.builder.Builder
+            :type builder: orator.orm.builder.Builder
 
             :param model: The model
-            :type model: eloquent.orm.Model
+            :type model: orator.orm.Model
             """
             column = model.get_qualified_deleted_at_column()
 
@@ -1319,7 +1319,7 @@ So, for our ``SoftDeletingScope``, it would look something like this:
 Accessors & mutators
 ====================
 
-Eloquent provides a convenient way to transform your model attributes when getting or setting them.
+Orator provides a convenient way to transform your model attributes when getting or setting them.
 
 Defining an accessor
 --------------------
@@ -1328,7 +1328,7 @@ Simply use the ``accessor`` decorator on your model to declare an accessor:
 
 .. code-block:: python
 
-    from eloquent.orm import Model, accessor
+    from orator.orm import Model, accessor
 
 
     class User(Model):
@@ -1352,7 +1352,7 @@ Mutators are declared in a similar fashion:
 
 .. code-block:: python
 
-    from eloquent.orm import Model, mutator
+    from orator.orm import Model, mutator
 
 
     class User(Model):
@@ -1368,7 +1368,7 @@ Mutators are declared in a similar fashion:
 
     .. code-block:: python
 
-        from eloquent.orm import Model, accessor
+        from orator.orm import Model, accessor
 
 
         class User(Model):
@@ -1387,7 +1387,7 @@ Mutators are declared in a similar fashion:
 
     .. code-block:: python
 
-        from eloquent.orm import Model, mutator
+        from orator.orm import Model, mutator
 
 
         class User(Model):
@@ -1487,7 +1487,7 @@ Converting a model to a dictionary
 ----------------------------------
 
 When building JSON APIs, you may often need to convert your models and relationships to dictionaries or JSON.
-So, Eloquent includes methods for doing so. To convert a model and its loaded relationship to a dictionary,
+So, Orator includes methods for doing so. To convert a model and its loaded relationship to a dictionary,
 you may use the ``to_dict`` method:
 
 .. code-block:: python

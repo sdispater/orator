@@ -32,17 +32,17 @@ Migrations are typically paired with the :ref:`SchemaBuilder` to easily manage y
 Creating Migrations
 ===================
 
-To create a migration, you can use the ``migrations:make`` command on the Eloquent CLI:
+To create a migration, you can use the ``migrations:make`` command on the Orator CLI:
 
 .. code-block:: bash
 
-    eloquent migrations:make create_users_table -c databases.py
+    orator migrations:make create_users_table -c databases.py
 
 This will create a migration file that looks like this:
 
 .. code-block:: python
 
-    from eloquent.migrations import Migration
+    from orator.migrations import Migration
 
 
     class CreateTableUsers(Migration):
@@ -67,22 +67,22 @@ If you want the migrations to be stored in another folder, use the ``--path/-p``
 
 .. code-block:: bash
 
-    eloquent migrations:make create_users_table -c databases.py -p my/path/to/migrations
+    orator migrations:make create_users_table -c databases.py -p my/path/to/migrations
 
 The ``--table`` and ``--create`` options can also be used to indicate the name of the table,
 and whether the migration will be creating a new table:
 
 .. code-block:: bash
 
-    eloquent migrations:make add_votes_to_users_table -c databases.py --table=users
+    orator migrations:make add_votes_to_users_table -c databases.py --table=users
 
-    eloquent migrations:make create_users_table -c databases.py --table=users --create
+    orator migrations:make create_users_table -c databases.py --table=users --create
 
 These commands would respectively create the following migrations:
 
  .. code-block:: python
 
-    from eloquent.migrations import Migration
+    from orator.migrations import Migration
 
 
     class AddVotesToUsersTable(Migration):
@@ -103,7 +103,7 @@ These commands would respectively create the following migrations:
 
  .. code-block:: python
 
-    from eloquent.migrations import Migration
+    from orator.migrations import Migration
 
 
     class CreateTableUsers(Migration):
@@ -130,7 +130,7 @@ To run all outstanding migrations, just use the ``migrations:run`` command:
 
 .. code-block:: bash
 
-    eloquent migrations:run -c databases.py
+    orator migrations:run -c databases.py
 
 
 Rolling back migrations
@@ -141,14 +141,14 @@ Rollback the last migration operation
 
 .. code-block:: bash
 
-    eloquent migrations:rollback -c databases.py
+    orator migrations:rollback -c databases.py
 
 Rollback all migrations
 -----------------------
 
 .. code-block:: bash
 
-    eloquent migrations:reset -c databases.py
+    orator migrations:reset -c databases.py
 
 
 Getting migrations status
@@ -158,7 +158,7 @@ To see the status of the migrations, just use the ``migrations:status`` command:
 
 .. code-block:: bash
 
-    eloquent migrations:status -c databases.py
+    orator migrations:status -c databases.py
 
 This would output something like this:
 

@@ -6,15 +6,15 @@ try:
 except ImportError:
     from queue import Queue
 
-from .. import EloquentTestCase
+from .. import OratorTestCase
 from .. import mock
 from ..orm.models import User
 
-from eloquent.query.builder import QueryBuilder
-from eloquent.connections.connection import Connection
+from orator.query.builder import QueryBuilder
+from orator.connections.connection import Connection
 
 
-class ConnectionTestCase(EloquentTestCase):
+class ConnectionTestCase(OratorTestCase):
 
     def test_table_returns_query_builder(self):
         connection = Connection(None, 'database')
@@ -54,7 +54,7 @@ class ConnectionTestCase(EloquentTestCase):
         self.assertFalse(connection.commit.called)
 
 
-class ConnectionThreadLocalTest(EloquentTestCase):
+class ConnectionThreadLocalTest(OratorTestCase):
 
     threads = 4
 

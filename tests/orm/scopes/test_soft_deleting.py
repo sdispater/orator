@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from flexmock import flexmock, flexmock_teardown
-from eloquent.orm.scopes import SoftDeletingScope
-from eloquent.orm import Builder, Model
-from eloquent.query import QueryBuilder
-from ... import EloquentTestCase
+from orator.orm.scopes import SoftDeletingScope
+from orator.orm import Builder, Model
+from orator.query import QueryBuilder
+from ... import OratorTestCase
 
 
-class SoftDeletingScopeTestCase(EloquentTestCase):
+class SoftDeletingScopeTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

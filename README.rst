@@ -1,30 +1,30 @@
-Eloquent
-########
+Orator
+######
 
-.. image:: https://travis-ci.org/sdispater/eloquent.png
-   :alt: Eloquent Build status
-   :target: https://travis-ci.org/sdispater/eloquent
+.. image:: https://travis-ci.org/sdispater/orator.png
+   :alt: Orator Build status
+   :target: https://travis-ci.org/sdispater/orator
 
-The Eloquent ORM provides a simple yet beautiful ActiveRecord implementation.
+The Orator ORM provides a simple yet beautiful ActiveRecord implementation.
 
 It is inspired by the database part of the `Laravel framework <http://laravel.com>`_,
 but largely modified to be more pythonic.
 
-The full documentation is available here: http://eloquent.readthedocs.org
+The full documentation is available here: http://orator.readthedocs.org
 
 
 Installation
 ============
 
-You can install Eloquent in 2 different ways:
+You can install Orator in 2 different ways:
 
 * The easier and more straightforward is to use pip
 
 .. code-block:: bash
 
-    pip install eloquent
+    pip install orator
 
-* Install from source using the official repository (https://github.com/sdispater/eloquent)
+* Install from source using the official repository (https://github.com/sdispater/orator)
 
 The different dbapi packages are not part of the package dependencies,
 so you must install them in order to connect to corresponding databases:
@@ -45,7 +45,7 @@ and passing it to a ``DatabaseManager`` instance.
 
 .. code-block:: python
 
-    from eloquent import DatabaseManager, Model
+    from orator import DatabaseManager, Model
 
     config = {
         'mysql': {
@@ -348,7 +348,7 @@ Converting a model to a dictionary
 ----------------------------------
 
 When building JSON APIs, you may often need to convert your models and relationships to dictionaries or JSON.
-So, Eloquent includes methods for doing so. To convert a model and its loaded relationship to a dictionary,
+So, Orator includes methods for doing so. To convert a model and its loaded relationship to a dictionary,
 you may use the ``to_dict`` method:
 
 .. code-block:: python
@@ -570,7 +570,7 @@ Advanced where
 --------------
 
 Sometimes you may need to create more advanced where clauses such as "where exists" or nested parameter groupings.
-It is pretty easy to do with the Eloquent query builder
+It is pretty easy to do with the Orator query builder
 
 Parameter grouping
 ~~~~~~~~~~~~~~~~~~
@@ -767,7 +767,7 @@ Read / Write connections
 ========================
 
 Sometimes you may wish to use one database connection for SELECT statements,
-and another for INSERT, UPDATE, and DELETE statements. Eloquent makes this easy,
+and another for INSERT, UPDATE, and DELETE statements. Orator makes this easy,
 and the proper connections will always be used whether you use raw queries, the query
 builder or the actual ORM
 

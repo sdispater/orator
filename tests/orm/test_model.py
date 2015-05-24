@@ -6,23 +6,23 @@ import time
 import datetime
 from arrow import Arrow
 from flexmock import flexmock, flexmock_teardown
-from .. import EloquentTestCase, mock
+from .. import OratorTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
 
-from eloquent.query.builder import QueryBuilder
-from eloquent.query.grammars import QueryGrammar
-from eloquent.query.processors import QueryProcessor
-from eloquent.orm.builder import Builder
-from eloquent.orm.model import Model
-from eloquent.orm.utils import mutator, accessor
-from eloquent.exceptions.orm import ModelNotFound, MassAssignmentError
-from eloquent.orm.collection import Collection
-from eloquent.connections import Connection
-from eloquent import DatabaseManager
-from eloquent.utils import basestring
+from orator.query.builder import QueryBuilder
+from orator.query.grammars import QueryGrammar
+from orator.query.processors import QueryProcessor
+from orator.orm.builder import Builder
+from orator.orm.model import Model
+from orator.orm.utils import mutator, accessor
+from orator.exceptions.orm import ModelNotFound, MassAssignmentError
+from orator.orm.collection import Collection
+from orator.connections import Connection
+from orator import DatabaseManager
+from orator.utils import basestring
 
 
-class OrmModelTestCase(EloquentTestCase):
+class OrmModelTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()
@@ -441,7 +441,7 @@ class OrmModelTestCase(EloquentTestCase):
         self.assertEqual(2, len(model.relation_many))
         self.assertEqual([2, 3], model.relation_many.lists('id'))
 
-    def test_new_query_returns_eloquent_query_builder(self):
+    def test_new_query_returns_orator_query_builder(self):
         conn = flexmock(Connection)
         grammar = flexmock(QueryGrammar)
         processor = flexmock(QueryProcessor)

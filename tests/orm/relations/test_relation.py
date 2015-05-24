@@ -3,15 +3,15 @@
 
 import arrow
 from flexmock import flexmock, flexmock_teardown
-from ... import EloquentTestCase
+from ... import OratorTestCase
 
-from eloquent.query.builder import QueryBuilder
-from eloquent.orm.builder import Builder
-from eloquent.orm.model import Model
-from eloquent.orm.relations import HasOne
+from orator.query.builder import QueryBuilder
+from orator.orm.builder import Builder
+from orator.orm.model import Model
+from orator.orm.relations import HasOne
 
 
-class OrmRelationTestCase(EloquentTestCase):
+class OrmRelationTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

@@ -4,13 +4,13 @@ import os
 from io import BytesIO
 from flexmock import flexmock
 from cleo import Output
-from eloquent.migrations import Migrator
-from eloquent.commands.migrations import MigrateCommand
-from eloquent import DatabaseManager
-from .. import EloquentCommandTestCase
+from orator.migrations import Migrator
+from orator.commands.migrations import MigrateCommand
+from orator import DatabaseManager
+from .. import OratorCommandTestCase
 
 
-class MigrateCommandTestCase(EloquentCommandTestCase):
+class MigrateCommandTestCase(OratorCommandTestCase):
 
     def test_basic_migrations_call_migrator_with_proper_arguments(self):
         resolver = flexmock(DatabaseManager)

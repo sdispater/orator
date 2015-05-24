@@ -13,7 +13,7 @@ It can be used to perform most database operations in your application, and work
 
 .. note::
 
-    Since Eloquent uses DBAPI packages under the hood, there is no need to clean
+    Since Orator uses DBAPI packages under the hood, there is no need to clean
     parameters passed as bindings.
 
 .. note::
@@ -207,7 +207,7 @@ Advanced where
 --------------
 
 Sometimes you may need to create more advanced where clauses such as "where exists" or nested parameter groupings.
-It is pretty easy to do with the Eloquent query builder
+It is pretty easy to do with the Orator query builder
 
 Parameter grouping
 ~~~~~~~~~~~~~~~~~~

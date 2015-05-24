@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from . import EloquentTestCase
+from . import OratorTestCase
 from . import mock
 from .utils import MockConnection, MockManager, MockFactory
 
-from eloquent.database_manager import DatabaseManager
+from orator.database_manager import DatabaseManager
 
 
-class ConnectionTestCase(EloquentTestCase):
+class ConnectionTestCase(OratorTestCase):
 
     def test_connection_method_create_a_new_connection_if_needed(self):
         manager = self._get_manager()

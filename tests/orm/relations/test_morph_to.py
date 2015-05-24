@@ -2,18 +2,18 @@
 
 import arrow
 from flexmock import flexmock, flexmock_teardown
-from ... import EloquentTestCase
+from ... import OratorTestCase
 
-from eloquent.query.builder import QueryBuilder
-from eloquent.query.grammars import QueryGrammar
-from eloquent.query.expression import QueryExpression
-from eloquent.orm.builder import Builder
-from eloquent.orm.model import Model
-from eloquent.orm.relations import MorphTo
-from eloquent.orm.collection import Collection
+from orator.query.builder import QueryBuilder
+from orator.query.grammars import QueryGrammar
+from orator.query.expression import QueryExpression
+from orator.orm.builder import Builder
+from orator.orm.model import Model
+from orator.orm.relations import MorphTo
+from orator.orm.collection import Collection
 
 
-class OrmMorphToTestCase(EloquentTestCase):
+class OrmMorphToTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

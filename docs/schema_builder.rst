@@ -15,7 +15,7 @@ Before getting started, be sure to have configured a ``DatabaseManager`` as seen
 
 .. code-block:: python
 
-    from eloquent import DatabaseManager, Schema
+    from orator import DatabaseManager, Schema
 
     config = {
         'mysql': {
@@ -138,7 +138,7 @@ You could also modify the column to be nullable:
 .. warning::
 
     The column change feature, while tested, is still considered in **beta** stage.
-    Please report any encountered issue or bug on the `Github project <https://github.com/sdispater/eloquent>`_
+    Please report any encountered issue or bug on the `Github project <https://github.com/sdispater/orator>`_
 
 
 Renaming columns
@@ -164,12 +164,12 @@ To rename a column, you can use use the ``rename_column`` method on the Schema b
             table.rename('user_id', 'author_id')
             table.foreign('author_id').references('id').on('users')
 
-    In future versions, Eloquent **might** handle this automatically.
+    In future versions, Orator **might** handle this automatically.
 
 .. warning::
 
     The rename column feature, while tested, is still considered in **beta** stage (especially for SQLite).
-    Please report any encountered issue or bug on the `Github project <https://github.com/sdispater/eloquent>`_
+    Please report any encountered issue or bug on the `Github project <https://github.com/sdispater/orator>`_
 
 
 Dropping columns
@@ -241,7 +241,7 @@ Dropping indexes
 ================
 
 To drop an index you must specify the index's name.
-Eloquent assigns a reasonable name to the indexes by default.
+Orator assigns a reasonable name to the indexes by default.
 Simply concatenate the table name, the names of the column in the index, and the index type.
 Here are some examples:
 
@@ -257,7 +257,7 @@ Command                                                   Description
 Foreign keys
 ============
 
-Eloquent also provides support for adding foreign key constraints to your tables:
+Orator also provides support for adding foreign key constraints to your tables:
 
 .. code-block:: python
 
