@@ -414,12 +414,15 @@ class BelongsToMany(Relation):
         Save a list of new models and attach them to the parent model
 
         :type models: list
-        :type joinings: list
+        :type joinings: dict
 
         :rtype: list
         """
+        if joinings is None:
+            joinings = {}
+
         for key, model in enumerate(models):
-            self.save(model, joinings[key], False)
+            self.save(model, joinings.get(key), False)
 
         self.touch_if_touching()
 

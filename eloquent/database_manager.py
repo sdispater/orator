@@ -31,7 +31,7 @@ class BaseDatabaseManager(ConnectionResolverInterface):
         :type name: str
 
         :return: A Connection instance
-        :rtype: eloquent.connections.Connection
+        :rtype: eloquent.connections.connection.Connection
         """
         name, type = self._parse_connection_name(name)
 
