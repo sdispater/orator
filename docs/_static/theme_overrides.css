@@ -165,24 +165,42 @@ article ul li {
     background: none;
 }
 
-.wy-menu-vertical li span.toctree-expand::before {
-    content: "";
+.wy-menu-vertical li {
+    position: relative;
+}
+
+.wy-menu-vertical li a span.toctree-expand {
+    display: none;
+}
+
+.wy-menu-vertical li.current ul li a span.toctree-expand,
+.wy-menu-vertical li.on a:hover span.toctree-expand,
+.wy-menu-vertical li.current a:hover span.toctree-expand{
+    display: none;
+}
+
+.wy-menu-vertical li.toctree-l1:before {
+    font-family: FontAwesome;
+    content: "";
     opacity: 0.3;
     color: #81969A;
     font-size: 10px;
-    position: relative;
-    top: 2px;
+    top: 3px;
+    position: absolute;
+    left: 12px;
+    z-index: 2;
 }
 
-.wy-menu-vertical li.on a span.toctree-expand::before,
-.wy-menu-vertical li.current > a span.toctree-expand::before {
-    content: "";
-    color: #EC7600;
+.wy-menu-vertical li.toctree-l1.current:before {
+    font-family: FontAwesome;
+    content: "";
     opacity: 1;
-}
-
-.wy-menu-vertical li.current ul li a span.toctree-expand {
-    display: none;
+    color: #1999B3;
+    font-size: 10px;
+    top: 3px;
+    position: absolute;
+    left: 12px;
+    z-index: 2;
 }
 
 .rst-content table.docutils,
@@ -294,10 +312,11 @@ b, strong {
 
 pre, pre code, .rst-content tt, code.docutils {
     font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
-    color: #CB6077;
+    color: #1999B3;
     background-color: #FFFFFF;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 400;
+    border: 0;
 }
 
 pre, code, .rst-content ttc {
@@ -332,10 +351,10 @@ code {
 p > code,
 .rst-content tt,
 p > code.docutils {
-    color: #CB6077;
+    color: #1999B3;
     padding: 0;
     display: inline;
-    font-weight: 500;
+    font-weight: 400;
     border: 0;
     background-color: #FFFFFF;
 }
@@ -346,7 +365,9 @@ p > code.docutils {
 
 .rst-content .note,
 .rst-content .warning,
-.rst-content .versionadded{
+.rst-content .versionadded,
+.rst-content .tip,
+.rst-content .caution{
     padding: 0px 40px;
     margin: 30px 0px;
     background: #FFFFFF;
@@ -357,9 +378,15 @@ p > code.docutils {
     color: rgb(99, 169, 216) !important;
 }
 
-.rst-content .warning {
+.rst-content .warning,
+.rst-content .caution {
     border-left: 1px solid #FF9800;
     color: #FFC107 !important;
+}
+
+.rst-content .tip {
+    border-left: 1px solid #A1C659;
+    color: #A1C659 !important;
 }
 
 .rst-content .note > p {
@@ -367,17 +394,24 @@ p > code.docutils {
     color: rgb(99, 169, 216) !important;
 }
 
-.rst-content .warning > p {
+.rst-content .warning > p,
+.rst-content .caution > p
+{
     padding: 12px 12px 12px 0;
     color: #FF9800 !important;
 }
 
+.rst-content .tip> p {
+    padding: 12px 12px 12px 0;
+    color: #A1C659 !important;
+}
+
 .rst-content .versionadded {
-    color: #BEB55B !important;
+    color: #AA759F !important;
 }
 
 .rst-content .versionadded > p {
-    color: #BEB55B !important;
+    color: #AA759F !important;
 }
 
 .rst-content .versionadded > p:before {
@@ -555,6 +589,7 @@ green     #859900  operators, other keywords
 .highlight .nf { color: #8AB3B5; font-weight: normal; } /* Name.Function */
 .highlight .bp { color: #CB6077 } /* Name.Builtin.Pseudo */
 .highlight .nd { color: #BB9584 } /* Name.Decorator */
+.highlight .ne { color: #CB6077; font-weight: 400 } /* Name.Exception */
 .highlight .o { color: #7A7A7A } /* Operator */
 .highlight .n { color: #7A7A7A }
 .highlight .c { color: #B8AFAD; font-style: normal; }
