@@ -1,3 +1,11 @@
+### 0.5
+
+(May 24th, 2015)
+
+- Adds database migrations
+- Adds mutators and accessors
+- Fix BelongsToMany.save_many() default joinings value
+
 ### 0.4
 
 (April 28th, 2015)
