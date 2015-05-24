@@ -1,15 +1,15 @@
 Installation
 ------------
 
-You can install Eloquent in 2 different ways:
+You can install Orator in 2 different ways:
 
 * The easier and more straightforward is to use pip
 
 .. code-block:: bash
 
-    pip install eloquent
+    pip install orator
 
-* Install from source using the official repository (https://github.com/sdispater/eloquent)
+* Install from source using the official repository (https://github.com/sdispater/orator)
 
 .. note::
 

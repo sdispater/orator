@@ -2,10 +2,10 @@
 
 from flexmock import flexmock_teardown
 from cleo import Application, CommandTester
-from .. import EloquentTestCase
+from .. import OratorTestCase
 
 
-class EloquentCommandTestCase(EloquentTestCase):
+class OratorCommandTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

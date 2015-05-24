@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-from ... import EloquentTestCase
-from eloquent import Model
-from eloquent.connections import PostgresConnection
-from eloquent.connectors.postgres_connector import PostgresConnector
-from eloquent.query.expression import QueryExpression
+from ... import OratorTestCase
+from orator import Model
+from orator.connections import PostgresConnection
+from orator.connectors.postgres_connector import PostgresConnector
+from orator.query.expression import QueryExpression
 
 
-class SchemaBuilderPostgresIntegrationTestCase(EloquentTestCase):
+class SchemaBuilderPostgresIntegrationTestCase(OratorTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -146,7 +146,7 @@ class SchemaBuilderPostgresIntegrationTestCase(EloquentTestCase):
 
     def schema(self):
         """
-        :rtype: eloquent.schema.SchemaBuilder
+        :rtype: orator.schema.SchemaBuilder
         """
         return self.connection().get_schema_builder()
 
@@ -202,9 +202,9 @@ class DatabaseIntegrationConnectionResolver(object):
         if self._connection:
             return self._connection
 
-        database = os.environ.get('ELOQUENT_POSTGRES_TEST_DATABASE', 'eloquent_test')
-        user = os.environ.get('ELOQUENT_POSTGRES_TEST_USER', 'postgres')
-        password = os.environ.get('ELOQUENT_POSTGRES_TEST_PASSWORD', None)
+        database = os.environ.get('ORATOR_POSTGRES_TEST_DATABASE', 'orator_test')
+        user = os.environ.get('ORATOR_POSTGRES_TEST_USER', 'postgres')
+        password = os.environ.get('ORATOR_POSTGRES_TEST_PASSWORD', None)
 
         self._connection = PostgresConnection(
             PostgresConnector().connect({

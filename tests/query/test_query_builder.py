@@ -2,23 +2,23 @@
 
 import re
 
-from .. import EloquentTestCase
+from .. import OratorTestCase
 from .. import mock
 
 from ..utils import MockConnection, MockProcessor
 
-from eloquent.query.grammars import (
+from orator.query.grammars import (
     QueryGrammar,
     PostgresQueryGrammar,
     SQLiteQueryGrammar,
     MySqlQueryGrammar
 )
-from eloquent.query.builder import QueryBuilder
-from eloquent.query.expression import QueryExpression
-from eloquent.query.join_clause import JoinClause
+from orator.query.builder import QueryBuilder
+from orator.query.expression import QueryExpression
+from orator.query.join_clause import JoinClause
 
 
-class QueryBuilderTestCase(EloquentTestCase):
+class QueryBuilderTestCase(OratorTestCase):
 
     def test_basic_select(self):
         builder = self.get_builder()

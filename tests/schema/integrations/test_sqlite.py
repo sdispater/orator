@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from ... import EloquentTestCase
-from eloquent import Model
-from eloquent.connections import SQLiteConnection
-from eloquent.connectors.sqlite_connector import SQLiteConnector
-from eloquent.query.expression import QueryExpression
+from ... import OratorTestCase
+from orator import Model
+from orator.connections import SQLiteConnection
+from orator.connectors.sqlite_connector import SQLiteConnector
+from orator.query.expression import QueryExpression
 
 
-class SchemaBuilderSQLiteIntegrationTestCase(EloquentTestCase):
+class SchemaBuilderSQLiteIntegrationTestCase(OratorTestCase):
 
     @classmethod
     def setUpClass(cls):

@@ -2,12 +2,12 @@
 
 import os
 from flexmock import flexmock
-from eloquent.migrations import MigrationCreator
-from eloquent.commands.migrations import MigrateMakeCommand
-from .. import EloquentCommandTestCase
+from orator.migrations import MigrationCreator
+from orator.commands.migrations import MigrateMakeCommand
+from .. import OratorCommandTestCase
 
 
-class MigrateMakeCommandTestCase(EloquentCommandTestCase):
+class MigrateMakeCommandTestCase(OratorCommandTestCase):
 
     def test_basic_create_gives_creator_proper_arguments(self):
         creator_mock = flexmock(MigrationCreator)

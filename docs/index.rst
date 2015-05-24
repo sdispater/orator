@@ -1,7 +1,7 @@
-Eloquent
+Orator
 ========
 
-The Eloquent ORM provides a simple yet beautiful ActiveRecord implementation.
+The Orator ORM provides a simple yet beautiful ActiveRecord implementation.
 
 It is inspired by the database part of the `Laravel framework <http://laravel.com>`_,
 but modified to be more pythonic.

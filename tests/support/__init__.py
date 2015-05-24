@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from .. import EloquentTestCase
+from .. import OratorTestCase
 from .. import mock
 
 from ..utils import MockConnection, MockProcessor
 
-from eloquent.support.collection import Collection
+from orator.support.collection import Collection
 
 
-class SupportCollectionTestCase(EloquentTestCase):
+class SupportCollectionTestCase(OratorTestCase):
 
     pass

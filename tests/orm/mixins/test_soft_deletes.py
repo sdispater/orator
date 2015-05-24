@@ -3,16 +3,16 @@
 import datetime
 import arrow
 from flexmock import flexmock, flexmock_teardown
-from eloquent import Model, SoftDeletes
-from eloquent.orm import Builder
-from eloquent.query import QueryBuilder
-from ... import EloquentTestCase
+from orator import Model, SoftDeletes
+from orator.orm import Builder
+from orator.query import QueryBuilder
+from ... import OratorTestCase
 
 
 t = arrow.get().naive
 
 
-class SoftDeletesTestCase(EloquentTestCase):
+class SoftDeletesTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

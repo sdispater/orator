@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from . import mock
-from eloquent.connections.connection_interface import ConnectionInterface
-from eloquent.query.processors.processor import QueryProcessor
-from eloquent.database_manager import DatabaseManager
-from eloquent.connectors.connection_factory import ConnectionFactory
-from eloquent.query.builder import QueryBuilder
-from eloquent.orm.model import Model
+from orator.connections.connection_interface import ConnectionInterface
+from orator.query.processors.processor import QueryProcessor
+from orator.database_manager import DatabaseManager
+from orator.connectors.connection_factory import ConnectionFactory
+from orator.query.builder import QueryBuilder
+from orator.orm.model import Model
 
 
 class MockConnection(ConnectionInterface):

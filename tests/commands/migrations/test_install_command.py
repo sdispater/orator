@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from flexmock import flexmock
-from eloquent.migrations import DatabaseMigrationRepository
-from eloquent.commands.migrations import InstallCommand
-from .. import EloquentCommandTestCase
+from orator.migrations import DatabaseMigrationRepository
+from orator.commands.migrations import InstallCommand
+from .. import OratorCommandTestCase
 
 
-class MigrateInstallCommandTestCase(EloquentCommandTestCase):
+class MigrateInstallCommandTestCase(OratorCommandTestCase):
 
     def test_execute_calls_repository_to_install(self):
         repo_mock = flexmock(DatabaseMigrationRepository)

@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 
 from flexmock import flexmock, flexmock_teardown
-from .. import EloquentTestCase, mock
+from .. import OratorTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
 
-from eloquent.query.grammars.grammar import QueryGrammar
-from eloquent.query.builder import QueryBuilder
-from eloquent.orm.builder import Builder
-from eloquent.orm.model import Model
-from eloquent.exceptions.orm import ModelNotFound
-from eloquent.orm.collection import Collection
-from eloquent.connections import Connection
-from eloquent.query.processors import QueryProcessor
+from orator.query.grammars.grammar import QueryGrammar
+from orator.query.builder import QueryBuilder
+from orator.orm.builder import Builder
+from orator.orm.model import Model
+from orator.exceptions.orm import ModelNotFound
+from orator.orm.collection import Collection
+from orator.connections import Connection
+from orator.query.processors import QueryProcessor
 
 
-class BuilderTestCase(EloquentTestCase):
+class BuilderTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

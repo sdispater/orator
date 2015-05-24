@@ -8,5 +8,5 @@ install:
 script: py.test
 
 before_script:
-  - psql -c 'create database eloquent_test;' -U postgres
-  - mysql -e 'create database eloquent_test;'
+  - psql -c 'create database orator_test;' -U postgres
+  - mysql -e 'create database orator_test;'

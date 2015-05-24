@@ -3,13 +3,13 @@
 import os
 import glob
 from flexmock import flexmock, flexmock_teardown
-from .. import EloquentTestCase
-from eloquent.migrations import Migrator, DatabaseMigrationRepository, Migration
-from eloquent import DatabaseManager
-from eloquent.connections import Connection
+from .. import OratorTestCase
+from orator.migrations import Migrator, DatabaseMigrationRepository, Migration
+from orator import DatabaseManager
+from orator.connections import Connection
 
 
-class MigratorTestCase(EloquentTestCase):
+class MigratorTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

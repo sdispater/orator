@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from flexmock import flexmock, flexmock_teardown
-from .. import EloquentTestCase
-from eloquent.migrations import DatabaseMigrationRepository
-from eloquent import DatabaseManager
-from eloquent.query import QueryBuilder
-from eloquent.connections import Connection
-from eloquent.schema import SchemaBuilder
+from .. import OratorTestCase
+from orator.migrations import DatabaseMigrationRepository
+from orator import DatabaseManager
+from orator.query import QueryBuilder
+from orator.connections import Connection
+from orator.schema import SchemaBuilder
 
 
-class DatabaseMigrationRepositoryTestCase(EloquentTestCase):
+class DatabaseMigrationRepositoryTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

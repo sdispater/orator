@@ -3,12 +3,12 @@
 import tempfile
 import os
 from flexmock import flexmock, flexmock_teardown
-from eloquent.migrations import MigrationCreator
-from eloquent.migrations.stubs import CREATE_STUB, UPDATE_STUB, BLANK_STUB
-from .. import EloquentTestCase
+from orator.migrations import MigrationCreator
+from orator.migrations.stubs import CREATE_STUB, UPDATE_STUB, BLANK_STUB
+from .. import OratorTestCase
 
 
-class MigrationCreatorTestCase(EloquentTestCase):
+class MigrationCreatorTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()

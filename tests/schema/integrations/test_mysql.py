@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import os
-from ... import EloquentTestCase
-from eloquent import Model
-from eloquent.connections import MySqlConnection
-from eloquent.connectors.mysql_connector import MySqlConnector
-from eloquent.query.expression import QueryExpression
-from eloquent.exceptions.query import QueryException
+from ... import OratorTestCase
+from orator import Model
+from orator.connections import MySqlConnection
+from orator.connectors.mysql_connector import MySqlConnector
+from orator.query.expression import QueryExpression
+from orator.exceptions.query import QueryException
 
 
-class SchemaBuilderMySqlIntegrationTestCase(EloquentTestCase):
+class SchemaBuilderMySqlIntegrationTestCase(OratorTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -154,7 +154,7 @@ class SchemaBuilderMySqlIntegrationTestCase(EloquentTestCase):
 
     def schema(self):
         """
-        :rtype: eloquent.schema.SchemaBuilder
+        :rtype: orator.schema.SchemaBuilder
         """
         return self.connection().get_schema_builder()
 
@@ -210,9 +210,9 @@ class DatabaseIntegrationConnectionResolver(object):
         if self._connection:
             return self._connection
 
-        database = os.environ.get('ELOQUENT_MYSQL_TEST_DATABASE', 'eloquent_test')
-        user = os.environ.get('ELOQUENT_MYSQL_TEST_USER', 'root')
-        password = os.environ.get('ELOQUENT_MYSQL_TEST_PASSWORD', '')
+        database = os.environ.get('ORATOR_MYSQL_TEST_DATABASE', 'orator_test')
+        user = os.environ.get('ORATOR_MYSQL_TEST_USER', 'root')
+        password = os.environ.get('ORATOR_MYSQL_TEST_PASSWORD', '')
 
         self._connection = MySqlConnection(
             MySqlConnector().connect({

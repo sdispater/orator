@@ -3,7 +3,7 @@
 import sys
 import os
 from unittest import TestCase
-from eloquent.database_manager import DatabaseManager
+from orator.database_manager import DatabaseManager
 from .orm.models import Model, User
 
 PY2 = sys.version_info[0] == 2
@@ -14,14 +14,14 @@ else:
     import unittest.mock as mock
 
 
-class EloquentTestCase(TestCase):
+class OratorTestCase(TestCase):
 
     def tearDown(self):
         if hasattr(self, 'local_database'):
             os.remove(self.local_database)
 
     def init_database(self):
-        self.local_database = '/tmp/eloquent_test_database.db'
+        self.local_database = '/tmp/orator_test_database.db'
 
         if os.path.exists(self.local_database):
             os.remove(self.local_database)
@@ -55,10 +55,10 @@ class EloquentTestCase(TestCase):
         if PY2:
             return self.assertRegexpMatches(*args, **kwargs)
         else:
-            return super(EloquentTestCase, self).assertRegex(*args, **kwargs)
+            return super(OratorTestCase, self).assertRegex(*args, **kwargs)
 
     def assertNotRegex(self, *args, **kwargs):
         if PY2:
             return self.assertNotRegexpMatches(*args, **kwargs)
         else:
-            return super(EloquentTestCase, self).assertNotRegex(*args, **kwargs)
+            return super(OratorTestCase, self).assertNotRegex(*args, **kwargs)
