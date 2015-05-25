@@ -94,5 +94,9 @@ class BasePaginator(object):
     def __len__(self):
         return self.count()
 
-    def __str__(self):
-        return self.render()
+    def __iter__(self):
+        for item in self._items:
+            yield item
+
+    def __getitem__(self, item):
+        return self.items[item]

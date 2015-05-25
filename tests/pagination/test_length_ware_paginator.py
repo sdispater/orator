@@ -20,3 +20,5 @@ class LengthAwarePaginatorTestCase(OratorTestCase):
         self.assertEqual(1, p.previous_page)
         self.assertEqual(3, p.first_item)
         self.assertEqual(4, p.last_item)
+
+        self.assertEqual('item4', p[1])
