@@ -150,6 +150,9 @@ class Collection(object):
 
         return Collection([x for x in self._items if not (x in seen or seen_add(x))])
 
+    def is_empty(self):
+        return len(self._items) == 0
+
     def _get_items(self, items):
         if isinstance(items, Collection):
             items = items.all()
@@ -172,4 +175,7 @@ class Collection(object):
             yield item
 
     def __getitem__(self, item):
+        if isinstance(item, slice):
+            return Collection.make(self._items[item])
+
         return self._items[item]

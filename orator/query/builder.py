@@ -5,7 +5,7 @@ from itertools import chain
 from collections import OrderedDict
 from .expression import QueryExpression
 from .join_clause import JoinClause
-from ..support.collection import Collection
+from ..pagination import Paginator, LengthAwarePaginator
 from ..utils import basestring, Null
 from ..exceptions import ArgumentError
 
@@ -58,7 +58,7 @@ class QueryBuilder(object):
         self.union_orders = []
         self.lock_ = None
 
-        self._backups = []
+        self._backups = {}
 
         self._use_write_connection = False
 
@@ -1023,6 +1023,79 @@ class QueryBuilder(object):
             self.get_bindings(),
             not self._use_write_connection
         )
+
+    def paginate(self, per_page=15, current_page=None, columns=None):
+        """
+        Paginate the given query.
+
+        :param per_page: The number of records per page
+        :type per_page: int
+
+        :param current_page: The current page of results
+        :type current_page: int
+
+        :param columns: The columns to return
+        :type columns: list
+
+        :return: The paginator
+        :rtype: LengthAwarePaginator
+        """
+        if columns is None:
+            columns = ['*']
+
+        page = current_page or Paginator.resolve_current_page()
+
+        total = self.get_count_for_pagination()
+
+        results = self.for_page(page, per_page).get(columns)
+
+        return LengthAwarePaginator(results, total, per_page, page)
+
+    def simple_paginate(self, per_page=15, current_page=None, columns=None):
+        """
+        Paginate the given query.
+
+        :param per_page: The number of records per page
+        :type per_page: int
+
+        :param current_page: The current page of results
+        :type current_page: int
+
+        :param columns: The columns to return
+        :type columns: list
+
+        :return: The paginator
+        :rtype: Paginator
+        """
+        if columns is None:
+            columns = ['*']
+
+        page = current_page or Paginator.resolve_current_page()
+
+        self.skip((page - 1) * per_page).take(per_page + 1)
+
+        return Paginator(self.get(columns), per_page, page)
+
+    def get_count_for_pagination(self):
+        self._backup_fields_for_count()
+
+        total = self.count()
+
+        self._restore_fields_for_count()
+
+        return total
+
+    def _backup_fields_for_count(self):
+        for field in ['orders', 'limit', 'offset']:
+            self._backups[field] = getattr(self, field)
+
+            setattr(self, field, None)
+
+    def _restore_fields_for_count(self):
+        for field in ['orders', 'limit', 'offset']:
+            setattr(self, field, self._backups[field])
+
+        self._backups = {}
 
     def chunk(self, count):
         """
