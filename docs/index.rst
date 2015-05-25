@@ -13,5 +13,6 @@ but modified to be more pythonic.
     basic_usage
     query_builder
     orm
+    pagination
     schema_builder
     migrations
