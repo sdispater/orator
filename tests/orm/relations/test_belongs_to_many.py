@@ -520,6 +520,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         return BelongsToMany(builder, parent, 'user_role', 'user_id', 'role_id', 'relation_name')
 
     def _get_relation_arguments(self):
+        flexmock(Model).should_receive('_boot_columns').and_return(['name'])
         parent = flexmock(Model())
         parent.should_receive('get_key').and_return(1)
         parent.should_receive('get_created_at_column').and_return('created_at')

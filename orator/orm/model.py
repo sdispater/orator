@@ -69,6 +69,7 @@ class Model(object):
     _mutator_cache = {}
 
     __resolver = None
+    __columns__ = []
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
@@ -116,6 +117,13 @@ class Model(object):
                 cls._mutator_cache[cls][method.attribute] = method
 
         cls._boot_mixins()
+        cls._boot_columns()
+
+    @classmethod
+    def _boot_columns(cls):
+        connection = cls.resolve_connection()
+        columns = connection.get_schema_manager().list_table_columns(cls.__table__ or inflection.tableize(cls.__name__))
+        cls.__columns__ = list(columns.keys())
 
     @classmethod
     def _boot_mixins(cls):
@@ -572,7 +580,16 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return HasOne(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+        relation = HasOne(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+
+        def results_getter():
+            relation()
+
+            return relation.get_results()
+
+        self.__relations[name] = DynamicProperty(results_getter, relation)
+
+        return self.__relations[name]
 
     def morph_one(self, related, name, type_column=None, id_column=None, local_key=None):
         """
@@ -606,9 +623,18 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return MorphOne(instance.new_query(), self,
-                        '%s.%s' % (table, type_column),
-                        '%s.%s' % (table, id_column), local_key)
+        relation = MorphOne(instance.new_query(), self,
+                            '%s.%s' % (table, type_column),
+                            '%s.%s' % (table, id_column), local_key)
+
+        def results_getter():
+            relation()
+
+            return relation.get_results()
+
+        self.__relations[name] = DynamicProperty(results_getter, relation)
+
+        return self.__relations[name]
 
     def belongs_to(self, related, foreign_key=None, other_key=None, relation=None):
         """
@@ -643,7 +669,16 @@ class Model(object):
         if not other_key:
             other_key = instance.get_key_name()
 
-        return BelongsTo(query, self, foreign_key, other_key, relation)
+        relation_ = BelongsTo(query, self, foreign_key, other_key, relation)
+
+        def results_getter():
+            relation_()
+
+            return relation_.get_results()
+
+        self.__relations[relation] = DynamicProperty(results_getter, relation_)
+
+        return self.__relations[relation]
 
     def morph_to(self, name=None, type_column=None, id_column=None):
         """
@@ -681,7 +716,16 @@ class Model(object):
 
         instance = klass()
 
-        return MorphTo(instance.new_query(), self, id_column, instance.get_key_name(), type_column, name)
+        relation = MorphTo(instance.new_query(), self, id_column, instance.get_key_name(), type_column, name)
+
+        def results_getter():
+            relation()
+
+            return relation.get_results()
+
+        self.__relations[name] = DynamicProperty(results_getter, relation)
+
+        return self.__relations[name]
 
     def has_many(self, related, foreign_key=None, local_key=None):
         """
@@ -711,7 +755,16 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return HasMany(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+        relation = HasMany(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+
+        def results_getter():
+            relation()
+
+            return relation.get_results()
+
+        self.__relations[name] = DynamicProperty(results_getter, relation)
+
+        return self.__relations[name]
 
     def has_many_through(self, related, through, first_key=None, second_key=None):
         """
@@ -744,8 +797,17 @@ class Model(object):
         if not second_key:
             second_key = through.get_foreign_key()
 
-        return HasManyThrough(self._get_related(related)().new_query(),
+        relation = HasManyThrough(self._get_related(related)().new_query(),
                               self, through, first_key, second_key)
+
+        def results_getter():
+            relation()
+
+            return relation.get_results()
+
+        self.__relations[name] = DynamicProperty(results_getter, relation)
+
+        return self.__relations[name]
 
     def morph_many(self, related, name, type_column=None, id_column=None, local_key=None):
         """
@@ -777,9 +839,18 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return MorphMany(instance.new_query(), self,
+        relation = MorphMany(instance.new_query(), self,
                          '%s.%s' % (table, type_column),
                          '%s.%s' % (table, id_column), local_key)
+
+        def results_getter():
+            relation()
+
+            return relation.get_results()
+
+        self.__relations[name] = DynamicProperty(results_getter, relation)
+
+        return self.__relations[name]
 
     def belongs_to_many(self, related, table=None, foreign_key=None, other_key=None, relation=None):
         """
@@ -820,7 +891,16 @@ class Model(object):
 
         query = instance.new_query()
 
-        return BelongsToMany(query, self, table, foreign_key, other_key, relation)
+        relation_ = BelongsToMany(query, self, table, foreign_key, other_key, relation)
+
+        def results_getter():
+            relation_()
+
+            return relation_.get_results()
+
+        self.__relations[relation] = DynamicProperty(results_getter, relation_)
+
+        return self.__relations[relation]
 
     def morph_to_many(self, related, name, table=None, foreign_key=None, other_key=None, inverse=False):
         """
@@ -861,8 +941,17 @@ class Model(object):
         if not table:
             table = inflection.pluralize(name)
 
-        return MorphToMany(query, self, name, table,
-                           foreign_key, other_key, caller, inverse)
+        relation = MorphToMany(query, self, name, table,
+                               foreign_key, other_key, caller, inverse)
+
+        def results_getter():
+            relation()
+
+            return relation.get_results()
+
+        self.__relations[name] = DynamicProperty(results_getter, relation)
+
+        return self.__relations[name]
 
     def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None):
         """
@@ -2381,7 +2470,10 @@ class Model(object):
 
         return []
 
-    def __getattribute__(self, item):
+    def __getattr__(self, item):
+        if item in self.__columns__:
+            return self.get_attribute(item)
+
         try:
             attr = super(Model, self).__getattribute__(item)
             if isinstance(attr, Relation):

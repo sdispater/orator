@@ -522,6 +522,8 @@ class OrmModelTestCase(OratorTestCase):
             def get_date_format(self):
                 return 'DD-MM-YY'
 
+        flexmock(Stub).should_receive('_boot_columns').and_return(['created_at', 'updated_at'])
+
         model = Stub()
         model.set_raw_attributes({
             'created_at': '2015-03-24',

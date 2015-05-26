@@ -36,7 +36,7 @@ class PostgresSchemaManager(SchemaManager):
         if length == '-1' and 'atttypmod' in table_column:
             length = table_column['atttypmod'] - 4
 
-        if length is None or int(length) <= 0:
+        if length is None or not length.isdigit() or int(length) <= 0:
             length = None
 
         fixed = None
