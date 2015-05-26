@@ -2172,6 +2172,9 @@ class Model(object):
 
         :rtype: str
         """
+        if date is None:
+            return date
+
         format = self.get_date_format()
 
         if format == 'iso':
