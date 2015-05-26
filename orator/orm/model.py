@@ -1856,7 +1856,7 @@ class Model(object):
             if not key in attributes:
                 continue
 
-            attributes[key] = self._format_date(self.as_datetime(attributes[key]))
+            attributes[key] = self._format_date(attributes[key])
 
         mutated_attributes = self._get_mutated_attributes()
 
@@ -1940,10 +1940,10 @@ class Model(object):
 
         :rtype: dict
         """
-        if len(self.get_visible()) > 0:
-            return {x: values[x] for x in values.keys() if x in self.get_visible()}
+        if len(self.__visible__) > 0:
+            return {x: values[x] for x in values.keys() if x in self.__visible__}
 
-        return {x: values[x] for x in values.keys() if x not in self.get_hidden() and not x.startswith('_')}
+        return {x: values[x] for x in values.keys() if x not in self.__hidden__ and not x.startswith('_')}
 
     def get_attribute(self, key, original=None):
         """
@@ -2175,10 +2175,15 @@ class Model(object):
         format = self.get_date_format()
 
         if format == 'iso':
+            if isinstance(date, basestring):
+                return arrow.get(date).isoformat()
+
             return date.isoformat()
         else:
             if isinstance(date, arrow.Arrow):
                 return date.format(format)
+            elif isinstance(date, basestring):
+                return arrow.get(date).format(format)
 
             return date.strftime(format)
 
