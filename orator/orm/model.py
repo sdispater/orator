@@ -1058,7 +1058,7 @@ class Model(object):
             raise Exception('No primary key defined on the model.')
 
         if self.__exists:
-            self._touch_owners()
+            self.touch_owners()
 
             self._perform_delete_on_model()
 
@@ -1222,7 +1222,7 @@ class Model(object):
         self.sync_original()
 
         if options.get('touch', True):
-            self._touch_owners()
+            self.touch_owners()
 
     def _perform_update(self, query, options=None):
         """
@@ -1300,7 +1300,7 @@ class Model(object):
 
         self.set_attribute(key_name, id)
 
-    def _touch_owners(self):
+    def touch_owners(self):
         """
         Touch the owning relations of the model.
         """

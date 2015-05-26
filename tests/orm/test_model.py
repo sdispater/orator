@@ -308,13 +308,13 @@ class OrmModelTestCase(OratorTestCase):
         query.should_receive('where').once().with_args('id', 1).and_return(builder)
         query.should_receive('delete').once()
         model.new_query = mock.MagicMock(return_value=builder)
-        model._touch_owners = mock.MagicMock()
+        model.touch_owners = mock.MagicMock()
 
         model.set_exists(True)
         model.id = 1
         model.delete()
 
-        self.assertTrue(model._touch_owners.called)
+        self.assertTrue(model.touch_owners.called)
 
     def test_push_no_relations(self):
         flexmock(Builder)
