@@ -57,6 +57,8 @@ class Model(object):
 
     __morph_class__ = None
 
+    _per_page = 15
+
     _with = []
 
     _booted = {}
@@ -1533,6 +1535,14 @@ class Model(object):
             return self.__class__.__name__
 
         return self.__morph_class__
+
+    def get_per_page(self):
+        """
+        Get the number of models to return per page.
+
+        :rtype: int
+        """
+        return self._per_page
 
     def get_foreign_key(self):
         """

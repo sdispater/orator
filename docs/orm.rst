@@ -1,5 +1,7 @@
-The ORM
-#######
+.. _ORM:
+
+ORM
+###
 
 Introduction
 ============
