@@ -20,8 +20,8 @@ class Fluent(object):
     def to_dict(self):
         return self.__attributes
 
-    def to_json(self):
-        return json.dumps(self.to_dict())
+    def to_json(self, **options):
+        return json.dumps(self.to_dict(), **options)
 
     def __contains__(self, item):
         return item in self.__attributes

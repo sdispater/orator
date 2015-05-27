@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import simplejson as json
+
 
 class Collection(object):
 
@@ -166,6 +168,9 @@ class Collection(object):
     def to_dict(self):
         return list(map(lambda value: value.to_dict() if hasattr(value, 'to_dict') else value,
                         self._items))
+
+    def to_json(self, **options):
+        return json.dumps(self.to_dict(), **options)
 
     def __len__(self):
         return len(self._items)
