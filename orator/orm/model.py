@@ -16,6 +16,7 @@ from .relations import (
 )
 from .relations.dynamic_property import DynamicProperty
 from .utils import mutator, accessor
+from ..events import Event
 
 
 class MetaModel(type):
@@ -71,6 +72,9 @@ class Model(object):
     __resolver = None
     __columns__ = []
 
+    __dispatcher__ = Event()
+    __observables__ = []
+
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
     CREATED_AT = 'created_at'
@@ -100,7 +104,11 @@ class Model(object):
         if not klass._booted.get(klass):
             klass._booted[klass] = True
 
+            self._fire_model_event('booting')
+
             klass._boot()
+
+            self._fire_model_event('booted')
 
     @classmethod
     def _boot(cls):
@@ -177,6 +185,17 @@ class Model(object):
         :rtype: dict
         """
         return self.__class__._global_scopes.get(self.__class__, {})
+
+    @classmethod
+    def observe(cls, observer):
+        """
+        Register an observer with the Model.
+
+        :param observer: The observer
+        """
+        for event in cls.get_observable_events():
+            if hasattr(observer, event):
+                cls._register_model_event(event, getattr(observer, event))
 
     def fill(self, **attributes):
         """
@@ -1058,11 +1077,16 @@ class Model(object):
             raise Exception('No primary key defined on the model.')
 
         if self.__exists:
+            if self._fire_model_event('deleting') is False:
+                return False
+
             self.touch_owners()
 
             self._perform_delete_on_model()
 
             self.__exists = False
+
+            self._fire_model_event('deleted')
 
             return True
 
@@ -1081,7 +1105,117 @@ class Model(object):
 
         return self.new_query().where(self.get_key_name(), self.get_key()).delete()
 
-    # TODO: events
+    @classmethod
+    def saving(cls, callback):
+        """
+        Register a saving model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('saving', callback)
+
+    @classmethod
+    def saved(cls, callback):
+        """
+        Register a saved model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('saved', callback)
+
+    @classmethod
+    def updating(cls, callback):
+        """
+        Register a updating model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('updating', callback)
+
+    @classmethod
+    def updated(cls, callback):
+        """
+        Register a updated model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('updated', callback)
+
+    @classmethod
+    def creating(cls, callback):
+        """
+        Register a creating model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('creating', callback)
+
+    @classmethod
+    def created(cls, callback):
+        """
+        Register a created model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('created', callback)
+
+    @classmethod
+    def deleting(cls, callback):
+        """
+        Register a deleting model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('deleting', callback)
+
+    @classmethod
+    def deleted(cls, callback):
+        """
+        Register a deleted model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('deleted', callback)
+
+    @classmethod
+    def flush_event_listeners(cls):
+        """
+        Remove all of the event listeners for the model.
+        """
+        if not cls.__dispatcher__:
+            return
+
+        for event in cls.get_observable_events():
+            cls.__dispatcher__.forget('%s: %s' % (event, cls.__name__))
+
+    @classmethod
+    def _register_model_event(cls, event, callback):
+        """
+        Register a model event with the dispatcher.
+
+        :param event: The event
+        :type event: str
+
+        :param callback: The callback
+        :type callback: callable
+        """
+        if cls.__dispatcher__:
+            cls.__dispatcher__.listen('%s: %s' % (event, cls.__name__), callback)
+
+    @classmethod
+    def get_observable_events(cls):
+        """
+        Get the observable event names.
+
+        :rtype: list
+        """
+        default_events = [
+            'creating', 'created', 'updating', 'updated',
+            'deleting', 'deleted', 'saving', 'saved',
+            'restoring', 'restored'
+        ]
+
+        return default_events + cls.__observables__
 
     def _increment(self, column, amount=1):
         """
@@ -1205,6 +1339,9 @@ class Model(object):
 
         query = self.new_query()
 
+        if self._fire_model_event('saving') is False:
+            return False
+
         if self.__exists:
             saved = self._perform_update(query, options)
         else:
@@ -1219,6 +1356,8 @@ class Model(object):
         """
         Finish processing on a successful save operation.
         """
+        self._fire_model_event('saved')
+
         self.sync_original()
 
         if options.get('touch', True):
@@ -1240,7 +1379,9 @@ class Model(object):
         dirty = self.get_dirty()
 
         if len(dirty):
-            # TODO: "updating" event
+            if self._fire_model_event('updating') is False:
+                return False
+
             if self.__timestamps__ and options.get('timestamps', True):
                 self._update_timestamps()
 
@@ -1249,7 +1390,7 @@ class Model(object):
             if len(dirty):
                 self._set_keys_for_save_query(query).update(dirty)
 
-                # TODO: "updated" event
+                self._fire_model_event('updated')
 
         return True
 
@@ -1266,7 +1407,8 @@ class Model(object):
         if options is None:
             options = {}
 
-        # TODO: "creating" event
+        if self._fire_model_event('creating') is False:
+            return False
 
         if self.__timestamps__ and options.get('timestamps', True):
             self._update_timestamps()
@@ -1280,7 +1422,7 @@ class Model(object):
 
         self.__exists = True
 
-        # TODO: "created" event
+        self._fire_model_event('created')
 
         return True
 
@@ -1322,6 +1464,22 @@ class Model(object):
         :rtype: bool
         """
         return relation in self.__touches__
+
+    def _fire_model_event(self, event):
+        """
+        Fire the given event for the model.
+
+        :type event: str
+        """
+        if not self.__dispatcher__:
+            return True
+
+        # We will append the names of the class to the event to distinguish it from
+        # other model events that are fired, allowing us to listen on each model
+        # event set individually instead of catching event for all the models.
+        event = '%s: %s' % (event, self.__class__.__name__)
+
+        return self.__dispatcher__.fire(event, self)
 
     def _set_keys_for_save_query(self, query):
         """

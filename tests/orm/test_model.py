@@ -20,6 +20,7 @@ from orator.orm.collection import Collection
 from orator.connections import Connection
 from orator import DatabaseManager
 from orator.utils import basestring
+from orator.events import Event
 
 
 class OrmModelTestCase(OratorTestCase):
@@ -136,8 +137,20 @@ class OrmModelTestCase(OratorTestCase):
         model = OrmModelStub()
         model.new_query = mock.MagicMock(return_value=Builder(QueryBuilder(None, None, None)))
         model._update_timestamps = mock.MagicMock()
-
-        # TODO: events
+        events = flexmock(Event())
+        model.__dispatcher__ = events
+        events.should_receive('fire').once()\
+            .with_args('saving: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('updating: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('updated: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('saved: %s' % model.__class__.__name__, model)\
+            .and_return(True)
 
         model.id = 1
         model.foo = 'bar'
@@ -158,7 +171,20 @@ class OrmModelTestCase(OratorTestCase):
         model.new_query = mock.MagicMock(return_value=Builder(QueryBuilder(None, None, None)))
         model._update_timestamps = mock.MagicMock()
 
-        # TODO: events
+        events = flexmock(Event())
+        model.__dispatcher__ = events
+        events.should_receive('fire').once()\
+            .with_args('saving: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('updating: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('updated: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('saved: %s' % model.__class__.__name__, model)\
+            .and_return(True)
 
         model.id = 1
         model.sync_original()
@@ -170,19 +196,36 @@ class OrmModelTestCase(OratorTestCase):
         model.new_query.assert_called_once_with()
         self.assertTrue(model._update_timestamps.called)
 
-    # TODO: update cancelled if updating event return false
+    def test_update_is_cancelled_if_updating_event_returns_false(self):
+        model = flexmock(OrmModelStub())
+        query = flexmock(Builder(flexmock(QueryBuilder(None, None, None))))
+        model.should_receive('new_query_without_scopes').once().and_return(query)
+        events = flexmock(Event())
+        model.__dispatcher__ = events
+        events.should_receive('fire').once()\
+            .with_args('saving: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('updating: %s' % model.__class__.__name__, model)\
+            .and_return(False)
+        model.set_exists(True)
+        model.foo = 'bar'
+
+        self.assertFalse(model.save())
 
     def test_update_process_without_timestamps(self):
         query = flexmock(Builder)
         query.should_receive('where').once().with_args('id', 1)
         query.should_receive('update').once().with_args({'name': 'john'})
 
-        model = OrmModelStub()
+        model = flexmock(OrmModelStub())
         model.__timestamps__ = False
         model.new_query = mock.MagicMock(return_value=Builder(QueryBuilder(None, None, None)))
         model._update_timestamps = mock.MagicMock()
 
-        # TODO: events
+        events = flexmock(Event())
+        model.__dispatcher__ = events
+        model.should_receive('_fire_model_event').and_return(True)
 
         model.id = 1
         model.sync_original()
@@ -202,7 +245,20 @@ class OrmModelTestCase(OratorTestCase):
         model.new_query = mock.MagicMock(return_value=Builder(QueryBuilder(None, None, None)))
         model._update_timestamps = mock.MagicMock()
 
-        # TODO: events
+        events = flexmock(Event())
+        model.__dispatcher__ = events
+        events.should_receive('fire').once()\
+            .with_args('saving: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('updating: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('updated: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('saved: %s' % model.__class__.__name__, model)\
+            .and_return(True)
 
         model.id = 1
         model.sync_original()
@@ -275,7 +331,20 @@ class OrmModelTestCase(OratorTestCase):
         model.new_query = mock.MagicMock(return_value=Builder(QueryBuilder(None, None, None)))
         model._update_timestamps = mock.MagicMock()
 
-        # TODO: events
+        events = flexmock(Event())
+        model.__dispatcher__ = events
+        events.should_receive('fire').once()\
+            .with_args('saving: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('creating: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('created: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('saved: %s' % model.__class__.__name__, model)\
+            .and_return(True)
 
         model.name = 'john'
         model.set_exists(False)
@@ -290,7 +359,20 @@ class OrmModelTestCase(OratorTestCase):
         model._update_timestamps = mock.MagicMock()
         model.set_incrementing(False)
 
-        # TODO: events
+        events = flexmock(Event())
+        model.__dispatcher__ = events
+        events.should_receive('fire').once()\
+            .with_args('saving: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('creating: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('created: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('saved: %s' % model.__class__.__name__, model)\
+            .and_return(True)
 
         model.name = 'john'
         model.set_exists(False)
@@ -299,7 +381,21 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.exists)
         self.assertTrue(model._update_timestamps.called)
 
-    # TODO: insert cancelled if creating event return false
+    def test_insert_is_cancelled_if_creating_event_returns_false(self):
+        model = flexmock(OrmModelStub())
+        query = flexmock(Builder(flexmock(QueryBuilder(None, None, None))))
+        model.should_receive('new_query_without_scopes').once().and_return(query)
+        events = flexmock(Event())
+        model.__dispatcher__ = events
+        events.should_receive('fire').once()\
+            .with_args('saving: %s' % model.__class__.__name__, model)\
+            .and_return(True)
+        events.should_receive('fire').once()\
+            .with_args('creating: %s' % model.__class__.__name__, model)\
+            .and_return(False)
+
+        self.assertFalse(model.save())
+        self.assertFalse(model.exists)
 
     def test_delete_properly_deletes_model(self):
         query = flexmock(Builder)

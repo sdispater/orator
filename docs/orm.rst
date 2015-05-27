@@ -1482,6 +1482,56 @@ Now, when you utilize the model:
     user.options = {'foo': 'bar'}
 
 
+Model events
+============
+
+Orator models fire several events, allowing you to hook into various points in
+the model's lifecycle using the following methods:
+``creating``, ``created``, ``updating``, ``updated``, ``saving``, ``saved``, ``deleting``, ``deleted``,
+``restoring``, ``restored``.
+
+Whenever a new item is saved for the first time, the ``creating`` and ``created`` events will fire.
+If an item is not new and the ``save`` method is called, the ``updating`` / ``updated`` events will fire.
+In both cases, the ``saving`` / ``saved`` events will fire.
+
+Cancelling save operations via events
+-------------------------------------
+
+If ``False`` is returned from the ``creating``, ``updating``, ``saving``, or ``deleting`` events,
+the action will be cancelled:
+
+.. code-block:: python
+
+    User.creating(lambda user: user.is_valid())
+
+
+Model observers
+===============
+
+To consolidate the handling of model events, you can register a model observer.
+An observer class can have methods that correspond to the various model events.
+For example, ``creating``, ``updating``, ``saving`` methods can be on an observer,
+in addition to any other model event name.
+
+So, for example, a model observer might look like this:
+
+.. code-block:: python
+
+    class UserObserver(object):
+
+        def saving(user):
+            # ...
+
+        def saved(user):
+            # ...
+
+You can register an observer instance using the ``observe`` method:
+
+.. code-block:: python
+
+    User.observe(UserObserver())
+
+
 Converting to dictionaries / JSON
 =================================
 
