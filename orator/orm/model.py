@@ -19,7 +19,22 @@ from .utils import mutator, accessor
 from ..events import Event
 
 
+class ModelRegister(dict):
+
+    pass
+
+Register = ModelRegister()
+
+
 class MetaModel(type):
+
+    __register__ = {}
+
+    def __init__(cls, *args, **kwargs):
+        name = cls.__table__ or inflection.tableize(cls.__name__)
+        Register[name] = cls
+
+        super(MetaModel, cls).__init__(*args, **kwargs)
 
     def __getattr__(cls, item):
         try:
@@ -74,6 +89,8 @@ class Model(object):
 
     __dispatcher__ = Event()
     __observables__ = []
+
+    __register__ = {}
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
@@ -1017,10 +1034,10 @@ class Model(object):
         if not isinstance(related, basestring) and issubclass(related, Model):
             return related
 
-        for cls in Model.__subclasses__():
-            table = cls.__table__ or inflection.tableize(cls.__name__)
-            if table == related:
-                return cls
+        related_class = Register.get(related)
+
+        if related_class:
+            return related_class
 
         raise RelatedClassNotFound(related)
 
