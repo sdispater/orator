@@ -71,5 +71,5 @@ class Paginator(BasePaginator):
     def to_dict(self):
         return self._items.to_dict()
 
-    def to_json(self):
-        return self._items.to_json()
+    def to_json(self, **options):
+        return self._items.to_json(**options)
