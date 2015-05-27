@@ -544,7 +544,7 @@ class Model(object):
         if self.exists:
             return self.__class__.with_(with_).where(key, self.get_key()).first()
 
-    def load(self, relations):
+    def load(self, *relations):
         """
         Eager load relations on the model
 
@@ -554,7 +554,11 @@ class Model(object):
         :return: The current model instance
         :rtype: Model
         """
-        # TODO
+        query = self.new_query().with_(*relations)
+
+        query.eager_load_relations([self])
+
+        return self
 
     @classmethod
     def with_(cls, *relations):
