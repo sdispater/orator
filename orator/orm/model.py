@@ -748,7 +748,7 @@ class Model(object):
 
         klass = None
         parent_type = getattr(self, type_column)
-        for cls in Model.__subclasses__():
+        for cls in Register.values():
             morph_class = cls.__morph_class__ or cls.__name__
             if morph_class == parent_type:
                 klass = cls
