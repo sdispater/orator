@@ -19,32 +19,32 @@ class OratorIntegrationTestCase(OratorTestCase):
         Model.unset_connection_resolver()
 
     def setUp(self):
-        with self.schema().create('users') as table:
+        with self.schema().create('test_users') as table:
             table.increments('id')
             table.string('email').unique()
             table.timestamps()
 
-        with self.schema().create('friends') as table:
+        with self.schema().create('test_friends') as table:
             table.integer('user_id')
             table.integer('friend_id')
 
-        with self.schema().create('posts') as table:
+        with self.schema().create('test_posts') as table:
             table.increments('id')
             table.integer('user_id')
             table.string('name')
             table.timestamps()
 
-        with self.schema().create('photos') as table:
+        with self.schema().create('test_photos') as table:
             table.increments('id')
             table.morphs('imageable')
             table.string('name')
             table.timestamps()
 
     def tearDown(self):
-        self.schema().drop('users')
-        self.schema().drop('friends')
-        self.schema().drop('posts')
-        self.schema().drop('photos')
+        self.schema().drop('test_users')
+        self.schema().drop('test_friends')
+        self.schema().drop('test_posts')
+        self.schema().drop('test_photos')
 
     def test_basic_model_retrieval(self):
         OratorTestUser.create(email='john@doe.com')
@@ -132,7 +132,7 @@ class OratorIntegrationTestCase(OratorTestCase):
         OratorTestUser.create(id=2, email='jane@doe.com')
 
         models = OratorTestUser.hydrate_raw(
-            'SELECT * FROM users WHERE email = ?',
+            'SELECT * FROM test_users WHERE email = ?',
             ['jane@doe.com'],
             'foo_connection'
         )
@@ -224,16 +224,16 @@ class OratorIntegrationTestCase(OratorTestCase):
 
 class OratorTestUser(Model):
 
-    __table__ = 'users'
+    __table__ = 'test_users'
     __guarded__ = []
 
     @property
     def friends(self):
-        return self.belongs_to_many(OratorTestUser, 'friends', 'user_id', 'friend_id')
+        return self.belongs_to_many(OratorTestUser, 'test_friends', 'user_id', 'friend_id')
 
     @property
     def posts(self):
-        return self.has_many('posts', 'user_id')
+        return self.has_many('test_posts', 'user_id')
 
     @property
     def post(self):
@@ -241,12 +241,12 @@ class OratorTestUser(Model):
 
     @property
     def photos(self):
-        return self.morph_many('photos', 'imageable')
+        return self.morph_many('test_photos', 'imageable')
 
 
 class OratorTestPost(Model):
 
-    __table__ = 'posts'
+    __table__ = 'test_posts'
     __guarded__ = []
 
     @property
@@ -255,12 +255,12 @@ class OratorTestPost(Model):
 
     @property
     def photos(self):
-        return self.morph_many('photos', 'imageable')
+        return self.morph_many('test_photos', 'imageable')
 
 
 class OratorTestPhoto(Model):
 
-    __table__ = 'photos'
+    __table__ = 'test_photos'
     __guarded__ = []
 
     @property
