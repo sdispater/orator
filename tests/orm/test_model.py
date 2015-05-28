@@ -656,6 +656,11 @@ class OrmModelTestCase(OratorTestCase):
 
         self.assertEqual([1, 2, 3], d['list_items'])
 
+        model = OrmModelStub(list_items=[1, 2, 3])
+        d = model.to_dict()
+
+        self.assertEqual([1, 2, 3], d['list_items'])
+
     def test_hidden_are_ignored_when_visible(self):
         model = OrmModelStub(name='john', age=28, id='foo')
         model.set_visible(['name', 'id'])

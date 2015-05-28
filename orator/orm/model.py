@@ -2373,6 +2373,9 @@ class Model(object):
         """
         Set a given attribute on the model.
         """
+        if self._has_set_mutator(key):
+            return super(Model, self).__setattr__(key, value)
+
         if key in self.get_dates() and value:
             value = self.from_datetime(value)
 
@@ -2675,7 +2678,7 @@ class Model(object):
             return super(Model, self).__setattr__(key, value)
 
         if self._has_set_mutator(key):
-            return super(Model, self).__setattr__(key, value)
+            return self.set_attribute(key, value)
 
         if callable(getattr(self, key, None)):
             return super(Model, self).__setattr__(key, value)
