@@ -829,7 +829,7 @@ class Model(object):
         if name in self.__relations:
             return self.__relations[name]
 
-        through = through()
+        through = self._get_related(through)()
 
         if not first_key:
             first_key = self.get_foreign_key()
@@ -838,7 +838,7 @@ class Model(object):
             second_key = through.get_foreign_key()
 
         relation = HasManyThrough(self._get_related(related)().new_query(),
-                              self, through, first_key, second_key)
+                                  self, through, first_key, second_key)
 
         def results_getter():
             relation()

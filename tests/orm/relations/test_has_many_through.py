@@ -65,6 +65,15 @@ class OrmHasManyThroughTestCase(OratorTestCase):
         self.assertEqual(2, len(models[1].foo))
         self.assertFalse(hasattr(models[2], 'foo'))
 
+    def test_get(self):
+        relation = self._get_relation()
+
+        query = relation.get_query()
+        query.get_query().should_receive('add_select').once().with_args('posts.*', 'users.country_id').and_return(query)
+        query.should_receive('get_models').and_return([])
+
+        relation.get()
+
     def _get_relation(self):
         flexmock(Builder)
         query = flexmock(QueryBuilder(None, QueryGrammar(), None))
