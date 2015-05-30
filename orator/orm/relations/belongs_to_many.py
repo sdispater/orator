@@ -69,7 +69,7 @@ class BelongsToMany(Relation):
         """
         self._pivot_wheres.append([column, operator, value, boolean])
 
-        return self.where('%s.%s' % (self._table, column), operator, value, boolean)
+        return self._query.where('%s.%s' % (self._table, column), operator, value, boolean)
 
     def or_where_pivot(self, column, operator=None, value=None):
         """
@@ -440,7 +440,7 @@ class BelongsToMany(Relation):
 
         :rtype: Collection or Model
         """
-        instance = self.find(id, columns)
+        instance = self._query.find(id, columns)
         if instance is None:
             instance = self.get_related().new_instance()
 
@@ -458,7 +458,7 @@ class BelongsToMany(Relation):
         if _attributes is not None:
             attributes.update(_attributes)
 
-        instance = self.where(attributes).first()
+        instance = self._query.where(attributes).first()
         if instance is None:
             instance = self._related.new_instance()
 
@@ -476,7 +476,7 @@ class BelongsToMany(Relation):
         if _attributes is not None:
             attributes.update(_attributes)
 
-        instance = self.where(attributes).first()
+        instance = self._query.where(attributes).first()
         if instance is None:
             instance = self.create(attributes, _joining or {}, _touch)
 
@@ -497,7 +497,7 @@ class BelongsToMany(Relation):
         if values is None:
             values = {}
 
-        instance = self.where(attributes).first()
+        instance = self._query.where(attributes).first()
 
         if instance is None:
             return self.create(values, joining, touch)

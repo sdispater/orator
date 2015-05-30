@@ -86,7 +86,7 @@ class MorphOneOrMany(HasOneOrMany):
         if columns is None:
             columns = ['*']
 
-        instance = self.find(id, columns)
+        instance = self._query.find(id, columns)
 
         if instance is None:
             instance = self._related.new_instance()
@@ -106,7 +106,7 @@ class MorphOneOrMany(HasOneOrMany):
         if _attributes is not None:
             attributes.update(_attributes)
 
-        instance = self.where(attributes).first()
+        instance = self._query.where(attributes).first()
 
         if instance is None:
             instance = self._related.new_instance()
@@ -126,7 +126,7 @@ class MorphOneOrMany(HasOneOrMany):
         if _attributes is not None:
             attributes.update(_attributes)
 
-        instance = self.where(attributes).first()
+        instance = self._query.where(attributes).first()
 
         if instance is None:
             instance = self.create(**attributes)

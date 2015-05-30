@@ -169,9 +169,9 @@ class OratorIntegrationTestCase(OratorTestCase):
         post.photos().create(name='Hero 1')
         post.photos().create(name='Hero 2')
 
-        self.assertIsInstance(user.photos.instance, Collection)
+        self.assertIsInstance(user.photos.results, Collection)
         #self.assertIsInstance(user.photos[0], OratorTestPhoto)
-        self.assertIsInstance(post.photos.instance, Collection)
+        self.assertIsInstance(post.photos.results, Collection)
         #self.assertIsInstance(post.photos[0], OratorTestPhoto)
         self.assertEqual(2, len(user.photos))
         self.assertEqual(2, len(post.photos))

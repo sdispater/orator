@@ -1,7 +1,35 @@
 # -*- coding: utf-8 -*-
 
+from cached_property import cached_property
 from ...query.expression import QueryExpression
 from ..collection import Collection
+
+
+class RelationWrapper(object):
+
+    def __init__(self, relationship):
+        self._relationship = relationship
+
+    def __dynamic(self, method):
+        attribute = getattr(self._relationship.get_query(), method)
+
+        def call(*args, **kwargs):
+            result = attribute(*args, **kwargs)
+
+            return result
+
+        if not callable(attribute):
+            return attribute
+
+        return call
+
+    def __getattr__(self, item):
+        attribute = getattr(self._relationship, item, None)
+
+        if not attribute:
+            return self.__dynamic(item)
+
+        return attribute
 
 
 class Relation(object):
@@ -63,13 +91,22 @@ class Relation(object):
         """
         raise NotImplementedError
 
+    @cached_property
+    def results(self):
+        return self.get_results()
+
+    def refresh(self):
+        del self.results
+
+        return self.results
+
     def get_eager(self):
         """
         Get the relationship for eager loading.
 
         :rtype: Collection
         """
-        return self.get()
+        return self._query.get()
 
     def touch(self):
         """
@@ -181,24 +218,23 @@ class Relation(object):
         """
         return self._parent.new_query().get_query().get_grammar().wrap(value)
 
-    def __dynamic(self, method):
-        attribute = getattr(self._query, method)
+    def set_parent(self, parent):
+        self._parent = parent
 
-        def call(*args, **kwargs):
-            result = attribute(*args, **kwargs)
+    def __getitem__(self, item):
+        return self.results[item]
 
-            return result
+    def __iter__(self):
+        return iter(self.results)
 
-        if not callable(attribute):
-            return attribute
-
-        return call
+    def __len__(self):
+        return len(self.results)
 
     def __getattr__(self, item):
-        return self.__dynamic(item)
+        return getattr(self.results, item)
 
     def __call__(self, *args, **kwargs):
         self._query = self._related.new_query()
         self.add_constraints()
 
-        return self
+        return RelationWrapper(self)

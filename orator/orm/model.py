@@ -620,10 +620,14 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return HasOne(instance.new_query(),
-                      self,
-                      '%s.%s' % (instance.get_table(), foreign_key),
-                      local_key)
+        rel = HasOne(instance.new_query(),
+                     self,
+                     '%s.%s' % (instance.get_table(), foreign_key),
+                     local_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def morph_one(self, related, name, type_column=None, id_column=None, local_key=None):
         """
@@ -657,9 +661,13 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return MorphOne(instance.new_query(), self,
-                        '%s.%s' % (table, type_column),
-                        '%s.%s' % (table, id_column), local_key)
+        rel = MorphOne(instance.new_query(), self,
+                       '%s.%s' % (table, type_column),
+                       '%s.%s' % (table, id_column), local_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def belongs_to(self, related, foreign_key=None, other_key=None, relation=None):
         """
@@ -694,7 +702,11 @@ class Model(object):
         if not other_key:
             other_key = instance.get_key_name()
 
-        return BelongsTo(query, self, foreign_key, other_key, relation)
+        rel = BelongsTo(query, self, foreign_key, other_key, relation)
+
+        self.__relations[relation] = rel
+
+        return rel
 
     def morph_to(self, name=None, type_column=None, id_column=None):
         """
@@ -732,9 +744,13 @@ class Model(object):
 
         instance = klass()
 
-        return MorphTo(instance.new_query(),
-                       self, id_column,
-                       instance.get_key_name(), type_column, name)
+        rel = MorphTo(instance.new_query(),
+                      self, id_column,
+                      instance.get_key_name(), type_column, name)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def has_many(self, related, foreign_key=None, local_key=None):
         """
@@ -764,10 +780,14 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return HasMany(instance.new_query(),
-                       self,
-                       '%s.%s' % (instance.get_table(), foreign_key),
-                       local_key)
+        rel = HasMany(instance.new_query(),
+                      self,
+                      '%s.%s' % (instance.get_table(), foreign_key),
+                      local_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def has_many_through(self, related, through, first_key=None, second_key=None):
         """
@@ -800,8 +820,12 @@ class Model(object):
         if not second_key:
             second_key = through.get_foreign_key()
 
-        return HasManyThrough(self._get_related(related)().new_query(),
-                              self, through, first_key, second_key)
+        rel = HasManyThrough(self._get_related(related)().new_query(),
+                             self, through, first_key, second_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def morph_many(self, related, name, type_column=None, id_column=None, local_key=None):
         """
@@ -821,10 +845,12 @@ class Model(object):
 
         :rtype: MorphMany
         """
-        instance = self._get_related(related)()
+        relation = inspect.stack()[1][3]
 
-        if name in self.__relations:
-            return self.__relations[name]
+        if relation in self.__relations:
+            return self.__relations[relation]
+
+        instance = self._get_related(related)()
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
@@ -833,9 +859,13 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return MorphMany(instance.new_query(), self,
-                         '%s.%s' % (table, type_column),
-                         '%s.%s' % (table, id_column), local_key)
+        rel = MorphMany(instance.new_query(), self,
+                        '%s.%s' % (table, type_column),
+                        '%s.%s' % (table, id_column), local_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def belongs_to_many(self, related, table=None, foreign_key=None, other_key=None, relation=None):
         """
@@ -876,7 +906,11 @@ class Model(object):
 
         query = instance.new_query()
 
-        return BelongsToMany(query, self, table, foreign_key, other_key, relation)
+        rel = BelongsToMany(query, self, table, foreign_key, other_key, relation)
+
+        self.__relations[relation] = rel
+
+        return rel
 
     def morph_to_many(self, related, name, table=None, foreign_key=None, other_key=None, inverse=False):
         """
@@ -917,8 +951,12 @@ class Model(object):
         if not table:
             table = inflection.pluralize(name)
 
-        return MorphToMany(query, self, name, table,
-                           foreign_key, other_key, caller, inverse)
+        rel = MorphToMany(query, self, name, table,
+                          foreign_key, other_key, caller, inverse)
+
+        self.__relations[caller] = rel
+
+        return rel
 
     def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None):
         """
@@ -2587,15 +2625,8 @@ class Model(object):
 
         return []
 
-    def __getattribute__(self, item):
-        try:
-            attr = super(Model, self).__getattribute__(item)
-            if isinstance(attr, Relation):
-                return self.get_attribute(item, attr)
-
-            return attr
-        except AttributeError:
-            return self.get_attribute(item)
+    def __getattr__(self, item):
+        return self.get_attribute(item)
 
     def __setattr__(self, key, value):
         if key.startswith(('_Model__', '_%s__' % self.__class__.__name__, '__')):
