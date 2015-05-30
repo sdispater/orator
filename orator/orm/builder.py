@@ -406,7 +406,7 @@ class Builder(object):
         relation.add_eager_constraints(models)
 
         if callable(constraints):
-            constraints(relation)
+            constraints(relation.get_query())
         else:
             relation.merge_query(constraints)
 

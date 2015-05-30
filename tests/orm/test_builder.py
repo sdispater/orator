@@ -327,6 +327,7 @@ class BuilderTestCase(OratorTestCase):
         relation.should_receive('add_eager_constraints').once().with_args(['models'])
         relation.should_receive('init_relation').once().with_args(['models'], 'orders').and_return(['models'])
         relation.should_receive('get_eager').once().and_return(['results'])
+        relation.should_receive('get_query').once().and_return(relation)
         relation.should_receive('match').once()\
             .with_args(['models'], ['results'], 'orders').and_return(['models.matched'])
         builder.should_receive('get_relation').once().with_args('orders').and_return(relation)
