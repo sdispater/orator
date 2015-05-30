@@ -14,7 +14,6 @@ from .relations import (
     Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough,
     MorphOne, MorphMany, MorphTo, MorphToMany
 )
-from .relations.dynamic_property import DynamicProperty
 from .utils import mutator, accessor
 from ..events import Event
 
@@ -2159,7 +2158,7 @@ class Model(object):
 
             return relations.get_results()
 
-        self.__relations[method] = DynamicProperty(results_getter, relations)
+        self.__relations[method] = relations
 
         return self.__relations[method]
 
