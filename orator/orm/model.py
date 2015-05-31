@@ -170,7 +170,7 @@ class Model(object):
     @classmethod
     def add_global_scope(cls, scope):
         """
-        _Register a new global scope on the model.
+        Register a new global scope on the model.
 
         :param scope: The scope to register
         :type scope: orator.orm.scopes.scope.Scope
@@ -213,7 +213,7 @@ class Model(object):
     @classmethod
     def observe(cls, observer):
         """
-        _Register an observer with the Model.
+        Register an observer with the Model.
 
         :param observer: The observer
         """
@@ -1101,7 +1101,7 @@ class Model(object):
     @classmethod
     def saving(cls, callback):
         """
-        _Register a saving model event with the dispatcher.
+        Register a saving model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1110,7 +1110,7 @@ class Model(object):
     @classmethod
     def saved(cls, callback):
         """
-        _Register a saved model event with the dispatcher.
+        Register a saved model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1119,7 +1119,7 @@ class Model(object):
     @classmethod
     def updating(cls, callback):
         """
-        _Register a updating model event with the dispatcher.
+        Register a updating model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1128,7 +1128,7 @@ class Model(object):
     @classmethod
     def updated(cls, callback):
         """
-        _Register a updated model event with the dispatcher.
+        Register a updated model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1137,7 +1137,7 @@ class Model(object):
     @classmethod
     def creating(cls, callback):
         """
-        _Register a creating model event with the dispatcher.
+        Register a creating model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1146,7 +1146,7 @@ class Model(object):
     @classmethod
     def created(cls, callback):
         """
-        _Register a created model event with the dispatcher.
+        Register a created model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1155,7 +1155,7 @@ class Model(object):
     @classmethod
     def deleting(cls, callback):
         """
-        _Register a deleting model event with the dispatcher.
+        Register a deleting model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1164,7 +1164,7 @@ class Model(object):
     @classmethod
     def deleted(cls, callback):
         """
-        _Register a deleted model event with the dispatcher.
+        Register a deleted model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1184,7 +1184,7 @@ class Model(object):
     @classmethod
     def _register_model_event(cls, event, callback):
         """
-        _Register a model event with the dispatcher.
+        Register a model event with the dispatcher.
 
         :param event: The event
         :type event: str
