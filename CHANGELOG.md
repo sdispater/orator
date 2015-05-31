@@ -1,3 +1,16 @@
+### 0.6
+
+- Adds pagination support
+- Adds model events support
+- Implements Model.load() method
+- Adds to_json() method to collections
+- Makes to_json() methods consistent.
+- Fixes how relations are retrieved from strings
+- Fixes classes lookup in morph_to() method
+- Fixes mutators not being called when initiating models
+- Improves models attributes lookup
+- Removes DynamicProperty class. Relations are dynamic themselves.
+
 ### 0.5
 
 (May 24th, 2015)
