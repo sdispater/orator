@@ -123,9 +123,16 @@ class BelongsTo(Relation):
 
         for model in models:
             value = model.get_attribute(foreign)
+            relationship = self.new_instance(model)
 
             if value in dictionary:
-                model.set_relation(relation, dictionary[value])
+                results = dictionary[value]
+            else:
+                results = None
+
+            relationship.set_results(results)
+
+            model.set_relation(relation, relationship)
 
         return models
 
@@ -178,3 +185,12 @@ class BelongsTo(Relation):
 
     def get_qualified_other_key_name(self):
         return '%s.%s' % (self._related.get_table(), self._other_key)
+
+    def new_instance(self, model):
+        return self.__class__(
+            self._query,
+            model,
+            self._foreign_key,
+            self._other_key,
+            self._relation
+        )

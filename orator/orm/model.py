@@ -131,6 +131,9 @@ class Model(object):
         """
         The booting method of the model.
         """
+        if not cls.__table__ and not cls is Model:
+            cls.__table__ = inflection.tableize(cls.__name__)
+
         cls._accessor_cache[cls] = {}
         cls._mutator_cache[cls] = {}
 

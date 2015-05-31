@@ -336,10 +336,16 @@ class BelongsToMany(Relation):
         for model in models:
             key = model.get_key()
 
+            relationship = self.new_instance(model)
+
             if key in dictionary:
                 collection = self._related.new_collection(dictionary[key])
+            else:
+                collection = self._related.new_collection()
 
-                model.set_relation(relation, collection)
+            relationship.set_results(collection)
+
+            model.set_relation(relation, relationship)
 
         return models
 
@@ -838,3 +844,13 @@ class BelongsToMany(Relation):
 
     def get_relation_name(self):
         return self._relation_name
+
+    def new_instance(self, model):
+        return self.__class__(
+            self._query,
+            model,
+            self._table,
+            self._foreign_key,
+            self._other_key,
+            self._relation_name
+        )

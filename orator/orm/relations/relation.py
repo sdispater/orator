@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from cached_property import cached_property
+from ...utils import cached_property
 from ...query.expression import QueryExpression
 from ..collection import Collection
 
@@ -99,6 +99,9 @@ class Relation(object):
         del self.results
 
         return self.results
+
+    def set_results(self, results):
+        self.results = results
 
     def get_eager(self):
         """

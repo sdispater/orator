@@ -103,11 +103,16 @@ class HasManyThrough(Relation):
 
         for model in models:
             key = model.get_key()
+            relationship = self.new_instance(model)
 
             if key in dictionary:
                 value = self._related.new_collection(dictionary[key])
+            else:
+                value = self._related.new_collection()
 
-                model.set_relation(relation, value)
+            relationship.set_results(value)
+
+            model.set_relation(relation, relationship)
 
         return models
 
@@ -175,3 +180,12 @@ class HasManyThrough(Relation):
 
     def get_has_compare_key(self):
         return self._far_parent.get_qualified_key_name()
+
+    def new_instance(self, model):
+        return self.__class__(
+            self._query,
+            model,
+            self._parent,
+            self._first_key,
+            self._second_key
+        )

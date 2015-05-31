@@ -80,11 +80,14 @@ class OrmHasOneTestCase(OratorTestCase):
         model3 = OrmHasOneModelStub()
         model3.id = 3
 
+        relation.get_query().should_receive('where').with_args('table.foreign_key', '=', 2)
+        relation.get_query().should_receive('where').with_args('table.foreign_key', '=', 3)
+
         models = relation.match([model1, model2, model3], Collection([result1, result2]), 'foo')
 
         self.assertEqual(1, models[0].foo.foreign_key)
         self.assertEqual(2, models[1].foo.foreign_key)
-        self.assertFalse(hasattr(models[2], 'foo'))
+        self.assertIsNone(models[2].foo.results)
 
     def test_relation_count_query_can_be_built(self):
         relation = self._get_relation()
@@ -107,6 +110,8 @@ class OrmHasOneTestCase(OratorTestCase):
         builder = Builder(query)
         builder.should_receive('where').with_args('table.foreign_key', '=', 1)
         related = flexmock(Model())
+        related_query = QueryBuilder(None, QueryGrammar(), None)
+        related.should_receive('new_query').and_return(Builder(related_query))
         builder.should_receive('get_model').and_return(related)
         parent = flexmock(Model())
         parent.should_receive('get_attribute').with_args('id').and_return(1)

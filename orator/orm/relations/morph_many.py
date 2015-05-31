@@ -32,3 +32,7 @@ class MorphMany(MorphOneOrMany):
         :type relation:  str
         """
         return self.match_many(models, results, relation)
+
+    def new_instance(self, model):
+        return MorphMany(self._query, model,
+                         self._morph_type, self._foreign_key, self._local_key)

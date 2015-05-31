@@ -110,7 +110,9 @@ class OrmBelongsToTestCase(OratorTestCase):
         model3 = OrmBelongsToManyModelStub()
         model3.id = 3
 
-        relation.get_related().should_receive('new_collection').replace_with(lambda l: Collection(l))
+        relation.get_related().should_receive('new_collection').replace_with(lambda l=None: Collection(l))
+        relation.get_query().should_receive('where').once().with_args('user_role.user_id', '=', 2)
+        relation.get_query().should_receive('where').once().with_args('user_role.user_id', '=', 3)
         models = relation.match([model1, model2, model3], Collection([result1, result2, result3]), 'foo')
 
         self.assertEqual(1, models[0].foo[0].pivot.user_id)
@@ -118,7 +120,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         self.assertEqual(2, models[1].foo[0].pivot.user_id)
         self.assertEqual(2, models[1].foo[1].pivot.user_id)
         self.assertEqual(2, len(models[1].foo))
-        self.assertFalse(hasattr(models[2], 'foo'))
+        self.assertTrue(models[2].foo.is_empty())
 
     def test_relation_is_properly_initialized(self):
         relation = self._get_relation()
@@ -538,8 +540,8 @@ class OrmBelongsToTestCase(OratorTestCase):
         related.should_receive('get_table').and_return('roles')
         related.should_receive('new_pivot').replace_with(lambda *args: Pivot(*args))
 
-        builder.get_query().should_receive('join').once().with_args('user_role', 'roles.id', '=', 'user_role.role_id')
-        builder.should_receive('where').once().with_args('user_role.user_id', '=', 1)
+        builder.get_query().should_receive('join').at_least().once().with_args('user_role', 'roles.id', '=', 'user_role.role_id')
+        builder.should_receive('where').at_least().once().with_args('user_role.user_id', '=', 1)
 
         return builder, parent, 'user_role', 'user_id', 'role_id', 'relation_id'
 
