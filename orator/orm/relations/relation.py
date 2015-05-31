@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ...utils import cached_property
+from cached_property import cached_property
 from ...query.expression import QueryExpression
 from ..collection import Collection
 
