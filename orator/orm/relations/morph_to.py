@@ -157,8 +157,10 @@ class MorphTo(BelongsTo):
 
         :rtype: Model
         """
+        from ..model import _Register
+
         klass = None
-        for cls in orator.orm.model.Model.__subclasses__():
+        for cls in _Register.values():
             morph_class = cls.__morph_class__ or cls.__name__
             if morph_class == type:
                 klass = cls

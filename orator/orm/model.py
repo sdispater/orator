@@ -20,9 +20,17 @@ from ..events import Event
 
 class ModelRegister(dict):
 
-    pass
+    def __init__(self, *args, **kwargs):
+        self.inverse = {}
 
-Register = ModelRegister()
+        super(ModelRegister, self).__init__(*args, **kwargs)
+
+    def __setitem__(self, key, value):
+        super(ModelRegister, self).__setitem__(key, value)
+
+        self.inverse[value] = key
+
+_Register = ModelRegister()
 
 
 class MetaModel(type):
@@ -31,7 +39,7 @@ class MetaModel(type):
 
     def __init__(cls, *args, **kwargs):
         name = cls.__table__ or inflection.tableize(cls.__name__)
-        Register[name] = cls
+        _Register[name] = cls
 
         super(MetaModel, cls).__init__(*args, **kwargs)
 
@@ -131,9 +139,6 @@ class Model(object):
         """
         The booting method of the model.
         """
-        if not cls.__table__ and not cls is Model:
-            cls.__table__ = inflection.tableize(cls.__name__)
-
         cls._accessor_cache[cls] = {}
         cls._mutator_cache[cls] = {}
 
@@ -165,7 +170,7 @@ class Model(object):
     @classmethod
     def add_global_scope(cls, scope):
         """
-        Register a new global scope on the model.
+        _Register a new global scope on the model.
 
         :param scope: The scope to register
         :type scope: orator.orm.scopes.scope.Scope
@@ -208,7 +213,7 @@ class Model(object):
     @classmethod
     def observe(cls, observer):
         """
-        Register an observer with the Model.
+        _Register an observer with the Model.
 
         :param observer: The observer
         """
@@ -738,7 +743,7 @@ class Model(object):
 
         klass = None
         parent_type = getattr(self, type_column)
-        for cls in Register.values():
+        for cls in _Register.values():
             morph_class = cls.__morph_class__ or cls.__name__
             if morph_class == parent_type:
                 klass = cls
@@ -1001,7 +1006,7 @@ class Model(object):
         if not isinstance(related, basestring) and issubclass(related, Model):
             return related
 
-        related_class = Register.get(related)
+        related_class = _Register.get(related)
 
         if related_class:
             return related_class
@@ -1096,7 +1101,7 @@ class Model(object):
     @classmethod
     def saving(cls, callback):
         """
-        Register a saving model event with the dispatcher.
+        _Register a saving model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1105,7 +1110,7 @@ class Model(object):
     @classmethod
     def saved(cls, callback):
         """
-        Register a saved model event with the dispatcher.
+        _Register a saved model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1114,7 +1119,7 @@ class Model(object):
     @classmethod
     def updating(cls, callback):
         """
-        Register a updating model event with the dispatcher.
+        _Register a updating model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1123,7 +1128,7 @@ class Model(object):
     @classmethod
     def updated(cls, callback):
         """
-        Register a updated model event with the dispatcher.
+        _Register a updated model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1132,7 +1137,7 @@ class Model(object):
     @classmethod
     def creating(cls, callback):
         """
-        Register a creating model event with the dispatcher.
+        _Register a creating model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1141,7 +1146,7 @@ class Model(object):
     @classmethod
     def created(cls, callback):
         """
-        Register a created model event with the dispatcher.
+        _Register a created model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1150,7 +1155,7 @@ class Model(object):
     @classmethod
     def deleting(cls, callback):
         """
-        Register a deleting model event with the dispatcher.
+        _Register a deleting model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1159,7 +1164,7 @@ class Model(object):
     @classmethod
     def deleted(cls, callback):
         """
-        Register a deleted model event with the dispatcher.
+        _Register a deleted model event with the dispatcher.
 
         :type callback: callable
         """
@@ -1179,7 +1184,7 @@ class Model(object):
     @classmethod
     def _register_model_event(cls, event, callback):
         """
-        Register a model event with the dispatcher.
+        _Register a model event with the dispatcher.
 
         :param event: The event
         :type event: str
@@ -1696,10 +1701,7 @@ class Model(object):
         :return: The name of the table
         :rtype: str
         """
-        if self.__table__ is not None:
-            return self.__table__
-
-        return inflection.tableize(self.__class__.__name__)
+        return _Register.inverse[self.__class__]
 
     def set_table(self, table):
         """
@@ -1708,7 +1710,13 @@ class Model(object):
         :param table: The table name
         :type table: str
         """
+        old_table = _Register.inverse.get(self.__class__, None)
         self.__table__ = table
+
+        if old_table:
+            del _Register[old_table]
+
+        _Register[self.__table__] = self.__class__
 
     def get_key(self):
         """
