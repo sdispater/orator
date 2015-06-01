@@ -163,7 +163,7 @@ class SchemaBuilderSQLiteIntegrationTestCase(OratorTestCase):
         votes_column = self.connection().get_column('posts', 'votes')
         self.assertFalse(name_column.get_notnull())
         self.assertTrue(votes_column.get_notnull())
-        self.assertEqual("'0'", votes_column.get_default())
+        self.assertEqual("0", votes_column.get_default())
         foreign_keys = self.connection().get_schema_manager().list_table_foreign_keys('posts')
 
         self.assertEqual(len(foreign_keys), len(old_foreign_keys))

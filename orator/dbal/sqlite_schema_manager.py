@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from .schema_manager import SchemaManager
 from .platforms.sqlite_platform import SQLitePlatform
 from .column import Column
@@ -7,23 +8,66 @@ from .column import Column
 
 class SQLiteSchemaManager(SchemaManager):
 
-    def list_table_columns(self, table):
-        sql = self._platform.get_list_table_columns_sql(table)
+    def _get_portable_table_column_definition(self, table_column):
+        parts = table_column['type'].split('(')
+        table_column['type'] = parts[0]
+        if len(parts) > 1:
+            length = parts[1].strip(')')
+            table_column['length'] = length
 
-        cursor = self._connection.get_connection().cursor()
-        options = self._platform.get_column_options()
-        table_columns = []
-        for column_info in cursor.execute(sql).fetchall():
-            column_info = dict(column_info.items())
-            column_info['default'] = column_info['dflt_value']
+        db_type = table_column['type'].lower()
+        length = table_column.get('length', None)
+        unsigned = False
 
-            column = Column(column_info['name'], column_info['type'], column_info)
+        if ' unsigned' in db_type:
+            db_type = db_type.replace(' unsigned', '')
+            unsigned = True
 
-            column.set_platform_options({x: column_info[x] for x in options})
+        fixed = False
 
-            table_columns.append(column)
+        type = self._platform.get_type_mapping(db_type)
+        default = table_column['dflt_value']
+        if default == 'NULL':
+            default = None
 
-        return table_columns
+        if default is not None:
+            # SQLite returns strings wrapped in single quotes, so we need to strip them
+            default = re.sub("^'(.*)'$", '\\1', default)
+
+        notnull = bool(table_column['notnull'])
+
+        if 'name' not in table_column:
+            table_column['name'] = ''
+
+        precision = None
+        scale = None
+
+        if db_type in ['char']:
+            fixed = True
+        elif db_type in ['float', 'double', 'real', 'decimal', 'numeric']:
+            if 'length' in table_column:
+                if ',' not in table_column['length']:
+                    table_column['length'] += ',0'
+
+                precision, scale = tuple(map(lambda x: x.strip(), table_column['length'].split(',')))
+
+            length = None
+
+        options = {
+            'length': length,
+            'unsigned': bool(unsigned),
+            'fixed': fixed,
+            'notnull': notnull,
+            'default': default,
+            'precision': precision,
+            'scale': scale,
+            'autoincrement': False
+        }
+
+        column = Column(table_column['name'], type, options)
+        column.set_platform_option('pk', table_column['pk'])
+
+        return column
 
     def list_table_indexes(self, table):
         sql = self._platform.get_list_table_indexes_sql(table)
