@@ -1,5 +1,7 @@
 ### 0.6
 
+(May 31, 2015)
+
 - Adds pagination support
 - Adds model events support
 - Implements Model.load() method
