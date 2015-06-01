@@ -30,7 +30,15 @@ setup(
     url='https://github.com/sdispater/orator',
     download_url='https://github.com/sdispater/orator/archive/%s.tar.gz' % __version__,
     packages=find_packages(),
-    install_requires=['simplejson', 'arrow', 'inflection', 'six'],
+    install_requires=[
+        'simplejson',
+        'arrow',
+        'inflection',
+        'six',
+        'cleo',
+        'blinker',
+        'cached_property'
+    ],
     tests_require=['pytest', 'mock', 'flexmock'],
     test_suite='nose.collector',
     scripts=['bin/orator'],

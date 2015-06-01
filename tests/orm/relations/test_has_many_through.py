@@ -56,6 +56,8 @@ class OrmHasManyThroughTestCase(OratorTestCase):
         model3.id = 3
 
         relation.get_related().should_receive('new_collection').replace_with(lambda l=None: Collection(l or []))
+        relation.get_query().should_receive('where').with_args('users.country_id', '=', 2)
+        relation.get_query().should_receive('where').with_args('users.country_id', '=', 3)
         models = relation.match([model1, model2, model3], Collection([result1, result2, result3]), 'foo')
 
         self.assertEqual(1, models[0].foo[0].country_id)
@@ -63,13 +65,22 @@ class OrmHasManyThroughTestCase(OratorTestCase):
         self.assertEqual(2, models[1].foo[0].country_id)
         self.assertEqual(2, models[1].foo[1].country_id)
         self.assertEqual(2, len(models[1].foo))
-        self.assertFalse(hasattr(models[2], 'foo'))
+        self.assertTrue(models[2].foo.is_empty())
+
+    def test_get(self):
+        relation = self._get_relation()
+
+        query = relation.get_query()
+        query.get_query().should_receive('add_select').once().with_args('posts.*', 'users.country_id').and_return(query)
+        query.should_receive('get_models').and_return([])
+
+        relation.get()
 
     def _get_relation(self):
         flexmock(Builder)
         query = flexmock(QueryBuilder(None, QueryGrammar(), None))
         builder = Builder(query)
-        builder.get_query().should_receive('join').once().with_args('users', 'users.id', '=', 'posts.user_id')
+        builder.get_query().should_receive('join').at_least().once().with_args('users', 'users.id', '=', 'posts.user_id')
         builder.should_receive('where').with_args('users.country_id', '=', 1)
         country = flexmock(Model())
         country.should_receive('get_key').and_return(1)

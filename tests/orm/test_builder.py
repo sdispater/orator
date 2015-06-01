@@ -327,6 +327,7 @@ class BuilderTestCase(OratorTestCase):
         relation.should_receive('add_eager_constraints').once().with_args(['models'])
         relation.should_receive('init_relation').once().with_args(['models'], 'orders').and_return(['models'])
         relation.should_receive('get_eager').once().and_return(['results'])
+        relation.should_receive('get_query').once().and_return(relation)
         relation.should_receive('match').once()\
             .with_args(['models'], ['results'], 'orders').and_return(['models.matched'])
         builder.should_receive('get_relation').once().with_args('orders').and_return(relation)
@@ -446,25 +447,36 @@ class BuilderTestCase(OratorTestCase):
         return builder
 
 
-class OrmBuilderTestModelFarRelatedStub(Model):
+class TestModel(Model):
+
+    @classmethod
+    def _boot_columns(cls):
+        return []
+
+    @classmethod
+    def resolve_connection(cls, connection=None):
+        return flexmock(Connection(None))
+
+
+class OrmBuilderTestModelFarRelatedStub(TestModel):
 
     pass
 
 
-class OrmBuilderTestModelScopeStub(Model):
+class OrmBuilderTestModelScopeStub(TestModel):
 
     def scope_approved(self, query):
         query.where('foo', 'bar')
 
 
-class OrmBuilderTestModelCloseRelated(Model):
+class OrmBuilderTestModelCloseRelated(TestModel):
 
     @property
     def bar(self):
         return self.has_many(OrmBuilderTestModelFarRelatedStub)
 
 
-class OrmBuilderTestModelParentStub(Model):
+class OrmBuilderTestModelParentStub(TestModel):
 
     @property
     def foo(self):

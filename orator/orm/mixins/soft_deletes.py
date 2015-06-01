@@ -50,11 +50,16 @@ class SoftDeletes(object):
         """
         Restore a soft-deleted model instance.
         """
+        if self._fire_model_event('restoring') is False:
+            return False
+
         setattr(self, self.get_deleted_at_column(), None)
 
         self.set_exists(True)
 
         result = self.save()
+
+        self._fire_model_event('restored')
 
         return result
 
@@ -89,6 +94,24 @@ class SoftDeletes(object):
         column = instance.get_qualified_deleted_at_column()
 
         return instance.new_query_without_scope(SoftDeletingScope()).where_not_null(column)
+
+    @classmethod
+    def restoring(cls, callback):
+        """
+        Register a restoring model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('restoring', callback)
+
+    @classmethod
+    def restored(cls, callback):
+        """
+        Register a restored model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('restored', callback)
 
     def get_deleted_at_column(self):
         """

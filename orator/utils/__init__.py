@@ -30,6 +30,9 @@ class Null(object):
 
 
 def decode(s, encodings=('utf8', 'ascii', 'latin1')):
+    if not PY2:
+        return s
+
     for encoding in encodings:
         try:
             return s.decode(encoding)

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import simplejson as json
+
 
 class Collection(object):
 
@@ -150,6 +152,9 @@ class Collection(object):
 
         return Collection([x for x in self._items if not (x in seen or seen_add(x))])
 
+    def is_empty(self):
+        return len(self._items) == 0
+
     def _get_items(self, items):
         if isinstance(items, Collection):
             items = items.all()
@@ -164,6 +169,9 @@ class Collection(object):
         return list(map(lambda value: value.to_dict() if hasattr(value, 'to_dict') else value,
                         self._items))
 
+    def to_json(self, **options):
+        return json.dumps(self.to_dict(), **options)
+
     def __len__(self):
         return len(self._items)
 
@@ -172,4 +180,7 @@ class Collection(object):
             yield item
 
     def __getitem__(self, item):
+        if isinstance(item, slice):
+            return Collection.make(self._items[item])
+
         return self._items[item]

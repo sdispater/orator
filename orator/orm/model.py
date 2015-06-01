@@ -14,11 +14,34 @@ from .relations import (
     Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough,
     MorphOne, MorphMany, MorphTo, MorphToMany
 )
-from .relations.dynamic_property import DynamicProperty
 from .utils import mutator, accessor
+from ..events import Event
+
+
+class ModelRegister(dict):
+
+    def __init__(self, *args, **kwargs):
+        self.inverse = {}
+
+        super(ModelRegister, self).__init__(*args, **kwargs)
+
+    def __setitem__(self, key, value):
+        super(ModelRegister, self).__setitem__(key, value)
+
+        self.inverse[value] = key
+
+_Register = ModelRegister()
 
 
 class MetaModel(type):
+
+    __register__ = {}
+
+    def __init__(cls, *args, **kwargs):
+        name = cls.__table__ or inflection.tableize(cls.__name__)
+        _Register[name] = cls
+
+        super(MetaModel, cls).__init__(*args, **kwargs)
 
     def __getattr__(cls, item):
         try:
@@ -57,6 +80,8 @@ class Model(object):
 
     __morph_class__ = None
 
+    _per_page = 15
+
     _with = []
 
     _booted = {}
@@ -67,6 +92,12 @@ class Model(object):
     _mutator_cache = {}
 
     __resolver = None
+    __columns__ = []
+
+    __dispatcher__ = Event()
+    __observables__ = []
+
+    __register__ = {}
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
@@ -97,7 +128,11 @@ class Model(object):
         if not klass._booted.get(klass):
             klass._booted[klass] = True
 
+            self._fire_model_event('booting')
+
             klass._boot()
+
+            self._fire_model_event('booted')
 
     @classmethod
     def _boot(cls):
@@ -114,6 +149,13 @@ class Model(object):
                 cls._mutator_cache[cls][method.attribute] = method
 
         cls._boot_mixins()
+        cls._boot_columns()
+
+    @classmethod
+    def _boot_columns(cls):
+        connection = cls.resolve_connection()
+        columns = connection.get_schema_manager().list_table_columns(cls.__table__ or inflection.tableize(cls.__name__))
+        cls.__columns__ = list(columns.keys())
 
     @classmethod
     def _boot_mixins(cls):
@@ -167,6 +209,17 @@ class Model(object):
         :rtype: dict
         """
         return self.__class__._global_scopes.get(self.__class__, {})
+
+    @classmethod
+    def observe(cls, observer):
+        """
+        Register an observer with the Model.
+
+        :param observer: The observer
+        """
+        for event in cls.get_observable_events():
+            if hasattr(observer, event):
+                cls._register_model_event(event, getattr(observer, event))
 
     def fill(self, **attributes):
         """
@@ -515,7 +568,7 @@ class Model(object):
         if self.exists:
             return self.__class__.with_(with_).where(key, self.get_key()).first()
 
-    def load(self, relations):
+    def load(self, *relations):
         """
         Eager load relations on the model
 
@@ -525,7 +578,11 @@ class Model(object):
         :return: The current model instance
         :rtype: Model
         """
-        # TODO
+        query = self.new_query().with_(*relations)
+
+        query.eager_load_relations([self])
+
+        return self
 
     @classmethod
     def with_(cls, *relations):
@@ -570,7 +627,14 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return HasOne(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+        rel = HasOne(instance.new_query(),
+                     self,
+                     '%s.%s' % (instance.get_table(), foreign_key),
+                     local_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def morph_one(self, related, name, type_column=None, id_column=None, local_key=None):
         """
@@ -604,9 +668,13 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return MorphOne(instance.new_query(), self,
-                        '%s.%s' % (table, type_column),
-                        '%s.%s' % (table, id_column), local_key)
+        rel = MorphOne(instance.new_query(), self,
+                       '%s.%s' % (table, type_column),
+                       '%s.%s' % (table, id_column), local_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def belongs_to(self, related, foreign_key=None, other_key=None, relation=None):
         """
@@ -641,7 +709,11 @@ class Model(object):
         if not other_key:
             other_key = instance.get_key_name()
 
-        return BelongsTo(query, self, foreign_key, other_key, relation)
+        rel = BelongsTo(query, self, foreign_key, other_key, relation)
+
+        self.__relations[relation] = rel
+
+        return rel
 
     def morph_to(self, name=None, type_column=None, id_column=None):
         """
@@ -671,7 +743,7 @@ class Model(object):
 
         klass = None
         parent_type = getattr(self, type_column)
-        for cls in Model.__subclasses__():
+        for cls in _Register.values():
             morph_class = cls.__morph_class__ or cls.__name__
             if morph_class == parent_type:
                 klass = cls
@@ -679,7 +751,13 @@ class Model(object):
 
         instance = klass()
 
-        return MorphTo(instance.new_query(), self, id_column, instance.get_key_name(), type_column, name)
+        rel = MorphTo(instance.new_query(),
+                      self, id_column,
+                      instance.get_key_name(), type_column, name)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def has_many(self, related, foreign_key=None, local_key=None):
         """
@@ -709,7 +787,14 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return HasMany(instance.new_query(), self, '%s.%s' % (instance.get_table(), foreign_key), local_key)
+        rel = HasMany(instance.new_query(),
+                      self,
+                      '%s.%s' % (instance.get_table(), foreign_key),
+                      local_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def has_many_through(self, related, through, first_key=None, second_key=None):
         """
@@ -734,7 +819,7 @@ class Model(object):
         if name in self.__relations:
             return self.__relations[name]
 
-        through = through()
+        through = self._get_related(through)()
 
         if not first_key:
             first_key = self.get_foreign_key()
@@ -742,8 +827,12 @@ class Model(object):
         if not second_key:
             second_key = through.get_foreign_key()
 
-        return HasManyThrough(self._get_related(related)().new_query(),
-                              self, through, first_key, second_key)
+        rel = HasManyThrough(self._get_related(related)().new_query(),
+                             self, through, first_key, second_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def morph_many(self, related, name, type_column=None, id_column=None, local_key=None):
         """
@@ -763,10 +852,12 @@ class Model(object):
 
         :rtype: MorphMany
         """
-        instance = self._get_related(related)()
+        relation = inspect.stack()[1][3]
 
-        if name in self.__relations:
-            return self.__relations[name]
+        if relation in self.__relations:
+            return self.__relations[relation]
+
+        instance = self._get_related(related)()
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
@@ -775,9 +866,13 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        return MorphMany(instance.new_query(), self,
-                         '%s.%s' % (table, type_column),
-                         '%s.%s' % (table, id_column), local_key)
+        rel = MorphMany(instance.new_query(), self,
+                        '%s.%s' % (table, type_column),
+                        '%s.%s' % (table, id_column), local_key)
+
+        self.__relations[name] = rel
+
+        return rel
 
     def belongs_to_many(self, related, table=None, foreign_key=None, other_key=None, relation=None):
         """
@@ -818,7 +913,11 @@ class Model(object):
 
         query = instance.new_query()
 
-        return BelongsToMany(query, self, table, foreign_key, other_key, relation)
+        rel = BelongsToMany(query, self, table, foreign_key, other_key, relation)
+
+        self.__relations[relation] = rel
+
+        return rel
 
     def morph_to_many(self, related, name, table=None, foreign_key=None, other_key=None, inverse=False):
         """
@@ -859,8 +958,12 @@ class Model(object):
         if not table:
             table = inflection.pluralize(name)
 
-        return MorphToMany(query, self, name, table,
-                           foreign_key, other_key, caller, inverse)
+        rel = MorphToMany(query, self, name, table,
+                          foreign_key, other_key, caller, inverse)
+
+        self.__relations[caller] = rel
+
+        return rel
 
     def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None):
         """
@@ -903,10 +1006,10 @@ class Model(object):
         if not isinstance(related, basestring) and issubclass(related, Model):
             return related
 
-        for cls in Model.__subclasses__():
-            table = cls.__table__ or inflection.tableize(cls.__name__)
-            if table == related:
-                return cls
+        related_class = _Register.get(related)
+
+        if related_class:
+            return related_class
 
         raise RelatedClassNotFound(related)
 
@@ -967,11 +1070,16 @@ class Model(object):
             raise Exception('No primary key defined on the model.')
 
         if self.__exists:
-            self._touch_owners()
+            if self._fire_model_event('deleting') is False:
+                return False
+
+            self.touch_owners()
 
             self._perform_delete_on_model()
 
             self.__exists = False
+
+            self._fire_model_event('deleted')
 
             return True
 
@@ -990,7 +1098,117 @@ class Model(object):
 
         return self.new_query().where(self.get_key_name(), self.get_key()).delete()
 
-    # TODO: events
+    @classmethod
+    def saving(cls, callback):
+        """
+        Register a saving model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('saving', callback)
+
+    @classmethod
+    def saved(cls, callback):
+        """
+        Register a saved model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('saved', callback)
+
+    @classmethod
+    def updating(cls, callback):
+        """
+        Register a updating model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('updating', callback)
+
+    @classmethod
+    def updated(cls, callback):
+        """
+        Register a updated model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('updated', callback)
+
+    @classmethod
+    def creating(cls, callback):
+        """
+        Register a creating model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('creating', callback)
+
+    @classmethod
+    def created(cls, callback):
+        """
+        Register a created model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('created', callback)
+
+    @classmethod
+    def deleting(cls, callback):
+        """
+        Register a deleting model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('deleting', callback)
+
+    @classmethod
+    def deleted(cls, callback):
+        """
+        Register a deleted model event with the dispatcher.
+
+        :type callback: callable
+        """
+        cls._register_model_event('deleted', callback)
+
+    @classmethod
+    def flush_event_listeners(cls):
+        """
+        Remove all of the event listeners for the model.
+        """
+        if not cls.__dispatcher__:
+            return
+
+        for event in cls.get_observable_events():
+            cls.__dispatcher__.forget('%s: %s' % (event, cls.__name__))
+
+    @classmethod
+    def _register_model_event(cls, event, callback):
+        """
+        Register a model event with the dispatcher.
+
+        :param event: The event
+        :type event: str
+
+        :param callback: The callback
+        :type callback: callable
+        """
+        if cls.__dispatcher__:
+            cls.__dispatcher__.listen('%s: %s' % (event, cls.__name__), callback)
+
+    @classmethod
+    def get_observable_events(cls):
+        """
+        Get the observable event names.
+
+        :rtype: list
+        """
+        default_events = [
+            'creating', 'created', 'updating', 'updated',
+            'deleting', 'deleted', 'saving', 'saved',
+            'restoring', 'restored'
+        ]
+
+        return default_events + cls.__observables__
 
     def _increment(self, column, amount=1):
         """
@@ -1114,6 +1332,9 @@ class Model(object):
 
         query = self.new_query()
 
+        if self._fire_model_event('saving') is False:
+            return False
+
         if self.__exists:
             saved = self._perform_update(query, options)
         else:
@@ -1128,10 +1349,12 @@ class Model(object):
         """
         Finish processing on a successful save operation.
         """
+        self._fire_model_event('saved')
+
         self.sync_original()
 
         if options.get('touch', True):
-            self._touch_owners()
+            self.touch_owners()
 
     def _perform_update(self, query, options=None):
         """
@@ -1149,7 +1372,9 @@ class Model(object):
         dirty = self.get_dirty()
 
         if len(dirty):
-            # TODO: "updating" event
+            if self._fire_model_event('updating') is False:
+                return False
+
             if self.__timestamps__ and options.get('timestamps', True):
                 self._update_timestamps()
 
@@ -1158,7 +1383,7 @@ class Model(object):
             if len(dirty):
                 self._set_keys_for_save_query(query).update(dirty)
 
-                # TODO: "updated" event
+                self._fire_model_event('updated')
 
         return True
 
@@ -1175,7 +1400,8 @@ class Model(object):
         if options is None:
             options = {}
 
-        # TODO: "creating" event
+        if self._fire_model_event('creating') is False:
+            return False
 
         if self.__timestamps__ and options.get('timestamps', True):
             self._update_timestamps()
@@ -1189,7 +1415,7 @@ class Model(object):
 
         self.__exists = True
 
-        # TODO: "created" event
+        self._fire_model_event('created')
 
         return True
 
@@ -1209,7 +1435,7 @@ class Model(object):
 
         self.set_attribute(key_name, id)
 
-    def _touch_owners(self):
+    def touch_owners(self):
         """
         Touch the owning relations of the model.
         """
@@ -1231,6 +1457,22 @@ class Model(object):
         :rtype: bool
         """
         return relation in self.__touches__
+
+    def _fire_model_event(self, event):
+        """
+        Fire the given event for the model.
+
+        :type event: str
+        """
+        if not self.__dispatcher__:
+            return True
+
+        # We will append the names of the class to the event to distinguish it from
+        # other model events that are fired, allowing us to listen on each model
+        # event set individually instead of catching event for all the models.
+        event = '%s: %s' % (event, self.__class__.__name__)
+
+        return self.__dispatcher__.fire(event, self)
 
     def _set_keys_for_save_query(self, query):
         """
@@ -1459,10 +1701,7 @@ class Model(object):
         :return: The name of the table
         :rtype: str
         """
-        if self.__table__ is not None:
-            return self.__table__
-
-        return inflection.tableize(self.__class__.__name__)
+        return _Register.inverse[self.__class__]
 
     def set_table(self, table):
         """
@@ -1471,7 +1710,13 @@ class Model(object):
         :param table: The table name
         :type table: str
         """
+        old_table = _Register.inverse.get(self.__class__, None)
         self.__table__ = table
+
+        if old_table:
+            del _Register[old_table]
+
+        _Register[self.__table__] = self.__class__
 
     def get_key(self):
         """
@@ -1533,6 +1778,14 @@ class Model(object):
             return self.__class__.__name__
 
         return self.__morph_class__
+
+    def get_per_page(self):
+        """
+        Get the number of models to return per page.
+
+        :rtype: int
+        """
+        return self._per_page
 
     def get_foreign_key(self):
         """
@@ -1757,7 +2010,7 @@ class Model(object):
             if not key in attributes:
                 continue
 
-            attributes[key] = self._format_date(self.as_datetime(attributes[key]))
+            attributes[key] = self._format_date(attributes[key])
 
         mutated_attributes = self._get_mutated_attributes()
 
@@ -1841,10 +2094,10 @@ class Model(object):
 
         :rtype: dict
         """
-        if len(self.get_visible()) > 0:
-            return {x: values[x] for x in values.keys() if x in self.get_visible()}
+        if len(self.__visible__) > 0:
+            return {x: values[x] for x in values.keys() if x in self.__visible__}
 
-        return {x: values[x] for x in values.keys() if x not in self.get_hidden() and not x.startswith('_')}
+        return {x: values[x] for x in values.keys() if x not in self.__hidden__ and not x.startswith('_')}
 
     def get_attribute(self, key, original=None):
         """
@@ -1916,7 +2169,7 @@ class Model(object):
 
             return relations.get_results()
 
-        self.__relations[method] = DynamicProperty(results_getter, relations)
+        self.__relations[method] = relations
 
         return self.__relations[method]
 
@@ -2073,13 +2326,21 @@ class Model(object):
 
         :rtype: str
         """
+        if date is None:
+            return date
+
         format = self.get_date_format()
 
         if format == 'iso':
+            if isinstance(date, basestring):
+                return arrow.get(date).isoformat()
+
             return date.isoformat()
         else:
             if isinstance(date, arrow.Arrow):
                 return date.format(format)
+            elif isinstance(date, basestring):
+                return arrow.get(date).format(format)
 
             return date.strftime(format)
 
@@ -2087,6 +2348,9 @@ class Model(object):
         """
         Set a given attribute on the model.
         """
+        if self._has_set_mutator(key):
+            return super(Model, self).__setattr__(key, value)
+
         if key in self.get_dates() and value:
             value = self.from_datetime(value)
 
@@ -2371,22 +2635,15 @@ class Model(object):
 
         return []
 
-    def __getattribute__(self, item):
-        try:
-            attr = super(Model, self).__getattribute__(item)
-            if isinstance(attr, Relation):
-                return self.get_attribute(item, attr)
-
-            return attr
-        except AttributeError:
-            return self.get_attribute(item)
+    def __getattr__(self, item):
+        return self.get_attribute(item)
 
     def __setattr__(self, key, value):
         if key.startswith(('_Model__', '_%s__' % self.__class__.__name__, '__')):
             return super(Model, self).__setattr__(key, value)
 
         if self._has_set_mutator(key):
-            return super(Model, self).__setattr__(key, value)
+            return self.set_attribute(key, value)
 
         if callable(getattr(self, key, None)):
             return super(Model, self).__setattr__(key, value)

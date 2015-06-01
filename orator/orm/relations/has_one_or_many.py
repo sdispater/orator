@@ -73,7 +73,7 @@ class HasOneOrMany(Relation):
         """
         return self._match_one_or_many(models, results, relation, 'many')
 
-    def _match_one_or_many(self, models, results, relation, type):
+    def _match_one_or_many(self, models, results, relation, type_):
         """
         Match the eargerly loaded resuls to their single parents.
 
@@ -86,8 +86,8 @@ class HasOneOrMany(Relation):
         :param relation: The relation
         :type relation: str
 
-        :param type: The match type
-        :type type: str
+        :param type_: The match type
+        :type type_: str
 
         :rtype: list
         """
@@ -96,10 +96,18 @@ class HasOneOrMany(Relation):
         for model in models:
             key = model.get_attribute(self._local_key)
 
-            if key in dictionary:
-                value = self._get_relation_value(dictionary, key, type)
+            relationship = self.new_instance(model)
 
-                model.set_relation(relation, value)
+            if key in dictionary:
+                value = self._get_relation_value(dictionary, key, type_)
+            else:
+                if type_ == 'one':
+                    value = None
+                else:
+                    value = self._related.new_collection()
+
+            relationship.set_results(value)
+            model.set_relation(relation, relationship)
 
         return models
 
@@ -182,7 +190,7 @@ class HasOneOrMany(Relation):
         if columns is None:
             columns = ['*']
 
-        instance = self.find(id, columns)
+        instance = self._query.find(id, columns)
 
         if instance is None:
             instance = self._related.new_instance()
@@ -202,7 +210,7 @@ class HasOneOrMany(Relation):
         if _attributes is not None:
             attributes.update(_attributes)
 
-        instance = self.where(attributes).first()
+        instance = self._query.where(attributes).first()
 
         if instance is None:
             instance = self._related.new_instance()
@@ -222,7 +230,7 @@ class HasOneOrMany(Relation):
         if _attributes is not None:
             attributes.update(_attributes)
 
-        instance = self.where(attributes).first()
+        instance = self._query.where(attributes).first()
 
         if instance is None:
             instance = self.create(**attributes)
@@ -318,3 +326,11 @@ class HasOneOrMany(Relation):
 
     def get_qualified_parent_key_name(self):
         return '%s.%s' % (self._parent.get_table(), self._local_key)
+
+    def new_instance(self, model):
+        return self.__class__(
+            self._query,
+            model,
+            self._foreign_key,
+            self._local_key
+        )

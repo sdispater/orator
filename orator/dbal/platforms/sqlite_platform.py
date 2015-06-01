@@ -7,16 +7,16 @@ from ..column import Column
 
 class SQLitePlatform(Platform):
 
-    TYPE_MAPPING = {
+    INTERNAL_TYPE_MAPPING = {
         'boolean': 'boolean',
         'tinyint': 'boolean',
-        'smallint': 'small_integer',
+        'smallint': 'smallint',
         'mediumint': 'integer',
         'int': 'integer',
         'integer': 'integer',
         'serial': 'integer',
-        'bigint': 'big_integer',
-        'bigserial': 'big_integer',
+        'bigint': 'bigint',
+        'bigserial': 'bigint',
         'clob': 'text',
         'tinytext': 'text',
         'mediumtext': 'text',
@@ -39,7 +39,7 @@ class SQLitePlatform(Platform):
         'real': 'float',
         'decimal': 'decimal',
         'numeric': 'decimal',
-        'blob': 'binary'
+        'blob': 'blob'
     }
 
     def get_list_table_columns_sql(self, table):
@@ -136,7 +136,7 @@ class SQLitePlatform(Platform):
                       data_table.get_name()))
         sql.append(self.get_drop_table_sql(data_table))
 
-        sql += self.get_post_alter_table_index_foreign_key_sql(diff)
+        #sql += self.get_post_alter_table_index_foreign_key_sql(diff)
 
         return sql
 
@@ -208,6 +208,68 @@ class SQLitePlatform(Platform):
 
     def supports_foreign_key_constraints(self):
         return False
+
+    def get_boolean_type_declaration_sql(self, column):
+        return 'BOOLEAN'
+
+    def get_integer_type_declaration_sql(self, column):
+        return 'INTEGER' + self._get_common_integer_type_declaration_sql(column)
+
+    def get_bigint_type_declaration_sql(self, column):
+        # SQLite autoincrement is implicit for INTEGER PKs, but not for BIGINT fields.
+        if not column.get('autoincrement', False):
+            return self.get_integer_type_declaration_sql(column)
+
+        return 'BIGINT' + self._get_common_integer_type_declaration_sql(column)
+
+    def get_tinyint_type_declaration_sql(self, column):
+        # SQLite autoincrement is implicit for INTEGER PKs, but not for TINYINT fields.
+        if not column.get('autoincrement', False):
+            return self.get_integer_type_declaration_sql(column)
+
+        return 'TINYINT' + self._get_common_integer_type_declaration_sql(column)
+
+    def get_smallint_type_declaration_sql(self, column):
+        # SQLite autoincrement is implicit for INTEGER PKs, but not for SMALLINT fields.
+        if not column.get('autoincrement', False):
+            return self.get_integer_type_declaration_sql(column)
+
+        return 'SMALLINT' + self._get_common_integer_type_declaration_sql(column)
+
+    def get_mediumint_type_declaration_sql(self, column):
+        # SQLite autoincrement is implicit for INTEGER PKs, but not for MEDIUMINT fields.
+        if not column.get('autoincrement', False):
+            return self.get_integer_type_declaration_sql(column)
+
+        return 'MEDIUMINT' + self._get_common_integer_type_declaration_sql(column)
+
+    def get_datetime_type_declaration_sql(self, column):
+        return 'DATETIME'
+
+    def get_date_type_declaration_sql(self, column):
+        return 'DATE'
+
+    def get_time_type_declaration_sql(self, column):
+        return 'TIME'
+
+    def _get_common_integer_type_declaration_sql(self, column):
+        # sqlite autoincrement is implicit for integer PKs, but not when the field is unsigned
+        if not column.get('autoincrement', False):
+            return ''
+
+        if not column.get('unsigned', False):
+            return ' UNSIGNED'
+
+        return ''
+
+    def get_varchar_type_declaration_sql_snippet(self, length, fixed):
+        if fixed:
+            return 'CHAR(%s)' % length if length else 'CHAR(255)'
+        else:
+            return 'VARCHAR(%s)' % length if length else 'TEXT'
+
+    def get_blob_type_sql_declaration(self, column):
+        return 'BLOB'
 
     def get_column_options(self):
         return ['pk']

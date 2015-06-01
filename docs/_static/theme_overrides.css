@@ -317,6 +317,7 @@ pre, pre code, .rst-content tt, code.docutils {
     font-size: 13px;
     font-weight: 400;
     border: 0;
+    padding: 0;
 }
 
 pre, code, .rst-content ttc {

@@ -3,6 +3,7 @@
 from ..exceptions.orm import ModelNotFound
 from ..utils import Null, basestring
 from ..query.expression import QueryExpression
+from ..pagination import Paginator, LengthAwarePaginator
 
 
 class Builder(object):
@@ -213,33 +214,56 @@ class Builder(object):
 
         return results
 
-    def paginate(self, per_page=None, columns=None):
+    def paginate(self, per_page=None, current_page=None, columns=None):
         """
         Paginate the given query.
 
         :param per_page: The number of records per page
         :type per_page: int
 
+        :param current_page: The current page of results
+        :type current_page: int
+
         :param columns: The columns to return
         :type columns: list
 
         :return: The paginator
         """
-        # TODO
+        if columns is None:
+            columns = ['*']
 
-    def simple_paginate(self, per_page=None, columns=None):
+        total = self._query.get_count_for_pagination()
+
+        page = current_page or Paginator.resolve_current_page()
+        per_page = per_page or self._model.get_per_page()
+        self._query.for_page(page, per_page)
+
+        return LengthAwarePaginator(self.get(columns).all(), total, per_page, page)
+
+    def simple_paginate(self, per_page=None, current_page=None, columns=None):
         """
         Paginate the given query.
 
         :param per_page: The number of records per page
         :type per_page: int
 
+        :param current_page: The current page of results
+        :type current_page: int
+
         :param columns: The columns to return
         :type columns: list
 
         :return: The paginator
         """
-        # TODO
+        if columns is None:
+            columns = ['*']
+
+        page = current_page or Paginator.resolve_current_page()
+        per_page = per_page or self._model.get_per_page()
+
+        self.skip((page - 1) * per_page).take(per_page + 1)
+
+        return Paginator(self.get(columns).all(), per_page, page)
 
     def update(self, _values=None, **values):
         """
@@ -382,7 +406,7 @@ class Builder(object):
         relation.add_eager_constraints(models)
 
         if callable(constraints):
-            constraints(relation)
+            constraints(relation.get_query())
         else:
             relation.merge_query(constraints)
 

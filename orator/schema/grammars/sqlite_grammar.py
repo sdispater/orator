@@ -36,7 +36,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         column = connection.get_column(table, command.from_)
 
-        columns = schema.list_table_columns(table)
+        columns = schema.list_table_columns(table).values()
         indexes = schema.list_table_indexes(table)
         foreign_keys = schema.list_table_foreign_keys(table)
 
@@ -75,7 +75,13 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         primary = []
         for column in columns:
             # Mapping the database type to the blueprint type
-            type = schema.get_database_platform().TYPE_MAPPING[column.get_type().lower()]
+            type = column.get_type()
+            if type == 'smallint':
+                type = 'small_integer'
+            elif type == 'bigint':
+                type = 'big_integer'
+            elif type == 'blob':
+                type = 'binary'
 
             # If the column is a primary, we will add it to the blueprint later
             if column.get_platform_option('pk'):
@@ -95,7 +101,13 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         # Inserting the renamed columns into the blueprint
         for column in new_columns:
-            type = schema.get_database_platform().TYPE_MAPPING[column.get_type().lower()]
+            type = column.get_type()
+            if type == 'smallint':
+                type = 'small_integer'
+            elif type == 'bigint':
+                type = 'big_integer'
+            elif type == 'blob':
+                type = 'binary'
 
             col = getattr(new_blueprint, type)(column.get_name())
             if not column.get_notnull():
@@ -175,7 +187,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         schema = connection.get_schema_manager()
         table = self.get_table_prefix() + blueprint.get_table()
 
-        columns = schema.list_table_columns(table)
+        columns = schema.list_table_columns(table).values()
         indexes = schema.list_table_indexes(table)
         foreign_keys = schema.list_table_foreign_keys(table)
 
@@ -204,7 +216,13 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         primary = []
         new_column_names = []
         for column in columns:
-            type = schema.get_database_platform().TYPE_MAPPING[column.get_type().lower()]
+            type = column.get_type()
+            if type == 'smallint':
+                type = 'small_integer'
+            elif type == 'bigint':
+                type = 'big_integer'
+            elif type == 'blob':
+                type = 'binary'
 
             if column.get_platform_option('pk'):
                 primary.append(column.get_name())
@@ -358,7 +376,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         schema = connection.get_schema_manager()
         table = self.get_table_prefix() + blueprint.get_table()
 
-        columns = schema.list_table_columns(table)
+        columns = schema.list_table_columns(table).values()
         indexes = schema.list_table_indexes(table)
         foreign_keys = schema.list_table_foreign_keys(table)
 
@@ -396,7 +414,13 @@ class SQLiteSchemaGrammar(SchemaGrammar):
             # If the column is not one that's been removed we reinsert it into the blueprint
             if column.get_name() in new_column_names:
                 # Mapping the database type to the blueprint type
-                type = schema.get_database_platform().TYPE_MAPPING[column.get_type().lower()]
+                type = column.get_type()
+                if type == 'smallint':
+                    type = 'small_integer'
+                elif type == 'bigint':
+                    type = 'big_integer'
+                elif type == 'blob':
+                    type = 'binary'
 
                 # If the column is a primary, we will add it to the blueprint later
                 if column.get_platform_option('pk'):

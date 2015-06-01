@@ -165,7 +165,9 @@ class OrmHasManyTestCase(OratorTestCase):
         model3 = OrmHasOneModelStub()
         model3.id = 3
 
-        relation.get_related().should_receive('new_collection').replace_with(lambda l: Collection(l))
+        relation.get_related().should_receive('new_collection').replace_with(lambda l=None: Collection(l))
+        relation.get_query().should_receive('where').with_args('table.foreign_key', '=', 2)
+        relation.get_query().should_receive('where').with_args('table.foreign_key', '=', 3)
 
         models = relation.match([model1, model2, model3], Collection([result1, result2, result3]), 'foo')
 
@@ -174,7 +176,7 @@ class OrmHasManyTestCase(OratorTestCase):
         self.assertEqual(2, models[1].foo[0].foreign_key)
         self.assertEqual(2, models[1].foo[1].foreign_key)
         self.assertEqual(2, len(models[1].foo))
-        self.assertFalse(hasattr(models[2], 'foo'))
+        self.assertTrue(models[2].foo.results.is_empty())
 
     def test_relation_count_query_can_be_built(self):
         relation = self._get_relation()
