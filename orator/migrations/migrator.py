@@ -4,6 +4,7 @@ import os
 import glob
 import inflection
 import logging
+from ..utils import decode
 
 
 class MigratorHandler(logging.NullHandler):
@@ -85,7 +86,7 @@ class Migrator(object):
 
         self._repository.log(migration_file, batch)
 
-        self._note('<info>✓ Migrated</info> %s' % migration_file)
+        self._note(decode('<info>✓ Migrated</info> ') + migration_file)
 
     def rollback(self, path, pretend=False):
         """
@@ -128,7 +129,7 @@ class Migrator(object):
 
         self._repository.delete(migration)
 
-        self._note('<info>✓ Rolled back</info> %s' % migration_file)
+        self._note(decode('<info>✓ Rolled back</info> ') + migration_file)
 
     def _get_migration_files(self, path):
         """
