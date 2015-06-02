@@ -176,7 +176,7 @@ class OrmHasManyTestCase(OratorTestCase):
         self.assertEqual(2, models[1].foo[0].foreign_key)
         self.assertEqual(2, models[1].foo[1].foreign_key)
         self.assertEqual(2, len(models[1].foo))
-        self.assertTrue(models[2].foo.results.is_empty())
+        self.assertTrue(models[2].foo.is_empty())
 
     def test_relation_count_query_can_be_built(self):
         relation = self._get_relation()
@@ -199,6 +199,7 @@ class OrmHasManyTestCase(OratorTestCase):
         builder = Builder(query)
         builder.should_receive('where').with_args('table.foreign_key', '=', 1)
         related = flexmock(Model())
+        related.should_receive('new_query').and_return(builder)
         builder.should_receive('get_model').and_return(related)
         parent = flexmock(Model())
         parent.should_receive('get_attribute').with_args('id').and_return(1)

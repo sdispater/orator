@@ -5,6 +5,11 @@ from .belongs_to_many import BelongsToMany
 
 class MorphToMany(BelongsToMany):
 
+    _name = None
+    _inverse = None
+    _morph_type = None
+    _morph_class = None
+
     def __init__(self, query, parent, name, table,
                  foreign_key, other_key, relation_name=None, inverse=False):
         """
@@ -28,6 +33,7 @@ class MorphToMany(BelongsToMany):
 
         :type inverse: bool
         """
+        self._name = name
         self._inverse = inverse
         self._morph_type = name + '_type'
         self._morph_class = query.get_model().get_morph_class() if inverse else parent.get_morph_class()
@@ -107,3 +113,15 @@ class MorphToMany(BelongsToMany):
 
     def get_morph_class(self):
         return self._morph_class
+
+    def new_instance(self, model):
+        return MorphToMany(
+            self._related.new_query(),
+            model,
+            self._name,
+            self._table,
+            self._foreign_key,
+            self._other_key,
+            self._relation_name,
+            self._inverse
+        )

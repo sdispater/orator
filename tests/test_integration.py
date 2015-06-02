@@ -169,9 +169,9 @@ class OratorIntegrationTestCase(OratorTestCase):
         post.photos().create(name='Hero 1')
         post.photos().create(name='Hero 2')
 
-        self.assertIsInstance(user.photos.results, Collection)
+        self.assertIsInstance(user.photos, Collection)
         #self.assertIsInstance(user.photos[0], OratorTestPhoto)
-        self.assertIsInstance(post.photos.results, Collection)
+        self.assertIsInstance(post.photos, Collection)
         #self.assertIsInstance(post.photos[0], OratorTestPhoto)
         self.assertEqual(2, len(user.photos))
         self.assertEqual(2, len(post.photos))
@@ -214,6 +214,20 @@ class OratorIntegrationTestCase(OratorTestCase):
 
         self.assertTrue(result)
         self.assertEqual(2, OratorTestPost.count())
+
+    def test_belongs_to_many_further_query(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        friend = OratorTestUser.create(id=2, email='jane@doe.com')
+        another_friend = OratorTestUser.create(id=3, email='another@doe.com')
+        user.friends().attach(friend)
+        user.friends().attach(another_friend)
+        related_friend = OratorTestUser.with_('friends').find(1).friends().where('id', 3).first()
+
+        self.assertEqual(3, related_friend.id)
+        self.assertEqual('another@doe.com', related_friend.email)
+        self.assertIn('pivot', related_friend.to_dict())
+        self.assertEqual(1, related_friend.pivot.user_id)
+        self.assertEqual(3, related_friend.pivot.friend_id)
 
     def connection(self):
         return Model.get_connection_resolver().connection()

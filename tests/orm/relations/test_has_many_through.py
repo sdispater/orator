@@ -92,6 +92,8 @@ class OrmHasManyThroughTestCase(OratorTestCase):
         post.should_receive('get_table').and_return('posts')
         builder.should_receive('get_model').and_return(post)
 
+        post.should_receive('new_query').and_return(builder)
+
         user.should_receive('get_key').and_return(1)
         user.should_receive('get_created_at_column').and_return('created_at')
         user.should_receive('get_updated_at_column').and_return('updated_at')

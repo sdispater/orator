@@ -6,6 +6,10 @@ from .relation import Relation
 
 class HasManyThrough(Relation):
 
+    _first_key = None
+    _second_key = None
+    _far_parent = None
+
     def __init__(self, query, far_parent, parent, first_key, second_key):
         """
         :param query: A Builder instance
@@ -182,8 +186,8 @@ class HasManyThrough(Relation):
         return self._far_parent.get_qualified_key_name()
 
     def new_instance(self, model):
-        return self.__class__(
-            self._query,
+        return HasManyThrough(
+            self._related.new_query(),
             model,
             self._parent,
             self._first_key,

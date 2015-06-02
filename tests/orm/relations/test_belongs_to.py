@@ -95,6 +95,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         builder = Builder(query)
         builder.should_receive('where').with_args('relation.id', '=', 'foreign.value')
         related = flexmock(Model())
+        related.should_receive('new_query').and_return(builder)
         related.should_receive('get_key_name').and_return('id')
         related.should_receive('get_table').and_return('relation')
         builder.should_receive('get_model').and_return(related)
