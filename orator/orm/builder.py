@@ -10,7 +10,7 @@ class Builder(object):
 
     _passthru = [
         'to_sql', 'lists', 'insert', 'insert_get_id', 'pluck', 'count',
-        'min', 'max', 'avg', 'sum', 'exists', 'get_bindings'
+        'min', 'max', 'avg', 'sum', 'exists', 'get_bindings', 'raw'
     ]
 
     def __init__(self, query):

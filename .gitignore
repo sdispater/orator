@@ -23,6 +23,9 @@ test_models.py
 test_threading.py
 test_schema.py
 app.py
+config.py
+test_perf.py
+test_proxy.py
 /migrations
 
 Makefile
