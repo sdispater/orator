@@ -37,7 +37,7 @@ setup(
         'six',
         'cleo',
         'blinker',
-        'cached_property'
+        'lazy-object-proxy'
     ],
     tests_require=['pytest', 'mock', 'flexmock'],
     test_suite='nose.collector',

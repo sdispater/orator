@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from cached_property import cached_property
+from lazy_object_proxy import Proxy
+from contextlib import contextmanager
 from ...query.expression import QueryExpression
 from ..collection import Collection
 
@@ -11,10 +12,16 @@ class RelationWrapper(object):
         self._relationship = relationship
 
     def __dynamic(self, method):
-        attribute = getattr(self._relationship.get_query(), method)
+        try:
+            attribute = object.__getattribute__(self._relationship, method)
+        except AttributeError:
+            attribute = getattr(self._relationship.get_query(), method)
 
         def call(*args, **kwargs):
             result = attribute(*args, **kwargs)
+
+            if result == self._relationship.get_query():
+                return self
 
             return result
 
@@ -24,17 +31,15 @@ class RelationWrapper(object):
         return call
 
     def __getattr__(self, item):
-        attribute = getattr(self._relationship, item, None)
-
-        if not attribute:
-            return self.__dynamic(item)
-
-        return attribute
+        return self.__dynamic(item)
 
 
-class Relation(object):
+class Relation(Proxy):
 
     _constraints = True
+    _query = None
+    _parent = None
+    _related = None
 
     def __init__(self, query, parent):
         """
@@ -44,6 +49,8 @@ class Relation(object):
         :param parent: The parent model
         :type parent: Model
         """
+        super(Relation, self).__init__(self.get_results)
+
         self._query = query
         self._parent = parent
         self._related = query.get_model()
@@ -91,17 +98,13 @@ class Relation(object):
         """
         raise NotImplementedError
 
-    @cached_property
-    def results(self):
-        return self.get_results()
-
     def refresh(self):
-        del self.results
+        del self.__wrapped__
 
-        return self.results
+        return self
 
     def set_results(self, results):
-        self.results = results
+        self.__wrapped__ = results
 
     def get_eager(self):
         """
@@ -109,7 +112,10 @@ class Relation(object):
 
         :rtype: Collection
         """
-        return self._query.get()
+        try:
+            return object.__getattribute__(self, 'get')()
+        except AttributeError:
+            return self._query.get()
 
     def touch(self):
         """
@@ -148,17 +154,26 @@ class Relation(object):
         return query.where(self.get_has_compare_key(), '=', QueryExpression(key))
 
     @classmethod
-    def no_constraints(cls, callback):
+    @contextmanager
+    def no_constraints(cls, with_subclasses=False):
         """
         Runs a callback with constraints disabled on the relation.
         """
         cls._constraints = False
 
-        results = callback()
+        if with_subclasses:
+            for klass in cls.__subclasses__():
+                klass._constraints = False
 
-        cls._constraints = True
-
-        return results
+        try:
+            yield cls
+        except Exception:
+            raise
+        finally:
+            cls._constraints = True
+            if with_subclasses:
+                for klass in cls.__subclasses__():
+                    klass._constraints = True
 
     def get_keys(self, models, key=None):
         """
@@ -224,20 +239,8 @@ class Relation(object):
     def set_parent(self, parent):
         self._parent = parent
 
-    def __getitem__(self, item):
-        return self.results[item]
-
-    def __iter__(self):
-        return iter(self.results)
-
-    def __len__(self):
-        return len(self.results)
-
-    def __getattr__(self, item):
-        return getattr(self.results, item)
-
     def __call__(self, *args, **kwargs):
-        self._query = self._related.new_query()
-        self.add_constraints()
+        relation = self.new_instance(self._parent)
+        #relation.add_constraints()
 
-        return RelationWrapper(self)
+        return RelationWrapper(relation)

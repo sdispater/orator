@@ -12,6 +12,14 @@ from .relation import Relation
 
 class BelongsToMany(Relation):
 
+    _table = None
+    _other_key = None
+    _foreign_key = None
+    _relation_name = None
+
+    _pivot_columns = []
+    _pivot_wheres = []
+
     def __init__(self, query, parent, table, foreign_key, other_key, relation_name=None):
         """
         :param query: A Builder instance
@@ -95,7 +103,9 @@ class BelongsToMany(Relation):
 
         :type columns: list
         """
-        results = self.take(1).get(columns)
+        self._query.take(1)
+
+        results = self.get(columns)
 
         if len(results) > 0:
             return results.first()
@@ -180,7 +190,7 @@ class BelongsToMany(Relation):
         """
         self._set_join()
 
-        if self._constraints:
+        if BelongsToMany._constraints:
             self._set_where()
 
     def get_relation_count_query(self, query, parent):
@@ -846,8 +856,8 @@ class BelongsToMany(Relation):
         return self._relation_name
 
     def new_instance(self, model):
-        return self.__class__(
-            self._query,
+        return BelongsToMany(
+            self._related.new_query(),
             model,
             self._table,
             self._foreign_key,

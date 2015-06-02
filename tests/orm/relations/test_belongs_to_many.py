@@ -536,6 +536,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         builder.set_model(related)
         builder.should_receive('get_model').and_return(related)
 
+        related.should_receive('new_query').and_return(builder)
         related.should_receive('get_key_name').and_return('id')
         related.should_receive('get_table').and_return('roles')
         related.should_receive('new_pivot').replace_with(lambda *args: Pivot(*args))

@@ -1,6 +1,13 @@
+### 0.6.1
+
+(June 2nd, 2015)
+
+- Fixes a lot of problems that broke relations behavior in 0.6.
+- Adds raw() method to orm builder passthru.
+
 ### 0.6
 
-(May 31, 2015)
+(May 31th, 2015)
 
 - Adds pagination support
 - Adds model events support

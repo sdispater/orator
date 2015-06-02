@@ -87,7 +87,7 @@ class OrmHasOneTestCase(OratorTestCase):
 
         self.assertEqual(1, models[0].foo.foreign_key)
         self.assertEqual(2, models[1].foo.foreign_key)
-        self.assertIsNone(models[2].foo.results)
+        self.assertEqual(None, models[2].foo)
 
     def test_relation_count_query_can_be_built(self):
         relation = self._get_relation()

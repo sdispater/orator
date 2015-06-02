@@ -8,6 +8,11 @@ from ...support.collection import Collection as BaseCollection
 
 class MorphTo(BelongsTo):
 
+    _morph_type = None
+    _models = Collection()
+    _dictionary = None
+    _with_trashed = None
+
     def __init__(self, query, parent, foreign_key, other_key, type, relation):
         """
         :type query: orator.orm.Builder
@@ -186,3 +191,13 @@ class MorphTo(BelongsTo):
             return query.with_trashed()
 
         return query
+
+    def new_instance(self, model):
+        return MorphTo(
+            self._related.new_query(),
+            model,
+            self._foreign_key,
+            self._other_key,
+            self._morph_type,
+            self._relation
+        )

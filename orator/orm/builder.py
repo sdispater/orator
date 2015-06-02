@@ -10,7 +10,7 @@ class Builder(object):
 
     _passthru = [
         'to_sql', 'lists', 'insert', 'insert_get_id', 'pluck', 'count',
-        'min', 'max', 'avg', 'sum', 'exists', 'get_bindings'
+        'min', 'max', 'avg', 'sum', 'exists', 'get_bindings', 'raw'
     ]
 
     def __init__(self, query):
@@ -424,7 +424,8 @@ class Builder(object):
         """
         from .relations import Relation
 
-        query = Relation.no_constraints(lambda: getattr(self.get_model(), relation)())
+        with Relation.no_constraints(True):
+            query = getattr(self.get_model(), relation)()
 
         nested = self._nested_relations(relation)
 
@@ -712,9 +713,8 @@ class Builder(object):
         """
         from .relations import Relation
 
-        return Relation.no_constraints(
-            lambda: getattr(self.get_model(), relation)()
-        )
+        with Relation.no_constraints(True):
+            return getattr(self.get_model(), relation)()
 
     def with_(self, *relations):
         """

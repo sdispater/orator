@@ -6,6 +6,9 @@ from .relation import Relation
 
 class HasOneOrMany(Relation):
 
+    _local_key = None
+    _foreign_key = None
+
     def __init__(self, query, parent, foreign_key, local_key):
         """
         :type query: orator.orm.Builder
@@ -326,11 +329,3 @@ class HasOneOrMany(Relation):
 
     def get_qualified_parent_key_name(self):
         return '%s.%s' % (self._parent.get_table(), self._local_key)
-
-    def new_instance(self, model):
-        return self.__class__(
-            self._query,
-            model,
-            self._foreign_key,
-            self._local_key
-        )

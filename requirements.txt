@@ -4,4 +4,4 @@ inflection
 six
 cleo
 blinker
-cached_property
+lazy-object-proxy

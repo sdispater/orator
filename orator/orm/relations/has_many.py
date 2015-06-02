@@ -34,4 +34,9 @@ class HasMany(HasOneOrMany):
         return self.match_many(models, results, relation)
 
     def new_instance(self, model):
-        return HasMany(self._query, model, self._foreign_key, self._local_key)
+        return HasMany(
+            self._related.new_query(),
+            model,
+            self._foreign_key,
+            self._local_key
+        )
