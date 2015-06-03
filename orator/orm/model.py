@@ -563,10 +563,13 @@ class Model(object):
         :return: The current model instance
         :rtype: Model
         """
+        if with_ is None:
+            with_ = ()
+
         key = self.get_key_name()
 
         if self.exists:
-            return self.__class__.with_(with_).where(key, self.get_key()).first()
+            return self.with_(*with_).where(key, self.get_key()).first()
 
     def load(self, *relations):
         """

@@ -736,6 +736,23 @@ class OrmModelTestCase(OratorTestCase):
 
         self.assertEqual(expected_attributes, sorted(list(model._get_mutated_attributes().keys())))
 
+    def test_fresh_method(self):
+        model = flexmock(OrmModelStub())
+        model.id = 1
+        model.set_exists(True)
+        builder = flexmock(Builder)
+        query = Builder(flexmock(QueryBuilder(None, None, None)))
+        query.should_receive('where').and_return(query)
+        query.get_query().should_receive('take').and_return(query)
+        query.should_receive('get').and_return(Collection([]))
+        model.should_receive('with_').once().with_args('foo', 'bar').and_return(query)
+
+        model.fresh(['foo', 'bar'])
+
+        model.should_receive('with_').once().with_args().and_return(query)
+
+        model.fresh()
+
     def test_clone_model_makes_a_fresh_copy(self):
         model = OrmModelStub()
         model.id = 1
