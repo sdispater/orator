@@ -856,7 +856,7 @@ class BelongsToMany(Relation):
         return self._relation_name
 
     def new_instance(self, model):
-        return BelongsToMany(
+        relation = BelongsToMany(
             self._related.new_query(),
             model,
             self._table,
@@ -864,3 +864,7 @@ class BelongsToMany(Relation):
             self._other_key,
             self._relation_name
         )
+
+        relation.with_pivot(*self._pivot_columns)
+
+        return relation
