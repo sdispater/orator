@@ -100,3 +100,21 @@ class Pivot(Model):
 
     def get_updated_at_column(self):
         return self.__parent.get_updated_at_column()
+
+    def set_table(self, table):
+        """
+        Set the table associated with the model.
+
+        :param table: The table name
+        :type table: str
+        """
+        self.__table__ = table
+
+    def get_table(self):
+        """
+        Get the table associated with the model.
+
+        :return: The name of the table
+        :rtype: str
+        """
+        return self.__table__
