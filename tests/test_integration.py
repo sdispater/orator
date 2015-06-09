@@ -6,6 +6,7 @@ from orator import Model, Collection
 from orator.connections import SQLiteConnection
 from orator.connectors.sqlite_connector import SQLiteConnector
 from orator.exceptions.orm import ModelNotFound
+from orator.orm.relations.relation import RelationWrapper
 
 
 class OratorIntegrationTestCase(OratorTestCase):
@@ -230,6 +231,8 @@ class OratorIntegrationTestCase(OratorTestCase):
         self.assertEqual(1, related_friend.pivot.user_id)
         self.assertEqual(3, related_friend.pivot.friend_id)
         self.assertTrue(hasattr(related_friend.pivot, 'id'))
+
+        self.assertIsInstance(user.friends().with_pivot('id'), RelationWrapper)
 
     def connection(self):
         return Model.get_connection_resolver().connection()

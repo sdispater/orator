@@ -20,7 +20,10 @@ class RelationWrapper(object):
         def call(*args, **kwargs):
             result = attribute(*args, **kwargs)
 
-            if result == self._relationship.get_query():
+            if result is self._relationship.get_query():
+                return self
+
+            if result is self._relationship:
                 return self
 
             return result
@@ -105,6 +108,8 @@ class Relation(Proxy):
 
     def set_results(self, results):
         self.__wrapped__ = results
+
+        return self
 
     def get_eager(self):
         """
@@ -241,6 +246,5 @@ class Relation(Proxy):
 
     def __call__(self, *args, **kwargs):
         relation = self.new_instance(self._parent)
-        #relation.add_constraints()
 
         return RelationWrapper(relation)
