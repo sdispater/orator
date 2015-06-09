@@ -6,6 +6,7 @@ from orator import Model, Collection
 from orator.connections import SQLiteConnection
 from orator.connectors.sqlite_connector import SQLiteConnector
 from orator.exceptions.orm import ModelNotFound
+from orator.orm.relations.relation import RelationWrapper
 
 
 class OratorIntegrationTestCase(OratorTestCase):
@@ -25,6 +26,7 @@ class OratorIntegrationTestCase(OratorTestCase):
             table.timestamps()
 
         with self.schema().create('test_friends') as table:
+            table.increments('id')
             table.integer('user_id')
             table.integer('friend_id')
 
@@ -221,13 +223,16 @@ class OratorIntegrationTestCase(OratorTestCase):
         another_friend = OratorTestUser.create(id=3, email='another@doe.com')
         user.friends().attach(friend)
         user.friends().attach(another_friend)
-        related_friend = OratorTestUser.with_('friends').find(1).friends().where('id', 3).first()
+        related_friend = OratorTestUser.with_('friends').find(1).friends().where('test_users.id', 3).first()
 
         self.assertEqual(3, related_friend.id)
         self.assertEqual('another@doe.com', related_friend.email)
         self.assertIn('pivot', related_friend.to_dict())
         self.assertEqual(1, related_friend.pivot.user_id)
         self.assertEqual(3, related_friend.pivot.friend_id)
+        self.assertTrue(hasattr(related_friend.pivot, 'id'))
+
+        self.assertIsInstance(user.friends().with_pivot('id'), RelationWrapper)
 
     def connection(self):
         return Model.get_connection_resolver().connection()
@@ -243,7 +248,12 @@ class OratorTestUser(Model):
 
     @property
     def friends(self):
-        return self.belongs_to_many(OratorTestUser, 'test_friends', 'user_id', 'friend_id')
+        return self.belongs_to_many(
+            OratorTestUser,
+            'test_friends',
+            'user_id',
+            'friend_id'
+        ).with_pivot('id')
 
     @property
     def posts(self):

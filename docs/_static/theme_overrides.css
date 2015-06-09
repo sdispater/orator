@@ -1,16 +1,16 @@
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,400italic,500,700);
 @import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
 @import url(http://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600);
-@import url(http://fonts.googleapis.com/css?family=Lato:400,700);
 
 body {
-    font: 400 14px/28px "Roboto",sans-serif;
+    font: 400 13px/26px "Open Sans",sans-serif;
     color: #7A7A7A;
     text-rendering: optimizelegibility;
+    background-color: #FAFAFA;
 }
 
 .wy-body-for-nav {
-    background: #FFFFFF;
+    background: #FAFAFA;
 }
 
 .wy-nav-content {
@@ -19,6 +19,18 @@ body {
 
 .wy-nav-content-wrap {
     background: #FFFFFF;
+    margin-left: 300px;
+    padding-left: 70px;
+    padding-right: 70px;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+    max-width: 940px;
+}
+
+@media only screen and (max-width: 768px) {
+    .wy-nav-content-wrap {
+        margin-left: 0;
+        padding-left: 0;
+    }
 }
 
 .rst-content h1:hover .headerlink,
@@ -29,78 +41,126 @@ body {
 .rst-content h6:hover .headerlink,
 .rst-content dl dt:hover .headerlink {
     display: inline;
+    vertical-align: middle;
 }
 
 .wy-plain-list-disc li,
 .rst-content .section ul li,
 .rst-content .toctree-wrapper ul li,
 article ul li {
-    font: 400 14px/28px "Roboto",sans-serif;
+    font: 400 13px/26px "Open Sans",sans-serif;
     color: #7A7A7A;
 }
 
 .wy-nav-side {
-    background: #293134;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
+    position: absolute;
+    background: #FAFAFA;
+    box-shadow: 0px 0 1px rgba(0, 0, 0, 0.1) inset;
+    overflow: visible;
+    bottom: inherit;
 }
 
 .wy-side-nav-search {
-    font-family: "Lato", "Roboto", sans-serif;
+    font-family: "Open Sans", "Roboto", sans-serif;
     font-size: 15px;
-    background-color: #2F393C;
+    background-color: transparent;
+    color: #7A7A7A;
 }
 
 .wy-menu-vertical ul {
-    font-family: "Lato", "Roboto", sans-serif;
+    font-family: "Open Sans", "Roboto", sans-serif;
     margin-right: 1em;
 }
 
+.wy-menu-vertical > ul {
+    padding-left: 20px;
+}
+
 .wy-menu-vertical li.current {
-    background: #293134;
+    background: transparent;
+}
+
+.wy-menu-vertical > ul > li {
+    margin-bottom: 30px;
+}
+
+.wy-menu-vertical > ul > li > ul {
+    display: block;
+}
+
+.wy-menu-vertical li.current > ul {
+    background: transparent;
+    padding: 0;
 }
 
 .wy-menu-vertical li.on a, .wy-menu-vertical li.current > a {
-    background: #293134;
+    background: transparent;
     border: 0;
+    font-weight: 400;
 }
 
 .wy-menu-vertical li a {
-    opacity: 0.6;
+    opacity: 1;
+}
+
+.wy-menu-vertical > ul > li > a,
+.wy-menu-vertical > ul > li > a:visited
+{
+    color: #5A5A5A;
+    opacity: 1;
+}
+
+.wy-menu-vertical li a:hover {
+    background: transparent;
 }
 
 .wy-menu-vertical li a, .wy-menu-vertical li.current > a {
-    padding: 0.3045em 2em;
     border-radius: 0 5px 5px 0;
 }
 
-.wy-menu-vertical li.current a {
+.wy-menu-vertical li.current > ul > li > a {
     font-size: 13px;
     border-right: 0;
     opacity: 1;
-    padding: 0.3045em 3em;
+    padding: 0.4045em 20px;
 }
 
 .wy-menu-vertical li.current > a {
-    font-size: 14px;
+    font-size: 13px;
     border-right: 0;
-    padding-left: 2em;
 }
 
 .wy-menu-vertical li.toctree-l2.current > a {
     background: none;
-    padding: 0.3045em 3em;
     font-size: 13px;
+    color: #F3888B !important;
 }
 
-.wy-menu-vertical li.toctree-l2.current > a::before {
+.wy-menu-vertical li.toctree-l1.current > ul > li > a::before {
     font-family: "FontAwesome";
-    content: "";
+    content: "";
     color: #EC7600;
     font-size: 8px;
     position: absolute;
-    top: 0.6045em;
+    top: 4px;
     left: 3em;
+    opacity: 0.3;
+    display: none;
+}
+
+.wy-menu-vertical li.toctree-l1.current > ul > li.toctree-l2.current > a::before {
+    content: "#";
+    color: #F3888B;
+    font-size: 13px;
+    position: absolute;
+    top: 6px;
+    left: 20px;
+    opacity: 1;
+    display: block;
+}
+
+.wy-menu-vertical li.toctree-l2.current ul {
+    display: none !important;
 }
 
 .wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a  {
@@ -115,39 +175,47 @@ article ul li {
 
 .wy-menu-vertical a,
 .wy-menu-vertical a:visited {
-    color: #81969A;
-    line-height: 24px;
-    font-size: 14px;
+    color: #9A9A9A;
+    line-height: 20px;
+    font-size: 13px;
 }
 
 .wy-menu-vertical a:hover {
-    color: #81969A;
-    background: #2F393C;
+    color: #7A7A7A;
 }
 
+.wy-menu-vertical > ul > li > ul > li > a,
+.wy-menu-vertical > ul > li > ul > li > a:visited,
 .wy-menu-vertical li.current a,
 .wy-menu-vertical li.current a:visited {
-    color: #81969A;
+    color: #9A9A9A;
+    background: transparent;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -ms-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
 }
 
+.wy-menu-vertical > ul > li > ul > li > a:hover,
 .wy-menu-vertical li.current a:hover {
-    color: #81969A;
-    background: #2F393C;
+    color: #F3888B;
+    background: transparent;
 }
 
 .wy-menu-vertical li.current > a {
-    color: #81969A !important;
+    color: #1999B3 !important;
+    padding-left: 2.427em;
 }
 
 .wy-menu-vertical li.current > a:hover {
-    background: #293134 !important;
 }
 
 .wy-side-nav-search input[type="text"] {
     border: 0;
     background: none;
     box-shadow: none;
-    color: #FFFFFF;
+    color: #8A8A8A;
     font-size: 13px;
     width: 90%;
     border-radius: 0;
@@ -158,7 +226,7 @@ article ul li {
 
 .wy-side-nav-search > a,
 .wy-side-nav-search > a:visited {
-    color: #81969A;
+    color: #9A9A9A;
 }
 
 .wy-side-nav-search > a:hover {
@@ -169,7 +237,11 @@ article ul li {
     position: relative;
 }
 
-.wy-menu-vertical li a span.toctree-expand {
+.wy-menu-vertical li span.toctree-expand::before,
+.wy-menu-vertical li.on a span.toctree-expand::before,
+.wy-menu-vertical li.current > a span.toctree-expand::before,
+.wy-menu-vertical li a span.toctree-expand,
+.wy-menu-vertical li a span.toctree-expand:before {
     display: none;
 }
 
@@ -179,28 +251,28 @@ article ul li {
     display: none;
 }
 
-.wy-menu-vertical li.toctree-l1:before {
-    font-family: FontAwesome;
-    content: "";
-    opacity: 0.3;
-    color: #81969A;
-    font-size: 10px;
-    top: 3px;
+.wy-menu-vertical li.toctree-l1.current:before {
+    content: "#";
+    color: #1999B3;
+    font-size: 13px;
     position: absolute;
-    left: 12px;
+    top: 3px;
+    left: 20px;
     z-index: 2;
+    display: block;
 }
 
-.wy-menu-vertical li.toctree-l1.current:before {
+.wy-menu-vertical li.toctree-l1:before {
     font-family: FontAwesome;
     content: "";
     opacity: 1;
     color: #1999B3;
     font-size: 10px;
-    top: 3px;
+    top: 2px;
     position: absolute;
     left: 12px;
     z-index: 2;
+    display: none;
 }
 
 .rst-content table.docutils,
@@ -237,21 +309,34 @@ article ul li {
     background: none;
 }
 
+.rst-content table.docutils tbody td tt.code,
+.rst-content table.field-list tbody td tt.code,
+.rst-content table.docutils tbody td code.code,
+.rst-content table.field-list tbody td code.code
+{
+    border: 0;
+    background: none;
+    padding: 0.3em 0;
+    color: #1999B3;
+}
+
 .rst-content .highlighted {
-    background: rgba(205, 220, 57, 0.7);
-    border: 1px solid rgba(205, 220, 57, 0.9);
-    padding: 1px 3px;
+    background: rgba(138, 179, 181, 0.15) none repeat scroll 0% 0%;
+    border: 1px solid rgba(138, 179, 181, 0.2);
+    padding: 2px 3px;
     border-radius: 3px;
-    color: rgba(135, 150, 0, 1);
+    color: inherit;
+    display: inline;
+    font-weight: inherit;
 }
 
 h1, h2, h3, h4, h5, h6 {
     color: #7A7A7A;
     padding: 10px 0px;
-    font-family: "Montserrat",serif;
+    font-family: "Open Sans", "Montserrat",serif;
     line-height: 1;
     margin: 40px 0 30px 0;
-    font-weight: 400;
+    font-weight: 300;
 }
 
 h1 {
@@ -265,11 +350,12 @@ h2 {
 }
 
 h2:before {
+    font-family: "FontAwesome";
     content: "#";
     margin-left: -30px;
     font-size: 32px;
-    top: 10px;
-    color: #03A9F4;
+    top: 11px;
+    color: #EF6155;
     opacity: 0.6;
     position: absolute;
 }
@@ -287,10 +373,9 @@ h1,
 h1 a,
 .header h1,
 .header h1 a {
-    font: 700 42px/66px "Roboto", "Montserrat", sans-serif;
+    font: 300 42px/66px "Open Sans", "Roboto","Montserrat",sans-serif;
     margin-bottom: 30px;
-    font-weight: 700;
-    color: #2C3E50;
+    color: #2C2C2C;
 }
 
 a, a:visited {
@@ -302,7 +387,7 @@ a > em {
 }
 
 p {
-    font: 400 14px/28px "Roboto",sans-serif;
+    font: 400 13px/26px "Open Sans",sans-serif;
     color: #7A7A7A;
 }
 
@@ -334,11 +419,12 @@ div[class^="highlight"] {
 
 .highlight > pre, div[class^="highlight"] pre {
     font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
-	border: 1px solid #F2F2F2;
+	border-left: 1px solid #F2F2F2;
     font-size: 13px;
-    padding: 4%;
+    padding: 2% 4%;
+    margin-left: 1%;
     color: #7A7A7A;
-    background-color: #FAFAFA;
+    /*background-color: #FAFAFA;*/
 }
 
 code {
@@ -369,40 +455,54 @@ p > code.docutils {
 .rst-content .versionadded,
 .rst-content .tip,
 .rst-content .caution{
-    padding: 0px 40px;
-    margin: 30px 0px;
+    padding: 0px 4%;
+    margin: 30px 1%;
     background: #FFFFFF;
 }
 
+.rst-content .note .highlight > pre,
+.rst-content .note div[class^="highlight"] pre,
+.rst-content .warning .highlight > pre,
+.rst-content .warning div[class^="highlight"] pre,
+.rst-content .versionadded .highlight > pre,
+.rst-content .versionadded div[class^="highlight"] pre,
+.rst-content .tip .highlight > pre,
+.rst-content .tip div[class^="highlight"] pre,
+.rst-content .caution .highlight > pre,
+.rst-content .caution div[class^="highlight"] pre {
+    margin-left: 0;
+    border-left: 0;
+}
+
 .rst-content .note {
-    border-left: 1px solid rgba(60, 147, 206, 0.7);
-    color: rgb(99, 169, 216) !important;
+    border-left: 1px solid rgba(111, 179, 210, 0.4);
+    color: #6FB3D2 !important;
 }
 
 .rst-content .warning,
 .rst-content .caution {
-    border-left: 1px solid #FF9800;
-    color: #FFC107 !important;
+    border-left: 1px solid rgba(244, 191, 117, 0.4);
+    color: #F4BF75 !important;
 }
 
 .rst-content .tip {
-    border-left: 1px solid #A1C659;
+    border-left: 1px solid rgba(161, 198, 89, 0.4);
     color: #A1C659 !important;
 }
 
 .rst-content .note > p {
     padding: 12px 12px 12px 0;
-    color: rgb(99, 169, 216) !important;
+    color: #6FB3D2 !important;
 }
 
 .rst-content .warning > p,
 .rst-content .caution > p
 {
     padding: 12px 12px 12px 0;
-    color: #FF9800 !important;
+    color: #F4BF75 !important;
 }
 
-.rst-content .tip> p {
+.rst-content .tip > p {
     padding: 12px 12px 12px 0;
     color: #A1C659 !important;
 }
@@ -438,6 +538,7 @@ p > code.docutils {
     border: 0;
     padding: 0;
     display: inline;
+    color: #F99157 !important;
 }
 
 .btn-neutral,
@@ -448,19 +549,20 @@ p > code.docutils {
     padding: 6px 14px;
     border-radius: 4px;
     box-shadow: none;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 0;
     transition: all 0.3s;
+    background-color: transparent !important;
 }
 
 .btn-neutral:hover {
-    background-color: rgba(0, 188, 212, 0.6) !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    background-color: transparent !important;
+    color: rgba(25, 153, 179, 0.8) !important;
     /*color: rgba(0, 168, 192, 1) !important;*/
 }
 
 .btn-neutral:focus {
-    background-color: rgba(0, 188, 212, 0.6) !important;
-    color: rgba(255, 255, 255, 0.7) !important;
+    background-color: transparent !important;
+    color: rgba(25, 153, 179, 1) !important;
     box-shadow: none;
     padding: 6px 14px;
 }
@@ -569,12 +671,14 @@ green     #859900  operators, other keywords
 .highlight .sr { color: #dc322f } /* Literal.String.Regex */
 .highlight .s1 { color: #2aa198 } /* Literal.String.Single */
 .highlight .ss { color: #2aa198 } /* Literal.String.Symbol */
-.highlight .bp { color: #268bd2 } /* Name.Builtin.Pseudo */
-.highlight .vc { color: #268bd2 } /* Name.Variable.Class */
-.highlight .vg { color: #268bd2 } /* Name.Variable.Global */
-.highlight .vi { color: #268bd2 } /* Name.Variable.Instance */
+.highlight .bp { color: #F2777A } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #F2777A } /* Name.Variable.Class */
+.highlight .vg { color: #F2777A } /* Name.Variable.Global */
+.highlight .vi { color: #F2777A } /* Name.Variable.Instance */
 .highlight .il { color: #2aa198 } /* Literal.Number.Integer.Long */
 
+
+/***** Mocha *****/
 .highlight .s { color: #7BBDA4 } /* Literal.String */
 .highlight .s1 { color: #7BBDA4 } /* Literal.String */
 .highlight .si { color: #A89BB9 } /* Literal.String */
@@ -588,11 +692,14 @@ green     #859900  operators, other keywords
 .highlight .ow { color: #BEB55B; font-weight: normal } /* Operator.Word */
 .highlight .nc { color: #D28B71; font-weight: 500 } /* Name.Class */
 .highlight .nf { color: #8AB3B5; font-weight: normal; } /* Name.Function */
-.highlight .bp { color: #CB6077 } /* Name.Builtin.Pseudo */
+.highlight .bp { color: #F3888B } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #F3888B } /* Name.Variable.Class */
+.highlight .vg { color: #F3888B } /* Name.Variable.Global */
+.highlight .vi { color: #F3888B } /* Name.Variable.Instance */
 .highlight .nd { color: #BB9584 } /* Name.Decorator */
 .highlight .ne { color: #CB6077; font-weight: 400 } /* Name.Exception */
-.highlight .o { color: #7A7A7A } /* Operator */
-.highlight .n { color: #7A7A7A }
+.highlight .o { color: #8A8A8A } /* Operator */
+.highlight .n { color: #8A8A8A }
 .highlight .c { color: #B8AFAD; font-style: normal; }
 .highlight .sd { color: #B8AFAD; font-style: normal; }
 .highlight .nl { color: #A89BB9 } /* Name.Label */
@@ -609,9 +716,56 @@ tt.code, code.code {
     padding: 0.3em 0.5em;
     background-color: #FAFAFA;
 }
-tt.code .name, code.code .name { color: #7A7A7A }
-tt.code .operator, code.code .operator { color: #7A7A7A }
-tt.code .punctuation, code.code .punctuation { color: #7A7A7A }
+tt.code .name, code.code .name { color: #8A8A8A }
+tt.code .operator, code.code .operator { color: #8A8A8A }
+tt.code .punctuation, code.code .punctuation { color: #8A8A8A }
 tt.code .string, code.code .string { color: #7BBDA4 }
 tt.code .number, code.code .number { color: #F4BC87 }
 tt.code .integer, code.code .integer { color: #F4BC87 }
+
+
+/***** Eighties *****/
+
+.highlight .s { color: #AFCE79 } /* Literal.String */
+.highlight .s1 { color: #AFCE79 } /* Literal.String */
+.highlight .si { color: #AFCE79 } /* Literal.String */
+.highlight .m { color: #7BB } /* Literal.Number */
+.highlight .mf { color: #7BB } /* Literal.Number */
+.highlight .mh { color: #7BB } /* Literal.Number */
+.highlight .mi { color: #7BB } /* Literal.Number */
+.highlight .mo { color: #7BB } /* Literal.Number */
+.highlight .k { color: #DAC322; font-weight: normal; } /* Keyword */
+.highlight .kn { color: #DAC322; font-weight: normal; } /* Keyword */
+.highlight .ow { color: #DAC322; font-weight: normal } /* Operator.Word */
+.highlight .nc { color: #F9A167; font-weight: 400 } /* Name.Class */
+.highlight .nf { color: #77BBBB; font-weight: normal; } /* Name.Function */
+.highlight .bp { color: #F3888B } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #F3888B } /* Name.Variable.Class */
+.highlight .vg { color: #F3888B } /* Name.Variable.Global */
+.highlight .vi { color: #F3888B } /* Name.Variable.Instance */
+.highlight .nd { color: #E3AB83 } /* Name.Decorator */
+.highlight .ne { color: #CB6077; font-weight: 400 } /* Name.Exception */
+.highlight .o { color: #8A8A8A } /* Operator */
+.highlight .n { color: #8A8A8A }
+.highlight .c { color: #B8AFAD; font-style: normal; }
+.highlight .sd { color: #B8AFAD; font-style: normal; }
+.highlight .nl { color: #7BB } /* Name.Label */
+.highlight .nn { color: #7BB } /* Name.Namespace */
+.highlight .nx { color: #7BB } /* Name.Other */
+.highlight .py { color: #7BB } /* Name.Property */
+
+/* Inline code */
+
+tt.code, code.code {
+    border: 1px solid #F2F2F2;
+    font-weight: normal;
+    display: inline;
+    padding: 0.3em 0.5em;
+    background-color: #FAFAFA;
+}
+tt.code .name, code.code .name { color: #8A8A8A }
+tt.code .operator, code.code .operator { color: #8A8A8A }
+tt.code .punctuation, code.code .punctuation { color: #8A8A8A }
+tt.code .string, code.code .string { color: #AFCE79 }
+tt.code .number, code.code .number { color: #7BB }
+tt.code .integer, code.code .integer { color: #7BB }
