@@ -1,3 +1,15 @@
+### 0.6.2
+
+(June 9nd, 2015)
+
+##### Fixes
+
+- Fixes a bug when results rather than the relation was returned
+- #7 Starting a new query from a BelongsToMany relation does not maintain pivot columns.
+- #6 Model.set_table() method does not properly handle pivot classes.
+- #5 Model.fresh() method raises an error for models retrieved from relations.
+
+
 ### 0.6.1
 
 (June 2nd, 2015)
