@@ -4,7 +4,7 @@
 class Connector(object):
 
     RESERVED_KEYWORDS = [
-        'log_queries', 'driver', 'prefix'
+        'log_queries', 'driver', 'prefix', 'name'
     ]
 
     def get_api(self):

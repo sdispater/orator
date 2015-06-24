@@ -11,10 +11,14 @@ from orator.orm.model import Model
 
 class MockConnection(ConnectionInterface):
 
+    def __init__(self, name=None):
+        if name:
+            self.get_name = lambda: name
+
     def set_reconnector(self, reconnector):
         return mock.MagicMock()
 
-    def prepare_mock(self):
+    def prepare_mock(self, name=None):
         self.table = mock.MagicMock()
         self.select = mock.MagicMock()
         self.insert = mock.MagicMock()
@@ -38,7 +42,7 @@ class MockManager(DatabaseManager):
 
     def prepare_mock(self):
         self._make_connection = mock.MagicMock(
-            side_effect=lambda name: MockConnection().prepare_mock()
+            side_effect=lambda name: MockConnection(name).prepare_mock()
         )
 
         return self

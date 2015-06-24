@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import threading
+import logging
 from .connections.connection_resolver_interface import ConnectionResolverInterface
 from .connectors.connection_factory import ConnectionFactory
 from .exceptions import ArgumentError
+
+logger = logging.getLogger('orator.database_manager')
 
 
 class BaseDatabaseManager(ConnectionResolverInterface):
@@ -36,6 +39,7 @@ class BaseDatabaseManager(ConnectionResolverInterface):
         name, type = self._parse_connection_name(name)
 
         if name not in self._connections:
+            logger.debug('Initiating connection %s' % name)
             connection = self._make_connection(name)
 
             self._set_connection_for_type(connection, type)
@@ -80,12 +84,16 @@ class BaseDatabaseManager(ConnectionResolverInterface):
         if name is None:
             name = self.get_default_connection()
 
+        logger.debug('Disconnecting %s' % name)
+
         if name in self._connections:
             self._connections[name].disconnect()
 
     def reconnect(self, name=None):
         if name is None:
             name = self.get_default_connection()
+
+        logger.debug('Reconnecting %s' % name)
 
         self.disconnect(name)
 
@@ -95,6 +103,8 @@ class BaseDatabaseManager(ConnectionResolverInterface):
         return self._refresh_api_connections(name)
 
     def _refresh_api_connections(self, name):
+        logger.debug('Refreshing api connections for %s' % name)
+
         fresh = self._make_connection(name)
 
         return self._connections[name]\
@@ -102,7 +112,11 @@ class BaseDatabaseManager(ConnectionResolverInterface):
             .set_read_connection(fresh.get_read_connection())
 
     def _make_connection(self, name):
+        logger.debug('Making connection for %s' % name)
+
         config = self._get_config(name)
+        if 'name' not in config:
+            config['name'] = name
 
         if name in self._extensions:
             return self._extensions[name](config, name)
@@ -115,6 +129,8 @@ class BaseDatabaseManager(ConnectionResolverInterface):
         return self._factory.make(config, name)
 
     def _prepare(self, connection):
+        logger.debug('Preparing connection %s' % connection.get_name())
+
         def reconnector(connection_):
             self.reconnect(connection_.get_name())
 
