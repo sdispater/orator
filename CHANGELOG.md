@@ -1,3 +1,16 @@
+### 0.6.3
+
+(June 30th, 2015)
+
+##### Improvements
+
+- [#10](https://github.com/sdispater/orator/issues/10) Remove hard dependencies in commands.
+
+##### Fixes
+
+- [#8](https://github.com/sdispater/orator/issues/8) Reconnection on lost connection does not properly work.
+
+
 ### 0.6.2
 
 (June 9nd, 2015)
