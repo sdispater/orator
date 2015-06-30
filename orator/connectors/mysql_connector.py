@@ -22,7 +22,8 @@ class MySqlConnector(Connector):
 
     RESERVED_KEYWORDS = [
         'log_queries', 'driver', 'prefix',
-        'engine', 'charset', 'collation'
+        'engine', 'charset', 'collation',
+        'name'
     ]
 
     def connect(self, config):

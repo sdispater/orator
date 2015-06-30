@@ -2,7 +2,7 @@
 
 from . import OratorTestCase
 from . import mock
-from .utils import MockConnection, MockManager, MockFactory
+from .utils import MockConnection, MockManager
 
 from orator.database_manager import DatabaseManager
 
@@ -23,14 +23,19 @@ class ConnectionTestCase(OratorTestCase):
 
     def test_manager_uses_factory_to_create_connections(self):
         manager = self._get_real_manager()
+        original_make = manager._factory.make
+        manager._factory.make = mock.MagicMock()
         manager.connection()
 
         manager._factory.make.assert_called_with(
             {
+                'name': 'sqlite',
                 'driver': 'sqlite',
                 'database': ':memory:'
             }, 'sqlite'
         )
+
+        manager._factory.make = original_make
 
     def test_connection_can_select_connections(self):
         manager = self._get_manager()
@@ -55,6 +60,14 @@ class ConnectionTestCase(OratorTestCase):
 
         self.assertEqual('sqlite', manager.get_default_connection())
 
+    def test_reconnect(self):
+        manager = self._get_real_manager()
+
+        api_connection = manager.connection().get_connection()
+        manager.reconnect()
+        self.assertIsNot(manager.connection().get_connection(), api_connection)
+        self.assertIsNotNone(manager.connection().get_connection())
+
     def _get_manager(self):
         manager = MockManager({
             'default': 'sqlite',
@@ -77,7 +90,7 @@ class ConnectionTestCase(OratorTestCase):
                 'driver': 'sqlite',
                 'database': ':memory:'
             }
-        }, MockFactory().prepare_mock())
+        })
 
         return manager
 

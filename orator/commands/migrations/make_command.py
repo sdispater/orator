@@ -4,6 +4,7 @@ import os
 from cleo import InputOption, InputArgument, ListInput
 from orator.migrations import MigrationCreator, DatabaseMigrationRepository
 from .base_command import BaseCommand
+from ...utils import decode
 
 
 class MigrateMakeCommand(BaseCommand):
@@ -45,7 +46,7 @@ class MigrateMakeCommand(BaseCommand):
 
         file_ = self._write_migration(creator, name, table, create, path)
 
-        o.writeln('<info>Create migration: <comment>%s</comment></info>' % file_)
+        o.writeln(decode('<info>✓ Migration created successfully</info>'))
 
     def _write_migration(self, creator, name, table, create, path):
         """

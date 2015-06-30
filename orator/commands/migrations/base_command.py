@@ -7,13 +7,16 @@ from orator import DatabaseManager
 
 class BaseCommand(Command):
 
-    def __init__(self):
+    def __init__(self, resolver=None):
+        self._resolver = resolver
+
         super(BaseCommand, self).__init__()
 
-        self._resolver = {}
-
     def configure(self):
-        self.add_option('config', 'c', InputOption.VALUE_REQUIRED, 'The config file path')
+        if not self._resolver:
+            self.add_option('config', 'c',
+                            InputOption.VALUE_REQUIRED,
+                            'The config file path')
 
     def execute(self, i, o):
         """
@@ -22,8 +25,9 @@ class BaseCommand(Command):
         :type i: cleo.inputs.input.Input
         :type o: cleo.outputs.output.Output
         """
-        config = self._get_config(i)
-        self._resolver = DatabaseManager(config)
+        if not self._resolver:
+            config = self._get_config(i)
+            self._resolver = DatabaseManager(config)
 
     def call(self, name, options=None, o=None):
         """
