@@ -3,6 +3,7 @@
 from cleo import InputOption
 from orator.migrations import DatabaseMigrationRepository
 from .base_command import BaseCommand
+from ...utils import decode
 
 
 class InstallCommand(BaseCommand):
@@ -30,4 +31,4 @@ class InstallCommand(BaseCommand):
         repository.set_source(database)
         repository.create_repository()
 
-        o.writeln('<info>Migration table created successfully</info>')
+        o.writeln(decode('<info>✓ Migration table created successfully</info>'))
