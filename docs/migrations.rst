@@ -80,7 +80,7 @@ and whether the migration will be creating a new table:
 
 These commands would respectively create the following migrations:
 
- .. code-block:: python
+.. code-block:: python
 
     from orator.migrations import Migration
 
@@ -101,7 +101,7 @@ These commands would respectively create the following migrations:
             with self.schema.table('users') as table:
                 pass
 
- .. code-block:: python
+.. code-block:: python
 
     from orator.migrations import Migration
 
