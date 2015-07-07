@@ -762,6 +762,7 @@ tt.code .integer, code.code .integer { color: #F4BC87 }
 .highlight .nx { color: #7BB } /* Name.Other */
 .highlight .py { color: #7BB } /* Name.Property */
 .highlight .nb { color: #E3AB83 } /* Name.Builtin */
+.highlight .p { color: #8A8A8A } /* Punctuation */
 
 /* Inline code */
 
