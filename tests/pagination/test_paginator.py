@@ -20,3 +20,10 @@ class PaginatorTestCase(OratorTestCase):
         self.assertEqual(4, p.last_item)
 
         self.assertEqual('item4', p[1])
+
+    def test_current_page_resolver(self):
+        def current_page_resolver():
+            return 7
+
+        Paginator.current_page_resolver(current_page_resolver)
+        self.assertEqual(7, Paginator.resolve_current_page())

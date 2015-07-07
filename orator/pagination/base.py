@@ -89,7 +89,7 @@ class BasePaginator(object):
 
     @classmethod
     def current_page_resolver(cls, resolver):
-        cls._current_page_resolver = resolver
+        cls._current_page_resolver = staticmethod(resolver)
 
     def __len__(self):
         return self.count()
