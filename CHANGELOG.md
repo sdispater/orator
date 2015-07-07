@@ -1,3 +1,12 @@
+### 0.6.4
+
+(July 7th, 2015)
+
+##### Fixes
+
+- [#11](https://github.com/sdispater/orator/issues/11) Paginator.resolve_current_page() raises and error on Python 2.7.
+
+
 ### 0.6.3
 
 (June 30th, 2015)
