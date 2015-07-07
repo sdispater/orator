@@ -66,6 +66,15 @@ article ul li {
     color: #7A7A7A;
 }
 
+.wy-side-nav-search a.icon.icon-home {
+    visibility: collapse;
+}
+
+.wy-side-nav-search a.icon.icon-home img.logo {
+    visibility: visible;
+    margin-top: -0.85em;
+}
+
 .wy-menu-vertical ul {
     font-family: "Open Sans", "Roboto", sans-serif;
     margin-right: 1em;
