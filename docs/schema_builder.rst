@@ -288,6 +288,30 @@ A similar naming convention is used for foreign keys as is used for other indexe
     When creating a foreign key that references an incrementing integer,
     remember to always make the foreign key column ``unsigned``.
 
+.. note::
+
+    .. versionchanged:: 0.6.3
+
+    By default, SQLite will not honor the ``ON DELETE`` and ``ON UPDATE`` statements.
+    Orator takes care of the problem by executing the following SQL query:
+
+    .. code-block:: sql
+
+        PRAGMA foreign_keys = ON
+
+    If you do not want this behavior, just set the configuration parameter ``foreign_keys`` to
+    ``False``:
+
+    .. code-block:: python
+
+        config = {
+            'sqlite': {
+                'driver': 'sqlite',
+                'database': ':memory:',
+                'foreign_keys': False
+            }
+        }
+
 
 Dropping timestamps and soft deletes
 ====================================
