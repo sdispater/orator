@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from .abstract_asset import AbstractAsset
 from ..utils import basestring
 
 
-class Column(object):
+class Column(AbstractAsset):
 
     def __init__(self, name, type, options=None):
-        self._name = name
+        self._set_name(name)
         self._type = type
 
         self._length = None

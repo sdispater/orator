@@ -2,12 +2,13 @@
 
 from collections import OrderedDict
 from .column import Column
+from .abstract_asset import AbstractAsset
 
 
-class Table(object):
+class Table(AbstractAsset):
 
     def __init__(self, table_name, columns=None, indexes=None, fk_constraints=None):
-        self._name = table_name
+        self._set_name(table_name)
         self._columns = OrderedDict()
         self._indexes = {}
         self._fk_constraints = {}

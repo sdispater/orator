@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from .identifier import Identifier
+
 
 class ColumnDiff(object):
 
@@ -13,4 +15,4 @@ class ColumnDiff(object):
         return property_name in self.changed_properties
 
     def get_old_column_name(self):
-        return self.old_column_name
+        return Identifier(self.old_column_name)

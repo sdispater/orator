@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from .platform import Platform
+from .keywords.postgresql_keywords import PostgreSQLKeywords
 from ..table import Table
 from ..column import Column
+from ..identifier import Identifier
 
 
 class PostgresPlatform(Platform):
@@ -129,7 +131,7 @@ class PostgresPlatform(Platform):
             if self.is_unchanged_binary_column(column_diff):
                 continue
 
-            old_column_name = column_diff.old_column_name
+            old_column_name = column_diff.get_old_column_name().get_quoted_name(self)
             column = column_diff.column
 
             if any([column_diff.has_changed('type'),
@@ -137,7 +139,7 @@ class PostgresPlatform(Platform):
                     column_diff.has_changed('scale'),
                     column_diff.has_changed('fixed')]):
                 query = 'ALTER ' + old_column_name + ' TYPE ' + self.get_sql_type_declaration(column.to_dict())
-                sql.append('ALTER TABLE ' + diff.name + ' ' + query)
+                sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
 
             if column_diff.has_changed('default') or column_diff.has_changed('type'):
                 if column.get_default() is None:
@@ -146,7 +148,7 @@ class PostgresPlatform(Platform):
                     default_clause = ' SET' + self.get_default_value_declaration_sql(column.to_dict())
 
                 query = 'ALTER ' + old_column_name + default_clause
-                sql.append('ALTER TABLE ' + diff.name + ' ' + query)
+                sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
 
             if column_diff.has_changed('notnull'):
                 op = 'DROP'
@@ -154,7 +156,7 @@ class PostgresPlatform(Platform):
                     op = 'SET'
 
                 query = 'ALTER ' + old_column_name + ' ' + op + ' NOT NULL'
-                sql.append('ALTER TABLE ' + diff.name + ' ' + query)
+                sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
 
             if column_diff.has_changed('autoincrement'):
                 if column.get_autoincrement():
@@ -164,18 +166,19 @@ class PostgresPlatform(Platform):
                     sql.append('SELECT setval(\'' + seq_name + '\', '
                                '(SELECT MAX(' + old_column_name + ') FROM ' + diff.name + '))')
                     query = 'ALTER ' + old_column_name + ' SET DEFAULT nextval(\'' + seq_name + '\')'
-                    sql.append('ALTER TABLE ' + diff.name + ' ' + query)
+                    sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
                 else:
                     query = 'ALTER ' + old_column_name + ' DROP DEFAULT'
-                    sql.append('ALTER TABLE ' + diff.name + ' ' + query)
+                    sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
 
             if column_diff.has_changed('length'):
                 query = 'ALTER ' + old_column_name + ' TYPE ' + self.get_sql_type_declaration(column.to_dict())
-                sql.append('ALTER TABLE ' + diff.name + ' ' + query)
+                sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
 
         for old_column_name, column in diff.renamed_columns.items():
-            sql.append('ALTER TABLE ' + diff.name + ' '
-                       'RENAME COLUMN ' + old_column_name + ' TO ' + column.get_name())
+            sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' '
+                       'RENAME COLUMN ' + Identifier(old_column_name).get_quoted_name(self) +
+                       ' TO ' + column.get_quoted_name(self))
 
         return sql
 
@@ -278,3 +281,6 @@ class PostgresPlatform(Platform):
 
     def supports_foreign_key_constraints(self):
         return True
+
+    def _get_reserved_keywords_class(self):
+        return PostgreSQLKeywords

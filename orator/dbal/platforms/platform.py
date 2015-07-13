@@ -3,6 +3,8 @@
 
 class Platform(object):
 
+    _keywords = None
+
     INTERNAL_TYPE_MAPPING = {}
 
     def get_default_value_declaration_sql(self, field):
@@ -162,3 +164,53 @@ class Platform(object):
 
     def get_type_mapping(self, db_type):
         return self.INTERNAL_TYPE_MAPPING[db_type]
+
+    def get_reserved_keywords_list(self):
+        if self._keywords:
+            return self._keywords
+
+        klass = self._get_reserved_keywords_class()
+        keywords = klass()
+
+        self._keywords = keywords
+
+        return keywords
+
+    def _get_reserved_keywords_class(self):
+        raise NotImplementedError
+
+    def quote_identifier(self, string):
+        """
+        Quotes a string so that it can be safely used as a table or column name,
+        even if it is a reserved word of the platform. This also detects identifier
+        chains separated by dot and quotes them independently.
+
+        :param string: The identifier name to be quoted.
+        :type string: str
+
+        :return: The quoted identifier string.
+        :rtype: str
+        """
+        if '.' in string:
+            parts = list(map(self.quote_single_identifier, string.split('.')))
+
+            return '.'.join(parts)
+
+        return self.quote_single_identifier(string)
+
+    def quote_single_identifier(self, string):
+        """
+        Quotes a single identifier (no dot chain separation).
+
+        :param string: The identifier name to be quoted.
+        :type string: str
+
+        :return: The quoted identifier string.
+        :rtype: str
+        """
+        c = self.get_identifier_quote_character()
+
+        return '%s%s%s' % (c, string.replace(c, c+c), c)
+
+    def get_identifier_quote_character(self):
+        return '"'

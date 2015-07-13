@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from .platform import Platform
-from ..table import Table
-from ..column import Column
+from .keywords.mysql_keywords import MySQLKeywords
+from ..identifier import Identifier
 
 
 class MySqlPlatform(Platform):
@@ -95,7 +95,7 @@ class MySqlPlatform(Platform):
         query_parts = []
 
         if diff.new_name is not False:
-            query_parts.append('RENAME TO %s' % diff.new_name)
+            query_parts.append('RENAME TO %s' % diff.get_new_name().get_quoted_name(self))
 
         # Added columns?
 
@@ -112,19 +112,24 @@ class MySqlPlatform(Platform):
                 continue
 
             query_parts.append('CHANGE %s %s'
-                               % (column_diff.get_old_column_name(),
-                                  self.get_column_declaration_sql(column.get_name(), column_dict)))
+                               % (column_diff.get_old_column_name().get_quoted_name(self),
+                                  self.get_column_declaration_sql(column.get_quoted_name(self), column_dict)))
 
         for old_column_name, column in diff.renamed_columns.items():
             column_dict = column.to_dict()
+            old_column_name = Identifier(old_column_name)
             query_parts.append('CHANGE %s %s'
-                               % (self.quote(old_column_name),
-                                  self.get_column_declaration_sql(self.quote(column.get_name()), column_dict)))
+                               % (self.quote(old_column_name.get_quoted_name(self)),
+                                  self.get_column_declaration_sql(
+                                      self.quote(column.get_quoted_name(self)),
+                                      column_dict)))
 
         sql = []
 
         if len(query_parts) > 0:
-            sql.append('ALTER TABLE %s %s' % (diff.name, ', '.join(query_parts)))
+            sql.append('ALTER TABLE %s %s'
+                       % (diff.get_name(self).get_quoted_name(self),
+                          ', '.join(query_parts)))
 
         return sql
 
@@ -234,3 +239,9 @@ class MySqlPlatform(Platform):
 
     def quote(self, name):
         return '`%s`' % name.replace('`', '``')
+
+    def _get_reserved_keywords_class(self):
+        return MySQLKeywords
+
+    def get_identifier_quote_character(self):
+        return '`'
