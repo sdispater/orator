@@ -9,7 +9,7 @@ from .factory_builder import FactoryBuilder
 
 class Factory(object):
 
-    def __init__(self, faker=None):
+    def __init__(self, faker=None, resolver=None):
         """
         :param faker: A faker generator instance
         :type faker: faker.Generator
@@ -20,6 +20,7 @@ class Factory(object):
             self._faker = faker
 
         self._definitions = {}
+        self._resolver = resolver
 
     @classmethod
     def construct(cls, faker, path_to_factories=None):
@@ -70,14 +71,44 @@ class Factory(object):
             def wrapped(*args, **kwargs):
                 return func(*args, **kwargs)
 
-            if klass not in self._definitions:
-                self._definitions[klass] = {}
-
-            self._definitions[klass][name] = func
+            self.register(klass, func, name=name)
 
             return wrapped
 
         return decorate
+
+    def register(self, klass, callback, name='default'):
+        """
+        Register a class with a function.
+
+        :param klass: The class
+        :type klass: class
+
+        :param callback: The callable
+        :type callback: callable
+
+        :param name: The short name
+        :type name: str
+        """
+        if klass not in self._definitions:
+            self._definitions[klass] = {}
+
+        self._definitions[klass][name] = callback
+
+    def register_as(self, klass, name, callback):
+        """
+        Register a class with a function.
+
+        :param klass: The class
+        :type klass: class
+
+        :param callback: The callable
+        :type callback: callable
+
+        :param name: The short name
+        :type name: str
+        """
+        return self.register(klass, callback, name)
 
     def create(self, klass, **attributes):
         """
@@ -191,7 +222,7 @@ class Factory(object):
 
         :return: orator.orm.factory_builder.FactoryBuilder
         """
-        return FactoryBuilder(klass, name, self._definitions, self._faker)
+        return FactoryBuilder(klass, name, self._definitions, self._faker, self._resolver)
 
     def build(self, klass, name='default', amount=None):
         """
@@ -243,6 +274,9 @@ class Factory(object):
         instance = klass()
 
         return instance
+
+    def set_connection_resolver(self, resolver):
+        self._resolver = resolver
 
     def __getitem__(self, item):
         return self.make(item)

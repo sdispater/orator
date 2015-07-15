@@ -5,7 +5,7 @@ from .collection import Collection
 
 class FactoryBuilder(object):
 
-    def __init__(self, klass, name, definitions, faker):
+    def __init__(self, klass, name, definitions, faker, resolver=None):
         """
         :param klass: The class
         :type klass: class
@@ -24,6 +24,7 @@ class FactoryBuilder(object):
         self._faker = faker
         self._definitions = definitions
         self._amount = 1
+        self._resolver = resolver
 
     def times(self, amount):
         """
@@ -50,8 +51,14 @@ class FactoryBuilder(object):
         results = self.make(**attributes)
 
         if self._amount == 1:
+            if self._resolver:
+                results.set_connection_resolver(self._resolver)
+
             results.save()
         else:
+            if self._resolver:
+                results.each(lambda r: r.set_connection_resolver(self._resolver))
+
             for result in results:
                 result.save()
 
@@ -88,4 +95,10 @@ class FactoryBuilder(object):
         definition = self._definitions[self._klass][self._name](self._faker)
         definition.update(attributes)
 
-        return self._klass(**definition)
+        instance = self._klass()
+        instance.force_fill(**definition)
+
+        return instance
+
+    def set_connection_resolver(self, resolver):
+        self._resolver = resolver
