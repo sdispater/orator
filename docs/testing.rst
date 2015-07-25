@@ -3,6 +3,8 @@
 Testing
 #######
 
+.. _ModelFactories:
+
 Model Factories
 ===============
 

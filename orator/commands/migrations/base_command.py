@@ -46,6 +46,8 @@ class BaseCommand(Command):
             options = []
 
         command = self.get_application().find(name)
+        if self._resolver:
+            command.set_connection_resolver(self._resolver)
 
         options = [('command', command.get_name())] + options
 
@@ -70,3 +72,6 @@ class BaseCommand(Command):
             exec(fh.read(), {}, variables)
 
         return variables['DATABASES']
+
+    def set_connection_resolver(self, resolver):
+        self._resolver = resolver
