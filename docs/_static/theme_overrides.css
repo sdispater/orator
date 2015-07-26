@@ -5,11 +5,11 @@ body {
     font: 400 13px/26px "Open Sans",sans-serif;
     color: #7A7A7A;
     text-rendering: optimizelegibility;
-    background-color: #FAFAFA;
+    background-color: #FFFFFF;
 }
 
 .wy-body-for-nav {
-    background: #FAFAFA;
+    background: #FFFFFF;
 }
 
 .wy-nav-content {
@@ -21,7 +21,7 @@ body {
     margin-left: 300px;
     padding-left: 70px;
     padding-right: 70px;
-    box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+    /*box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);*/
     max-width: 940px;
 }
 
@@ -29,7 +29,12 @@ body {
     .wy-nav-content-wrap {
         margin-left: 0;
         padding-left: 0;
+        padding-right: 0;
     }
+}
+
+.wy-nav-top {
+    background: #1A1A1A;
 }
 
 .rst-content h1:hover .headerlink,
@@ -52,11 +57,11 @@ article ul li {
 }
 
 .wy-nav-side {
-    position: absolute;
-    background: #FAFAFA;
-    box-shadow: 0px 0 1px rgba(0, 0, 0, 0.1) inset;
-    overflow: visible;
-    bottom: inherit;
+    position: fixed;
+    background: #1A1A1A;
+    /*box-shadow: 0px 0 1px rgba(0, 0, 0, 0.1) inset;
+    overflow: scroll;
+    bottom: inherit;*/
 }
 
 .wy-side-nav-search {
@@ -114,7 +119,18 @@ article ul li {
 .wy-menu-vertical > ul > li > a,
 .wy-menu-vertical > ul > li > a:visited
 {
-    color: #5A5A5A;
+    color: #9A9A9A;
+    opacity: 1;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -ms-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.wy-menu-vertical > ul > li > a:hover
+{
+    color: #FAC322;
     opacity: 1;
 }
 
@@ -141,7 +157,8 @@ article ul li {
 .wy-menu-vertical li.toctree-l2.current > a {
     background: none;
     font-size: 13px;
-    color: #F3888B !important;
+    color: #EF6155 !important;
+    padding-left: 3.027em;
 }
 
 .wy-menu-vertical li.toctree-l1.current > ul > li > a::before {
@@ -157,8 +174,8 @@ article ul li {
 }
 
 .wy-menu-vertical li.toctree-l1.current > ul > li.toctree-l2.current > a::before {
-    content: "#";
-    color: #F3888B;
+    content: "##";
+    color: #EF6155;
     font-size: 13px;
     position: absolute;
     top: 6px;
@@ -183,20 +200,20 @@ article ul li {
 
 .wy-menu-vertical a,
 .wy-menu-vertical a:visited {
-    color: #9A9A9A;
+    color: #7A7A7A;
     line-height: 20px;
     font-size: 13px;
 }
 
 .wy-menu-vertical a:hover {
-    color: #7A7A7A;
+    color: #5A5A5A;
 }
 
 .wy-menu-vertical > ul > li > ul > li > a,
 .wy-menu-vertical > ul > li > ul > li > a:visited,
 .wy-menu-vertical li.current a,
 .wy-menu-vertical li.current a:visited {
-    color: #9A9A9A;
+    color: #7A7A7A;
     background: transparent;
     -webkit-transition: all 0.3s;
     -moz-transition: all 0.3s;
@@ -207,12 +224,12 @@ article ul li {
 
 .wy-menu-vertical > ul > li > ul > li > a:hover,
 .wy-menu-vertical li.current a:hover {
-    color: #F3888B;
+    color: #EF6155;
     background: transparent;
 }
 
 .wy-menu-vertical li.current > a {
-    color: #1999B3 !important;
+    color: #FAC322 !important;
     padding-left: 2.427em;
 }
 
@@ -220,15 +237,16 @@ article ul li {
 }
 
 .wy-side-nav-search input[type="text"] {
+    font-family: "Open Sans", "Roboto", sans-serif;
     border: 0;
     background: none;
     box-shadow: none;
-    color: #8A8A8A;
+    color: #7A7A7A;
     font-size: 13px;
     width: 90%;
     border-radius: 0;
     border-bottom: 1px solid rgba(129, 150, 154, 0.7);
-    opacity: 0.7;
+    opacity: 1;
     padding: 6px 0;
 }
 
@@ -261,7 +279,7 @@ article ul li {
 
 .wy-menu-vertical li.toctree-l1.current:before {
     content: "#";
-    color: #1999B3;
+    color: #FAC322;
     font-size: 13px;
     position: absolute;
     top: 3px;
@@ -329,13 +347,13 @@ article ul li {
 }
 
 .rst-content .highlighted {
-    background: rgba(138, 179, 181, 0.15) none repeat scroll 0% 0%;
-    border: 1px solid rgba(138, 179, 181, 0.2);
-    padding: 2px 3px;
+    border: 1px solid rgb(250, 195, 34);
+    padding: 0 4px;
     border-radius: 3px;
-    color: inherit;
+    color: #BA8300;
     display: inline;
     font-weight: inherit;
+    background: rgba(250, 195, 34, 0.6) none repeat scroll 0% 0%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -439,8 +457,11 @@ div[class^="highlight"] {
     /*background-color: #FAFAFA;*/
 }
 
-code {
+code, .rst-content tt, .rst-content code {
     font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
+}
+
+code {
     color: #CB6077;
     background-color: #FFFFFF;
     font-size: 13px;
@@ -606,6 +627,87 @@ p > code.docutils {
 
 .btn-neutral span.fa-arrow-circle-right:before {
     content: ''
+}
+
+
+/* Autodoc */
+.rst-content table.field-list .field-name {
+    text-align: left;
+    white-space: nowrap;
+    padding-right: 10px;
+    width: 140px;
+    font-weight: 600;
+}
+
+.rst-content table.field-list .field-body {
+    padding: 8px 16px;
+    text-align: left;
+    vertical-align: top;
+    border: 0;
+}
+
+.rst-content table.field-list .field-body ul {
+    line-height: 0;
+}
+
+.rst-content table.field-list .field-body ul li {
+    list-style: none;
+    margin-left: 0;
+    font-size: 100%;
+}
+
+.rst-content table.field-list td p {
+    line-height: inherit;
+}
+
+.rst-content table.field-list .field-body strong {
+    color: #F3888B;
+    font-weight: 400;
+    margin-top: 0;
+}
+
+.rst-content dl:not(.docutils).class > dt {
+    border: 0;
+    background: transparent;
+    font-size: inherit;
+    margin-bottom: 24px;
+    color: #DAC322;
+    font-weight: 600;
+}
+
+.rst-content dl:not(.docutils).class > dt > em,
+.rst-content dl:not(.docutils).class > dt > em.property {
+    font-weight: 400;
+    font-style: normal;
+}
+
+.rst-content dl:not(.docutils).class > dt > code {
+    color: #F9A167;
+    font-weight: 400;
+}
+
+.rst-content dl:not(.docutils) dl.classmethod > dt,
+.rst-content dl:not(.docutils) dl.method > dt {
+    border-left: 1px solid #F2F2F2;
+    background: transparent;
+    font-size: inherit;
+}
+
+.rst-content dl:not(.docutils) dl.classmethod > dt > code,
+.rst-content dl:not(.docutils) dl.method > dt > code {
+    color: #77BBBB;
+    font-weight: 400;
+}
+
+.rst-content dl:not(.docutils) dl.classmethod > dt > em,
+.rst-content dl:not(.docutils) dl.method > dt > em {
+    font-weight: 400;
+}
+
+.rst-content dl:not(.docutils) dl.classmethod > dt > em.property,
+.rst-content dl:not(.docutils) dl.method > dt > em.property {
+    font-weight: 400;
+    color: #7AC;
 }
 
 
