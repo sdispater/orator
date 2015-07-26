@@ -182,7 +182,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         :rtype: list
         """
-        sql = []
+        sql = ['PRAGMA foreign_keys = OFF']
 
         schema = connection.get_schema_manager()
         table = self.get_table_prefix() + blueprint.get_table()

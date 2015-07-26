@@ -21,6 +21,7 @@ class SchemaBuilderSQLiteIntegrationTestCase(OratorTestCase):
         with self.schema().create('users') as table:
             table.increments('id')
             table.string('email').unique()
+            table.integer('votes').default(0)
             table.timestamps()
 
         with self.schema().create('friends') as table:
@@ -176,6 +177,9 @@ class SchemaBuilderSQLiteIntegrationTestCase(OratorTestCase):
 
         post = Post.find(1)
         self.assertEqual('0', post.votes)
+
+        with self.schema().table('users') as table:
+            table.big_integer('votes').change()
 
     def test_cascading(self):
         user = User.create(email='john@doe.com')

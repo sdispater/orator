@@ -27,6 +27,7 @@ class SchemaBuilderPostgresIntegrationTestCase(OratorTestCase):
         with self.schema().create('users') as table:
             table.increments('id')
             table.string('email').unique()
+            table.integer('votes').default(0)
             table.timestamps()
 
         with self.schema().create('friends') as table:
@@ -140,6 +141,9 @@ class SchemaBuilderPostgresIntegrationTestCase(OratorTestCase):
 
         post = Post.find(1)
         self.assertEqual('0', post.votes)
+
+        with self.schema().table('users') as table:
+            table.big_integer('votes').change()
 
     def connection(self):
         return Model.get_connection_resolver().connection()
