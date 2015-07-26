@@ -28,3 +28,5 @@ THe Orator ORM supports python versions **2.7+** and **3.2+**
     pagination
     schema_builder
     migrations
+    seeding
+    testing

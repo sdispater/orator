@@ -37,7 +37,8 @@ setup(
         'six',
         'cleo',
         'blinker',
-        'lazy-object-proxy'
+        'lazy-object-proxy',
+        'fake-factory'
     ],
     tests_require=['pytest', 'mock', 'flexmock'],
     test_suite='nose.collector',

@@ -17,6 +17,11 @@ class MigrateCommand(BaseCommand):
                         'The database connection to use')
         self.add_option('path', 'p', InputOption.VALUE_OPTIONAL,
                         'The path of migrations files to be executed.')
+        self.add_option('seed', 's', InputOption.VALUE_NONE,
+                        'Indicates if the seed task should be re-run.')
+        self.add_option('seed-path', None, InputOption.VALUE_REQUIRED,
+                        'The path of seeds files to be executed. '
+                        'Defaults to <comment>./seeders</comment>')
         self.add_option('pretend', 'P', InputOption.VALUE_NONE,
                         'Dump the SQL queries that would be run.')
 
@@ -56,6 +61,17 @@ class MigrateCommand(BaseCommand):
 
         for note in migrator.get_notes():
             o.writeln(note)
+
+        # If the "seed" option has been given, we will rerun the database seed task
+        # to repopulate the database.
+        if i.get_option('seed'):
+            options = [
+                ('--path', i.get_option('seed-path'))
+                ('--database', database),
+                ('--config', i.get_option('config')),
+                ('-n', True)
+            ]
+            self.call('db:seed', options, o)
 
     def _prepare_database(self, migrator, database, i, o):
         migrator.set_connection(database)

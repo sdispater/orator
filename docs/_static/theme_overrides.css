@@ -390,6 +390,10 @@ a, a:visited {
     color: #00BCD4;
 }
 
+a:hover {
+    color: #48B0F7;
+}
+
 a > em {
     font-style: normal;
 }

@@ -141,6 +141,18 @@ class Collection(object):
 
         return Collection(list(map(callback, self._items)))
 
+    def each(self, callback):
+        if isinstance(self._items, dict):
+            items = self._items.values()
+        else:
+            items = self._items
+
+        for item in items:
+            if callback(item) is False:
+                break
+
+        return self
+
     def unique(self):
         """
         Return only unique items from the collection list.
