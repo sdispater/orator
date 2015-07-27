@@ -66,11 +66,14 @@ class MigrateCommand(BaseCommand):
         # to repopulate the database.
         if i.get_option('seed'):
             options = [
-                ('--path', i.get_option('seed-path'))
                 ('--database', database),
                 ('--config', i.get_option('config')),
                 ('-n', True)
             ]
+
+            if i.get_option('seed-path'):
+                options.append(('--path', i.get_option('seed-path')))
+
             self.call('db:seed', options, o)
 
     def _prepare_database(self, migrator, database, i, o):
