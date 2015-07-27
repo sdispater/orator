@@ -4,7 +4,7 @@ import os
 import glob
 import inflection
 import logging
-from ..utils import decode
+from ..utils import decode, load_module
 
 
 class MigratorHandler(logging.NullHandler):
@@ -139,7 +139,7 @@ class Migrator(object):
 
         :rtype: list
         """
-        files = glob.glob(os.path.join(path, '*_*.py'))
+        files = glob.glob(os.path.join(path, '[0-9]*_*.py'))
 
         if not files:
             return []
@@ -204,15 +204,21 @@ class Migrator(object):
 
         :rtype: orator.migrations.migration.Migration
         """
-        variables = {}
-
         name = '_'.join(migration_file.split('_')[4:])
         migration_file = os.path.join(path, '%s.py' % migration_file)
 
-        with open(migration_file) as fh:
-            exec(fh.read(), {}, variables)
+        # Loading parent module
+        parent = os.path.join(path, '__init__.py')
+        if not os.path.exists(parent):
+            with open(parent, 'w'):
+                pass
 
-        klass = variables[inflection.camelize(name)]
+        load_module('migrations', parent)
+
+        # Loading module
+        mod = load_module('migrations.%s' % name, migration_file)
+
+        klass = getattr(mod, inflection.camelize(name))
 
         instance = klass()
         instance.set_schema_builder(self.get_repository().get_connection().get_schema_builder())

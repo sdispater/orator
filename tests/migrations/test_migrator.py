@@ -31,7 +31,7 @@ class MigratorTestCase(OratorTestCase):
         )
 
         g = flexmock(glob)
-        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '*_*.py')).and_return([
+        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '[0-9]*_*.py')).and_return([
             os.path.join(os.getcwd(), '2_bar.py'),
             os.path.join(os.getcwd(), '1_foo.py'),
             os.path.join(os.getcwd(), '3_baz.py')
@@ -71,7 +71,7 @@ class MigratorTestCase(OratorTestCase):
         )
 
         g = flexmock(glob)
-        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '*_*.py')).and_return([
+        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '[0-9]*_*.py')).and_return([
             os.path.join(os.getcwd(), '2_bar.py'),
             os.path.join(os.getcwd(), '1_foo.py'),
             os.path.join(os.getcwd(), '3_baz.py')
@@ -108,7 +108,7 @@ class MigratorTestCase(OratorTestCase):
         )
 
         g = flexmock(glob)
-        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '*_*.py')).and_return([
+        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '[0-9]*_*.py')).and_return([
             os.path.join(os.getcwd(), '1_foo.py')
         ])
 
