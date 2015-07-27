@@ -15,8 +15,12 @@ class MigratorTestCase(OratorTestCase):
         flexmock_teardown()
 
     def test_migrations_are_run_up_when_outstanding_migrations_exist(self):
-        resolver = flexmock(DatabaseManager)
-        resolver.should_receive('connection').and_return(None)
+        resolver_mock = flexmock(DatabaseManager)
+        resolver_mock.should_receive('connection').and_return({})
+        resolver = flexmock(DatabaseManager({}))
+        connection = flexmock()
+        connection.should_receive('transaction').twice().and_return(connection)
+        resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
             Migrator(
@@ -42,8 +46,54 @@ class MigratorTestCase(OratorTestCase):
         migrator.get_repository().should_receive('log').once().with_args('2_bar', 1)
         migrator.get_repository().should_receive('log').once().with_args('3_baz', 1)
         bar_mock = flexmock(MigrationStub())
+        bar_mock.set_connection(connection)
         bar_mock.should_receive('up').once()
         baz_mock = flexmock(MigrationStub())
+        baz_mock.set_connection(connection)
+        baz_mock.should_receive('up').once()
+        migrator.should_receive('_resolve').with_args(os.getcwd(), '2_bar').once().and_return(bar_mock)
+        migrator.should_receive('_resolve').with_args(os.getcwd(), '3_baz').once().and_return(baz_mock)
+
+        migrator.run(os.getcwd())
+
+    def test_migrations_are_run_up_directly_if_transactional_is_false(self):
+        resolver_mock = flexmock(DatabaseManager)
+        resolver_mock.should_receive('connection').and_return({})
+        resolver = flexmock(DatabaseManager({}))
+        connection = flexmock()
+        connection.should_receive('transaction').never()
+        resolver.should_receive('connection').and_return(connection)
+
+        migrator = flexmock(
+            Migrator(
+                flexmock(
+                    DatabaseMigrationRepository(
+                        resolver,
+                        'migrations'
+                    )
+                ),
+                resolver
+            )
+        )
+
+        g = flexmock(glob)
+        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '[0-9]*_*.py')).and_return([
+            os.path.join(os.getcwd(), '2_bar.py'),
+            os.path.join(os.getcwd(), '1_foo.py'),
+            os.path.join(os.getcwd(), '3_baz.py')
+        ])
+
+        migrator.get_repository().should_receive('get_ran').once().and_return(['1_foo'])
+        migrator.get_repository().should_receive('get_next_batch_number').once().and_return(1)
+        migrator.get_repository().should_receive('log').once().with_args('2_bar', 1)
+        migrator.get_repository().should_receive('log').once().with_args('3_baz', 1)
+        bar_mock = flexmock(MigrationStub())
+        bar_mock.transactional = False
+        bar_mock.set_connection(connection)
+        bar_mock.should_receive('up').once()
+        baz_mock = flexmock(MigrationStub())
+        baz_mock.transactional = False
+        baz_mock.set_connection(connection)
         baz_mock.should_receive('up').once()
         migrator.should_receive('_resolve').with_args(os.getcwd(), '2_bar').once().and_return(bar_mock)
         migrator.should_receive('_resolve').with_args(os.getcwd(), '3_baz').once().and_return(baz_mock)
@@ -117,8 +167,12 @@ class MigratorTestCase(OratorTestCase):
         migrator.run(os.getcwd())
 
     def test_last_batch_of_migrations_can_be_rolled_back(self):
-        resolver = flexmock(DatabaseManager)
-        resolver.should_receive('connection').and_return(None)
+        resolver_mock = flexmock(DatabaseManager)
+        resolver_mock.should_receive('connection').and_return({})
+        resolver = flexmock(DatabaseManager({}))
+        connection = flexmock()
+        connection.should_receive('transaction').twice().and_return(connection)
+        resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
             Migrator(
@@ -140,8 +194,53 @@ class MigratorTestCase(OratorTestCase):
         ])
 
         bar_mock = flexmock(MigrationStub())
+        bar_mock.set_connection(connection)
         bar_mock.should_receive('down').once()
         foo_mock = flexmock(MigrationStub())
+        foo_mock.set_connection(connection)
+        foo_mock.should_receive('down').once()
+        migrator.should_receive('_resolve').with_args(os.getcwd(), 'bar').once().and_return(bar_mock)
+        migrator.should_receive('_resolve').with_args(os.getcwd(), 'foo').once().and_return(foo_mock)
+
+        migrator.get_repository().should_receive('delete').once().with_args(bar_migration)
+        migrator.get_repository().should_receive('delete').once().with_args(foo_migration)
+
+        migrator.rollback(os.getcwd())
+
+    def test_last_batch_of_migrations_can_be_rolled_back_directly_if_transactional_is_false(self):
+        resolver_mock = flexmock(DatabaseManager)
+        resolver_mock.should_receive('connection').and_return({})
+        resolver = flexmock(DatabaseManager({}))
+        connection = flexmock()
+        connection.should_receive('transaction').never()
+        resolver.should_receive('connection').and_return(connection)
+
+        migrator = flexmock(
+            Migrator(
+                flexmock(
+                    DatabaseMigrationRepository(
+                        resolver,
+                        'migrations'
+                    )
+                ),
+                resolver
+            )
+        )
+
+        foo_migration = MigrationStub('foo')
+        bar_migration = MigrationStub('bar')
+        migrator.get_repository().should_receive('get_last').once().and_return([
+            foo_migration,
+            bar_migration
+        ])
+
+        bar_mock = flexmock(MigrationStub())
+        bar_mock.transactional = False
+        bar_mock.set_connection(connection)
+        bar_mock.should_receive('down').once()
+        foo_mock = flexmock(MigrationStub())
+        foo_mock.transactional = False
+        foo_mock.set_connection(connection)
         foo_mock.should_receive('down').once()
         migrator.should_receive('_resolve').with_args(os.getcwd(), 'bar').once().and_return(bar_mock)
         migrator.should_receive('_resolve').with_args(os.getcwd(), 'foo').once().and_return(foo_mock)

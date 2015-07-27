@@ -6,10 +6,18 @@ from orator import Model
 class Migration(object):
 
     _connection = None
-    schema = None
+    transactional = True
 
-    def set_schema_builder(self, schema):
-        self.schema = schema
+    @property
+    def schema(self):
+        return self._connection.get_schema_builder()
+
+    @property
+    def db(self):
+        return self._connection
 
     def get_connection(self):
         return self._connection
+
+    def set_connection(self, connection):
+        self._connection = connection

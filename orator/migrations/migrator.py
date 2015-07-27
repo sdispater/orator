@@ -82,7 +82,12 @@ class Migrator(object):
         if pretend:
             return self._pretend_to_run(migration, 'up')
 
-        migration.up()
+        print(migration.transactional)
+        if migration.transactional:
+            with migration.db.transaction():
+                migration.up()
+        else:
+            migration.up()
 
         self._repository.log(migration_file, batch)
 
@@ -125,7 +130,11 @@ class Migrator(object):
         if pretend:
             return self._pretend_to_run(instance, 'down')
 
-        instance.down()
+        if instance.transactional:
+            with instance.db.transaction():
+                instance.down()
+        else:
+            instance.down()
 
         self._repository.delete(migration)
 
@@ -221,7 +230,7 @@ class Migrator(object):
         klass = getattr(mod, inflection.camelize(name))
 
         instance = klass()
-        instance.set_schema_builder(self.get_repository().get_connection().get_schema_builder())
+        instance.set_connection(self.get_repository().get_connection())
 
         return instance
 
