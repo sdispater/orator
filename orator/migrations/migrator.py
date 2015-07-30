@@ -82,7 +82,6 @@ class Migrator(object):
         if pretend:
             return self._pretend_to_run(migration, 'up')
 
-        print(migration.transactional)
         if migration.transactional:
             with migration.db.transaction():
                 migration.up()
