@@ -18,14 +18,10 @@ nosetests.xml
 .DS_Store
 .idea/*
 
-test.py
-test_models.py
-test_threading.py
-test_schema.py
+/test.py
+/test_*.py
 app.py
 config.py
-test_perf.py
-test_proxy.py
 /migrations
 /seeders
 development.db
