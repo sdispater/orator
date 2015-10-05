@@ -22,3 +22,10 @@ class LengthAwarePaginatorTestCase(OratorTestCase):
         self.assertEqual(4, p.last_item)
 
         self.assertEqual('item4', p[1])
+
+    def test_integer_division_for_last_page(self):
+        p = LengthAwarePaginator(['item3', 'item4'], 5, 2, 2)
+
+        self.assertEqual(2, p.current_page)
+        self.assertEqual(3, p.last_page)
+        self.assertEqual(5, p.total)
