@@ -4,7 +4,7 @@ try:
     import psycopg2
     import psycopg2.extras
 except ImportError:
-    pass
+    psycopg2 = None
 
 from .connector import Connector
 
