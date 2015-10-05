@@ -5,7 +5,7 @@ import logging
 from contextlib import contextmanager
 from .connection_interface import ConnectionInterface
 from ..query.grammars.grammar import QueryGrammar
-from ..query.builder import QueryBuilder
+from ..query import QueryBuilder
 from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
 from ..schema.builder import SchemaBuilder
@@ -18,7 +18,8 @@ query_logger = logging.getLogger('orator.connection.queries')
 
 class Connection(ConnectionInterface):
 
-    def __init__(self, connection, database='', table_prefix='', config=None):
+    def __init__(self, connection, database='', table_prefix='', config=None,
+                 builder_class=QueryBuilder, builder_default_kwargs=None):
         """
         :param connection: A dbapi connection instance
         :type connection: mixed
@@ -51,6 +52,13 @@ class Connection(ConnectionInterface):
         self._transactions = 0
 
         self._pretending = False
+
+        self._builder_class = builder_class
+
+        if builder_default_kwargs is None:
+            builder_default_kwargs = {}
+
+        self._builder_default_kwargs = builder_default_kwargs
 
         self._logging_queries = config.get('log_queries', False)
 
@@ -112,7 +120,10 @@ class Connection(ConnectionInterface):
         :return: A QueryBuilder instance
         :rtype: QueryBuilder
         """
-        query = QueryBuilder(self, self._query_grammar, self._post_processor)
+        query = self._builder_class(
+            self, self._query_grammar, self._post_processor,
+            **self._builder_default_kwargs
+        )
 
         return query
 
@@ -457,6 +468,14 @@ class Connection(ConnectionInterface):
 
     def get_schema_manager(self):
         return SchemaManager(self)
+
+    def set_builder_class(self, klass, default_kwargs=None):
+        self._builder_class = klass
+
+        if default_kwargs is not None:
+            self._builder_default_kwargs = default_kwargs
+
+        return self
 
     def __enter__(self):
         self.begin_transaction()

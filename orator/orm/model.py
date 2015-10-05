@@ -1656,9 +1656,7 @@ class Model(object):
         """
         conn = self.get_connection()
 
-        grammar = conn.get_query_grammar()
-
-        return QueryBuilder(conn, grammar, conn.get_post_processor())
+        return conn.query()
 
     def new_collection(self, models=None):
         """
@@ -2658,3 +2656,17 @@ class Model(object):
             super(Model, self).__delattr__(item)
         except AttributeError:
             del self.__attributes[item]
+
+    def __getstate__(self):
+        return {
+            'attributes': self.__attributes,
+            'relations': self.__relations,
+            'exists': self.__exists
+        }
+
+    def __setstate__(self, state):
+        self._boot_if_not_booted()
+
+        self.set_raw_attributes(state['attributes'], True)
+        self.set_relations(state['relations'])
+        self.set_exists(state['exists'])
