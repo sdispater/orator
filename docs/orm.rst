@@ -1175,16 +1175,24 @@ you must specify them when defining the relationship:
 
 .. code-block:: python
 
-    return self.belongs_to_many(Role).with_pivot('foo', 'bar')
+    class User(Model):
+
+        @belongs_to_many(with_pivot=['foo', 'bar'])
+        def roles(self):
+            return Role
 
 Now the ``foo`` and ``bar`` attributes will be accessible on the ``pivot`` object for the ``Role`` model.
 
 If you want your pivot table to have automatically maintained ``created_at`` and ``updated_at`` timestamps,
-use the ``with_timestamps`` method on the relationship definition:
+use the ``with_timestamps`` keyword argument on the relationship definition:
 
 .. code-block:: python
 
-    return self.belongs_to_many(Role).with_timestamps()
+    class User(Model):
+
+        @belongs_to_many(with_timestamps=True)
+        def roles(self):
+            return Role
 
 
 Deleting records on a pivot table
