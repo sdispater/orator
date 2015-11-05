@@ -111,8 +111,6 @@ class OrmBelongsToTestCase(OratorTestCase):
         model3.id = 3
 
         relation.get_related().should_receive('new_collection').replace_with(lambda l=None: Collection(l))
-        relation.get_query().should_receive('where').once().with_args('user_role.user_id', '=', 2)
-        relation.get_query().should_receive('where').once().with_args('user_role.user_id', '=', 3)
         models = relation.match([model1, model2, model3], Collection([result1, result2, result3]), 'foo')
 
         self.assertEqual(1, models[0].foo[0].pivot.user_id)

@@ -148,7 +148,9 @@ class Builder(object):
         if len(models) > 0:
             models = self.eager_load_relations(models)
 
-        return self._model.new_collection(models)
+        collection = self._model.new_collection(models)
+
+        return collection
 
     def pluck(self, column):
         """
@@ -371,13 +373,15 @@ class Builder(object):
         :type columns: list
 
         :return: A list of models
-        :rtype: list
+        :rtype: orator.orm.collection.Collection
         """
         results = self._query.get(columns)
 
         connection = self._model.get_connection_name()
 
-        return self._model.hydrate(results, connection).all()
+        models = self._model.hydrate(results, connection)
+
+        return models
 
     def eager_load_relations(self, models):
         """

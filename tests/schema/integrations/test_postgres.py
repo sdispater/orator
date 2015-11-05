@@ -207,8 +207,8 @@ class DatabaseIntegrationConnectionResolver(object):
             return self._connection
 
         database = os.environ.get('ORATOR_POSTGRES_TEST_DATABASE', 'orator_test')
-        user = os.environ.get('ORATOR_POSTGRES_TEST_USER', 'postgres')
-        password = os.environ.get('ORATOR_POSTGRES_TEST_PASSWORD', None)
+        user = os.environ.get('ORATOR_POSTGRES_TEST_USER', 'orator')
+        password = os.environ.get('ORATOR_POSTGRES_TEST_PASSWORD', 'orator')
 
         self._connection = PostgresConnection(
             PostgresConnector().connect({

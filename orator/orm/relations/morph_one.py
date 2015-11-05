@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .morph_one_or_many import MorphOneOrMany
+from .result import Result
 
 
 class MorphOne(MorphOneOrMany):
@@ -19,7 +20,7 @@ class MorphOne(MorphOneOrMany):
         :type relation: str
         """
         for model in models:
-            model.set_relation(relation, None)
+            model.set_relation(relation, Result(None, self, model))
 
         return models
 

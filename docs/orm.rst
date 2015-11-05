@@ -376,6 +376,13 @@ The ``with_trashed`` method may be used on a defined relationship:
 Relationships
 =============
 
+.. versionchanged:: 0.7
+
+
+    As of version 0.7, the decorator notation is preferred and more efficient.
+
+    However, the previous notation (via properties) is still supported.
+
 Orator makes managing and working with relationships easy. It supports many types of relationships:
 
 * :ref:`OneToOne`
@@ -398,13 +405,16 @@ We can define this relation with the ORM:
 
 .. code-block:: python
 
+    from orator.orm import has_one
+
+
     class User(Model):
 
-        @property
+        @has_one
         def phone(self):
-            return self.has_one(Phone)
+            return Phone
 
-The first argument passed to the ``has_one`` method is the class of the related model.
+The return value of the relation is the class of the related model.
 Once the relationship is defined, we can retrieve it using :ref:`dynamic_properties`:
 
 .. code-block:: python
@@ -421,41 +431,52 @@ The SQL performed by this statement will be as follow:
 
 The Orator ORM assumes the foreign key of the relationship based on the model name. In this case,
 ``Phone`` model is assumed to use a ``user_id`` foreign key. If you want to override this convention,
-you can pass a second argument to the ``has_one`` method. Furthermore, you may pass a third argument
-to the method to specify which local column should be used for the association:
+you can pass a first argument to the ``has_one`` decorator. Furthermore, you may pass a second argument
+to the decorator to specify which local column should be used for the association:
 
 .. code-block:: python
 
-    return self.has_one(Phone, 'foreign_key')
+    @has_one('foreign_key')
+    def phone(self):
+        return Phone
 
-    return self.has_one(Phone, 'foreign_key', 'local_key')
+    @has_one('foreign_key', 'local_key')
+    def phone(self):
+        return Phone
 
 
 Defining the inverse of the relation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To define the inverse of the relationship on the ``Phone`` model, you can use the ``belongs_to`` method:
+To define the inverse of the relationship on the ``Phone`` model, you can use the ``belongs_to`` decorator:
 
 .. code-block:: python
+
+    from orator.orm import belongs_to
+
 
     class Phone(Model):
 
-        @property
+        @belongs_to
         def user(self):
-            return self.belongs_to(User)
+            return User
 
 In the example above, the Orator ORM will look for a ``user_id`` column on the ``phones`` table. You can
-define a different foreign key column, you can pass it as the second argument of the ``belongs_to`` method:
+define a different foreign key column, you can pass it as the first argument of the ``belongs_to`` decorator:
 
 .. code-block:: python
 
-    return self.belongs_to(User, 'local_key')
+    @belongs_to('local_key')
+    def user(self):
+        return User
 
-Additionally, you pass the third parameter which specifies the name of the associated column on the parent table:
+Additionally, you can pass a third parameter which specifies the name of the associated column on the parent table:
 
 .. code-block:: python
 
-    return self.belongs_to(User, 'local_key', 'parent_key')
+    @belongs_to('local_key', 'parent_key')
+    def user(self):
+        return User
 
 
 .. _OneToMany:
@@ -467,11 +488,14 @@ An example of a one-to-many relation is a blog post that has many comments:
 
 .. code-block:: python
 
+    from orator.orm import has_many
+
+
     class Post(Model):
 
-        @property
+        @has_many
         def comments(self):
-            return self.has_many(Comment)
+            return Comment
 
 Now you can access the post's comments via :ref:`dynamic_properties`:
 
@@ -479,14 +503,18 @@ Now you can access the post's comments via :ref:`dynamic_properties`:
 
     comments = Post.find(1).comments
 
-Again, you may override the conventional foreign key by passing a second argument to the ``has_many`` method.
+Again, you may override the conventional foreign key by passing a first argument to the ``has_many`` decorator.
 And, like the ``has_one`` relation, the local column may also be specified:
 
 .. code-block:: python
 
-    return self.has_many(Comment, 'foreign_key')
+    @has_many('foreign_key')
+    def comments(self):
+        return Comment
 
-    return self.has_many(Comment, 'foreign_key', 'local_key')
+    @has_many('foreign_key', 'local_key')
+    def comments(self):
+        return Comment
 
 Defining the inverse of the relation:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -495,11 +523,13 @@ To define the inverse of the relationship on the ``Comment`` model, we use the `
 
 .. code-block:: python
 
+    from orator.orm import belongs_to
+
     class Comment(Model):
 
-        @property
+        @belongs_to
         def post(self):
-            return self.belongs_to(Post)
+            return Post
 
 
 .. _ManyToMany:
@@ -514,15 +544,18 @@ For example, many users may have the role of "Admin". Three database tables are 
 The ``roles_users`` table is derived from the alphabetical order of the related table names,
 and should have the ``user_id`` and ``role_id`` columns.
 
-We can define a many-to-many relation using the ``belongs_to_many`` method:
+We can define a many-to-many relation using the ``belongs_to_many`` decorator:
 
 .. code-block:: python
 
+    from orator.orm import belongs_to_many
+
+
     class User(Model):
 
-        @property
+        @belongs_to_many
         def roles(self):
-            return self.belongs_to_many(Role)
+            return Role
 
 Now, we can retrieve the roles through the ``User`` model:
 
@@ -530,28 +563,32 @@ Now, we can retrieve the roles through the ``User`` model:
 
     roles = User.find(1).roles
 
-If you want to use an unconventional table name for your pivot table, you can pass it as the second argument
+If you want to use an unconventional table name for your pivot table, you can pass it as the first argument
 to the ``belongs_to_many`` method:
 
 .. code-block:: python
 
-    return self.belongs_to_many(Role, 'user_role')
+    @belongs_to_many('user_role')
+    def roles(self):
+        return Role
 
 You can also override the conventional associated keys:
 
 .. code-block:: python
 
-    return self.belongs_to_many(Role, 'user_role', 'user_id', 'foo_id')
+    @belongs_to_many('user_role', 'user_id', 'foo_id')
+    def roles(self):
+        return Role
 
-Of course, you also can define the inverse og the relationship on the ``Role`` model:
+Of course, you also can define the inverse of the relationship on the ``Role`` model:
 
 .. code-block:: python
 
     class Role(Model):
 
-        @property
+        @belongs_to_many
         def users(self):
-            return self.belongs_to_many(Role)
+            return User
 
 
 .. _HasManyThrough:
@@ -581,22 +618,27 @@ The tables for this relationship would look like this:
         title - string
 
 Even though the ``posts`` table does not contain a ``country_id`` column, the ``has_many_through`` relation
-will allow access a country's posts via ``country.posts``:
+will allow access to a country's posts via ``country.posts``:
 
 .. code-block:: python
+
+    from orator.orm import has_many_through
+
 
     class Country(Model):
 
-        @property
+        @has_many_through(User)
         def posts(self):
-            return self.has_many_through(Post, User)
+            return Post
 
 If you want to manually specify the keys of the relationship,
-you can pass them as the third and fourth arguments to the method:
+you can pass them as the second and third arguments to the decorator:
 
 .. code-block:: python
 
-    return self.has_many_through(Post, User, 'country_id', 'user_id')
+    @has_many_through(User, 'country_id', 'user_id')
+    def posts(self):
+        return Post
 
 
 .. _PolymorphicRelations:
@@ -611,23 +653,26 @@ For example, you might have a ``Photo`` model that belongs to either a ``Staff``
 
 .. code-block:: python
 
+    from orator.orm import morph_to, morph_many
+
+
     class Photo(Model):
 
-        @property
+        @morph_to
         def imageable(self):
-            return self.morph_to()
+            return
 
     class Staff(Model):
 
-        @property
+        @morph_many('imageable')
         def photos(self):
-            return self.morph_many(Photo, 'imageable')
+            return Photo
 
     class Order(Model):
 
-        @property
+        @morph_many('imageable')
         def photos(self):
-            return self.morph_many(Photo, 'imageable')
+            return Photo
 
 Retrieving a polymorphic relation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -723,9 +768,9 @@ The ``Post`` and ``Video`` model will both have a ``morph_to_many`` relationship
 
     class Post(Model):
 
-        @property
+        @morph_to_many('taggable')
         def tags(self):
-            return self.morph_to_many(Tag, 'taggable')
+            return Tag
 
 The ``Tag`` model can define a method for each of its relationships:
 
@@ -733,13 +778,13 @@ The ``Tag`` model can define a method for each of its relationships:
 
     class Tag(Model):
 
-        @property
+        @morphed_by_many('taggable')
         def posts(self):
-            return self.morphed_by_many(Post, 'taggable')
+            return Post
 
-        @property
+        @morphed_by_many('taggable')
         def videos(self):
-            return self.morphed_by_many(Video, 'taggable')
+            return Video
 
 
 Querying relations
@@ -825,9 +870,9 @@ a dynamic property by the same name as the relation. For example, with the follo
 
     class Phone(Model):
 
-        @property
+        @belongs_to
         def user(self):
-            return self.belongs_to(User)
+            return User
 
     phone = Phone.find(1)
 
@@ -844,9 +889,9 @@ Now, for one-to-many relationships:
 
     class Post(Model):
 
-        @property
+        @has_many
         def comments(self):
-            return self.has_many(Comment)
+            return Comment
 
     post = Post.find(1)
 
@@ -878,9 +923,9 @@ to an ``Author``:
 
     class Book(Model):
 
-        @property
+        @belongs_to
         def author(self):
-            return self.belongs_to(Author)
+            return Author
 
 Now, consider the following code:
 
@@ -1102,9 +1147,9 @@ you just have to add a ``__touches__`` property containing the names of the rela
 
         __touches__ = ['posts']
 
-        @property
+        @belongs_to
         def post(self):
-            return self.belongs_to(Post)
+            return Post
 
 Now, when you update a ``Comment``, the owning ``Post`` will have its ``updated_at`` column updated.
 

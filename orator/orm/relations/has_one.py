@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .has_one_or_many import HasOneOrMany
+from .result import Result
 
 
 class HasOne(HasOneOrMany):
@@ -19,7 +20,7 @@ class HasOne(HasOneOrMany):
         :type relation: str
         """
         for model in models:
-            model.set_relation(relation, None)
+            model.set_relation(relation, Result(None, self, model))
 
         return models
 

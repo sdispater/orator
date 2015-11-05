@@ -8,6 +8,7 @@ from ...query.expression import QueryExpression
 from ..collection import Collection
 import orator.orm.model
 from .relation import Relation
+from .result import Result
 
 
 class BelongsToMany(Relation):
@@ -329,7 +330,7 @@ class BelongsToMany(Relation):
         :type relation:  str
         """
         for model in models:
-            model.set_relation(relation, self._related.new_collection())
+            model.set_relation(relation, Result(self._related.new_collection(), self, model))
 
         return models
 
@@ -346,16 +347,12 @@ class BelongsToMany(Relation):
         for model in models:
             key = model.get_key()
 
-            relationship = self.new_instance(model)
-
             if key in dictionary:
-                collection = self._related.new_collection(dictionary[key])
+                collection = Result(self._related.new_collection(dictionary[key]), self, model)
             else:
-                collection = self._related.new_collection()
+                collection = Result(self._related.new_collection(), self, model)
 
-            relationship.set_results(collection)
-
-            model.set_relation(relation, relationship)
+            model.set_relation(relation, collection)
 
         return models
 

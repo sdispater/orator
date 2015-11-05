@@ -215,8 +215,8 @@ class DatabaseIntegrationConnectionResolver(object):
             return self._connection
 
         database = os.environ.get('ORATOR_MYSQL_TEST_DATABASE', 'orator_test')
-        user = os.environ.get('ORATOR_MYSQL_TEST_USER', 'root')
-        password = os.environ.get('ORATOR_MYSQL_TEST_PASSWORD', '')
+        user = os.environ.get('ORATOR_MYSQL_TEST_USER', 'orator')
+        password = os.environ.get('ORATOR_MYSQL_TEST_PASSWORD', 'orator')
 
         self._connection = MySqlConnection(
             MySqlConnector().connect({

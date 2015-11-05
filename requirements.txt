@@ -6,3 +6,4 @@ cleo
 blinker
 lazy-object-proxy
 fake-factory
+wrapt

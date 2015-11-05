@@ -4,6 +4,7 @@ from lazy_object_proxy import Proxy
 from contextlib import contextmanager
 from ...query.expression import QueryExpression
 from ..collection import Collection
+from .result import Result
 
 
 class RelationWrapper(object):
@@ -52,7 +53,7 @@ class Relation(Proxy):
         :param parent: The parent model
         :type parent: Model
         """
-        super(Relation, self).__init__(self.get_results)
+        super(Relation, self).__init__(self._get_results)
 
         self._query = query
         self._parent = parent
@@ -101,13 +102,16 @@ class Relation(Proxy):
         """
         raise NotImplementedError
 
+    def _get_results(self):
+        return Result(self.get_results(), self, self._parent)
+
     def refresh(self):
         del self.__wrapped__
 
         return self
 
     def set_results(self, results):
-        self.__wrapped__ = results
+        self.__wrapped__ = Result(results, self, self._parent)
 
         return self
 

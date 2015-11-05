@@ -7,6 +7,12 @@ install:
   - pip install -r tests-requirements.txt
 script: py.test
 
+env:
+  - ORATOR_POSTGRES_TEST_USER=postgres
+  - ORATOR_POSTGRES_TEST_PASSWORD=
+  - ORATOR_MYSQL_TEST_USER=root
+  - ORATOR_MYSQL_TEST_PASSWORD=
+
 before_script:
   - psql -c 'create database orator_test;' -U postgres
   - mysql -e 'create database orator_test;'

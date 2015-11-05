@@ -2,6 +2,7 @@
 
 from ..collection import Collection
 from .relation import Relation
+from .result import Result
 
 
 class HasOneOrMany(Relation):
@@ -99,18 +100,15 @@ class HasOneOrMany(Relation):
         for model in models:
             key = model.get_attribute(self._local_key)
 
-            relationship = self.new_instance(model)
-
             if key in dictionary:
-                value = self._get_relation_value(dictionary, key, type_)
+                value = Result(self._get_relation_value(dictionary, key, type_), self, model)
             else:
                 if type_ == 'one':
-                    value = None
+                    value = Result(None, self, model)
                 else:
-                    value = self._related.new_collection()
+                    value = Result(self._related.new_collection(), self, model)
 
-            relationship.set_results(value)
-            model.set_relation(relation, relationship)
+            model.set_relation(relation, value)
 
         return models
 
