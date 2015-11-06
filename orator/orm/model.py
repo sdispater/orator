@@ -35,8 +35,6 @@ class ModelRegister(dict):
 
         super(ModelRegister, self).__delitem__(key)
 
-_Register = ModelRegister()
-
 
 class MetaModel(type):
 
@@ -44,7 +42,7 @@ class MetaModel(type):
 
     def __init__(cls, *args, **kwargs):
         name = cls.__table__ or inflection.tableize(cls.__name__)
-        _Register[name] = cls
+        cls._register[name] = cls
 
         super(MetaModel, cls).__init__(*args, **kwargs)
 
@@ -83,7 +81,7 @@ class Model(object):
 
     __touches__ = []
 
-    __morph_class__ = None
+    __morph_name__ = None
 
     _per_page = 15
 
@@ -102,7 +100,7 @@ class Model(object):
     __dispatcher__ = Event()
     __observables__ = []
 
-    __register__ = {}
+    _register = ModelRegister()
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
@@ -168,6 +166,9 @@ class Model(object):
         Boot the mixins
         """
         for mixin in cls.__bases__:
+            #if mixin == Model:
+            #    continue
+
             method = 'boot_%s' % inflection.underscore(mixin.__name__)
             if hasattr(mixin, method):
                 getattr(mixin, method)(cls)
@@ -762,13 +763,10 @@ class Model(object):
         if not hasattr(self, type_column):
             return MorphTo(self.new_query(), self, id_column, None, type_column, name)
 
-        klass = None
-        parent_type = getattr(self, type_column)
-        for cls in _Register.values():
-            morph_class = cls.__morph_class__ or cls.__name__
-            if morph_class == parent_type:
-                klass = cls
-                break
+        # If we are not eager loading the relationship we will essentially treat this
+        # as a belongs-to style relationship since morph-to extends that class and
+        # we will pass in the appropriate values so that it behaves as expected.
+        klass = self.get_actual_class_for_morph(getattr(self, type_column))
 
         instance = klass()
 
@@ -779,6 +777,18 @@ class Model(object):
         self._relations[name] = rel
 
         return rel
+
+    def get_actual_class_for_morph(self, slug):
+        """
+        Retrieve the class from a slug.
+
+        :param slug: The slug
+        :type slug: str
+        """
+        for cls in self.__class__._register.values():
+            morph_name = cls.get_morph_name()
+            if morph_name == slug:
+                return cls
 
     def has_many(self, related, foreign_key=None, local_key=None, relation=None):
         """
@@ -1054,7 +1064,7 @@ class Model(object):
         if not isinstance(related, basestring) and issubclass(related, Model):
             return related
 
-        related_class = _Register.get(related)
+        related_class = self.__class__._register.get(related)
 
         if related_class:
             return related_class
@@ -1747,7 +1757,7 @@ class Model(object):
         :return: The name of the table
         :rtype: str
         """
-        return _Register.inverse[self.__class__]
+        return self.__class__._register.inverse[self.__class__]
 
     def set_table(self, table):
         """
@@ -1756,13 +1766,13 @@ class Model(object):
         :param table: The table name
         :type table: str
         """
-        old_table = _Register.inverse.get(self.__class__, None)
+        old_table = self.__class__._register.inverse.get(self.__class__, None)
         self.__table__ = table
 
         if old_table:
-            del _Register[old_table]
+            del self.__class__._register[old_table]
 
-        _Register[self.__table__] = self.__class__
+        self.__class__._register[self.__table__] = self.__class__
 
     def get_key(self):
         """
@@ -1816,14 +1826,15 @@ class Model(object):
 
         return type, id
 
-    def get_morph_class(self):
+    @classmethod
+    def get_morph_name(cls):
         """
-        Get the class name for polymorphic relations.
+        Get the name for polymorphic relations.
         """
-        if not self.__morph_class__:
-            return self.__class__.__name__
+        if not cls.__morph_name__:
+            return inflection.tableize(cls.__name__)
 
-        return self.__morph_class__
+        return cls.__morph_name__
 
     def get_per_page(self):
         """

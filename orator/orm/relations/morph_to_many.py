@@ -8,7 +8,7 @@ class MorphToMany(BelongsToMany):
     _name = None
     _inverse = None
     _morph_type = None
-    _morph_class = None
+    _morph_name = None
 
     def __init__(self, query, parent, name, table,
                  foreign_key, other_key, relation_name=None, inverse=False):
@@ -36,7 +36,7 @@ class MorphToMany(BelongsToMany):
         self._name = name
         self._inverse = inverse
         self._morph_type = name + '_type'
-        self._morph_class = query.get_model().get_morph_class() if inverse else parent.get_morph_class()
+        self._morph_name = query.get_model().get_morph_name() if inverse else parent.get_morph_name()
 
         super(MorphToMany, self).__init__(query, parent, table, foreign_key, other_key, relation_name)
 
@@ -49,7 +49,7 @@ class MorphToMany(BelongsToMany):
         """
         super(MorphToMany, self)._set_where()
 
-        self._query.where('%s.%s' % (self._table, self._morph_type), self._morph_class)
+        self._query.where('%s.%s' % (self._table, self._morph_type), self._morph_name)
 
     def get_relation_count_query(self, query, parent):
         """
@@ -62,7 +62,7 @@ class MorphToMany(BelongsToMany):
         """
         query = super(MorphToMany, self).get_relation_count_query(query, parent)
 
-        return query.where('%s.%s' % (self._table, self._morph_type), self._morph_class)
+        return query.where('%s.%s' % (self._table, self._morph_type), self._morph_name)
 
     def add_eager_constraints(self, models):
         """
@@ -72,7 +72,7 @@ class MorphToMany(BelongsToMany):
         """
         super(MorphToMany, self).add_eager_constraints(models)
 
-        self._query.where('%s.%s' % (self._table, self._morph_type), self._morph_class)
+        self._query.where('%s.%s' % (self._table, self._morph_type), self._morph_name)
 
     def _create_attach_record(self, id, timed):
         """
@@ -80,7 +80,7 @@ class MorphToMany(BelongsToMany):
         """
         record = super(MorphToMany, self)._create_attach_record(id, timed)
 
-        record[self._morph_type] = self._morph_class
+        record[self._morph_type] = self._morph_name
 
         return record
 
@@ -92,7 +92,7 @@ class MorphToMany(BelongsToMany):
         """
         query = super(MorphToMany, self)._new_pivot_query()
 
-        return query.where(self._morph_type, self._morph_class)
+        return query.where(self._morph_type, self._morph_name)
 
     def new_pivot(self, attributes=None, exists=False):
         """
@@ -104,15 +104,15 @@ class MorphToMany(BelongsToMany):
 
         pivot.set_pivot_keys(self._foreign_key, self._other_key)\
             .set_morph_type(self._morph_type)\
-            .set_morph_class(self._morph_class)
+            .set_morph_name(self._morph_name)
 
         return pivot
 
     def get_morph_type(self):
         return self._morph_type
 
-    def get_morph_class(self):
-        return self._morph_class
+    def get_morph_name(self):
+        return self._morph_name
 
     def new_instance(self, model):
         return MorphToMany(

@@ -90,7 +90,7 @@ class MorphTo(BelongsTo):
         :rtype: orator.Model
         """
         self._parent.set_attribute(self._foreign_key, model.get_key())
-        self._parent.set_attribute(self._morph_type, model.get_morph_class())
+        self._parent.set_attribute(self._morph_type, model.get_morph_name())
 
         return self._parent.set_relation(self._relation, Result(model, self, self._parent))
 
@@ -168,14 +168,7 @@ class MorphTo(BelongsTo):
 
         :rtype: Model
         """
-        from ..model import _Register
-
-        klass = None
-        for cls in _Register.values():
-            morph_class = cls.__morph_class__ or cls.__name__
-            if morph_class == type:
-                klass = cls
-                break
+        klass = self._parent.get_actual_class_for_morph(type)
 
         return klass()
 

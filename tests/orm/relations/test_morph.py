@@ -171,7 +171,7 @@ class OrmMorphTestCase(OratorTestCase):
         builder.should_receive('get_model').and_return(related)
         parent = flexmock(Model())
         parent.should_receive('get_attribute').with_args('id').and_return(1)
-        parent.should_receive('get_morph_class').and_return(parent.__class__.__name__)
+        parent.should_receive('get_morph_name').and_return(parent.__class__.__name__)
         builder.should_receive('where').once().with_args('table.morph_type', parent.__class__.__name__)
 
         return MorphMany(builder, parent, 'table.morph_type', 'table.morph_id', 'id')
@@ -185,7 +185,7 @@ class OrmMorphTestCase(OratorTestCase):
         builder.should_receive('get_model').and_return(related)
         parent = flexmock(Model())
         parent.should_receive('get_attribute').with_args('id').and_return(1)
-        parent.should_receive('get_morph_class').and_return(parent.__class__.__name__)
+        parent.should_receive('get_morph_name').and_return(parent.__class__.__name__)
         builder.should_receive('where').once().with_args('table.morph_type', parent.__class__.__name__)
 
         return MorphOne(builder, parent, 'table.morph_type', 'table.morph_id', 'id')

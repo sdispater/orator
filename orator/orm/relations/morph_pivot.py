@@ -5,7 +5,7 @@ from .pivot import Pivot
 
 class MorphPivot(Pivot):
 
-    _morph_class = None
+    _morph_name = None
     _morph_type = None
 
     def _set_keys_for_save_query(self, query):
@@ -18,7 +18,7 @@ class MorphPivot(Pivot):
         :return: The Builder instance
         :rtype: orator.orm.Builder
         """
-        query.where(self._morph_type, self._morph_class)
+        query.where(self._morph_type, self._morph_name)
 
         return super(MorphPivot, self)._set_keys_for_save_query(query)
 
@@ -30,7 +30,7 @@ class MorphPivot(Pivot):
         """
         query = self._get_delete_query()
 
-        query.where(self._morph_type, self._morph_class)
+        query.where(self._morph_type, self._morph_name)
 
         return query.delete()
 
@@ -39,7 +39,7 @@ class MorphPivot(Pivot):
 
         return self
 
-    def set_morph_class(self, morph_class):
-        self._morph_class = morph_class
+    def set_morph_name(self, morph_name):
+        self._morph_name = morph_name
 
         return self

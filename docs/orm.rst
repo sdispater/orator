@@ -728,6 +728,21 @@ while the type will contain the class name of the owning model.
 This is what allows the ORM to determine which type of owning model
 to return when accessing the ``imageable`` relation.
 
+.. note::
+
+    When accessing or loading the relation, Orator will retrieve the related class using
+    the ``imageable_type`` column value.
+
+    **By default** it will assume this value is the table name of the related model,
+    so in this example ``staff`` or ``orders``. If you want to override this convention, just add the ``__morph_name__``
+    attribute to the related class:
+
+    .. code-block:: python
+
+        class Order(Model):
+
+            __morph_name__ = 'order'
+
 
 .. _ManyToManyPolymorphicRelations:
 
