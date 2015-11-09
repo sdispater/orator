@@ -2,17 +2,27 @@
 
 import os
 import glob
+import inspect
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase
 from orator.migrations import Migrator, DatabaseMigrationRepository, Migration
 from orator import DatabaseManager
 from orator.connections import Connection
+from orator.utils import PY3K
 
 
 class MigratorTestCase(OratorTestCase):
 
+    def setUp(self):
+        if PY3K:
+            self.orig = inspect.getargspec
+            inspect.getargspec = lambda fn: inspect.getfullargspec(fn)[:4]
+
     def tearDown(self):
         flexmock_teardown()
+
+        if PY3K:
+            inspect.getargspec = self.orig
 
     def test_migrations_are_run_up_when_outstanding_migrations_exist(self):
         resolver_mock = flexmock(DatabaseManager)
