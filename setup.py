@@ -29,7 +29,7 @@ setup(
     author_email='sebastien.eustace@gmail.com',
     url='https://github.com/sdispater/orator',
     download_url='https://github.com/sdispater/orator/archive/%s.tar.gz' % __version__,
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     install_requires=[
         'simplejson',
         'arrow',
