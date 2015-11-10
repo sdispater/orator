@@ -1,5 +1,7 @@
 ### 0.7
 
+(November 10th, 2015)
+
 ##### Improvements
 
 - [#15](https://github.com/sdispater/orator/issues/9) Execute migrations inside a transaction.
