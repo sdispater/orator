@@ -890,16 +890,16 @@ tt.code .integer, code.code .integer { color: #F4BC87 }
 .highlight .k { color: #579ED1; font-weight: normal; } /* Keyword */
 .highlight .kn { color: #579ED1; font-weight: normal; } /* Keyword */
 .highlight .ow { color: #579ED1; font-weight: normal } /* Operator.Word */
-.highlight .nc { color: #69B66F; font-weight: 400 } /* Name.Class */
+.highlight .nc { color: #69B69F; font-weight: 400 } /* Name.Class */
 .highlight .nf { color: #8986BF; font-weight: normal; } /* Name.Function */
-.highlight .bp { color: #69B66F } /* Name.Builtin.Pseudo */
-.highlight .vc { color: #69B66F } /* Name.Variable.Class */
-.highlight .vg { color: #69B66F } /* Name.Variable.Global */
-.highlight .vi { color: #69B66F } /* Name.Variable.Instance */
+.highlight .bp { color: #69B69F } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #69B69F } /* Name.Variable.Class */
+.highlight .vg { color: #69B69F } /* Name.Variable.Global */
+.highlight .vi { color: #69B69F } /* Name.Variable.Instance */
 .highlight .nd { color: #879ED1 } /* Name.Decorator */
 .highlight .ne { color: #CB6077; font-weight: 400 } /* Name.Exception */
-.highlight .o { color: #777F84 } /* Operator */
-.highlight .n { color: #777F84 }
+.highlight .o { color: #878F84 } /* Operator */
+.highlight .n { color: #878F84 }
 .highlight .c { color: #A8AFAD; font-style: normal; }
 .highlight .sd { color: #A8AFAD; font-style: normal; }
 .highlight .nl { color: #E9767F } /* Name.Label */
@@ -907,7 +907,7 @@ tt.code .integer, code.code .integer { color: #F4BC87 }
 .highlight .nx { color: #E9767F } /* Name.Other */
 .highlight .py { color: #E9767F } /* Name.Property */
 .highlight .nb { color: #63ABA3 } /* Name.Builtin */
-.highlight .p { color: #777F84 } /* Punctuation */
+.highlight .p { color: #878F84 } /* Punctuation */
 
 /* Inline code */
 
@@ -918,9 +918,9 @@ tt.code, code.code {
     padding: 0.3em 0.5em;
     background-color: #FAFAFA;
 }
-tt.code .name, code.code .name { color: #777F84 }
-tt.code .operator, code.code .operator { color: #777F84 }
-tt.code .punctuation, code.code .punctuation { color: #777F84 }
+tt.code .name, code.code .name { color: #878F84 }
+tt.code .operator, code.code .operator { color: #878F84 }
+tt.code .punctuation, code.code .punctuation { color: #878F84 }
 tt.code .string, code.code .string { color: #59B6CF }
 tt.code .number, code.code .number { color: #E9767F }
 tt.code .integer, code.code .integer { color: #E9767F }
