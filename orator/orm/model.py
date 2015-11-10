@@ -30,7 +30,10 @@ class ModelRegister(dict):
 
         self.inverse[value] = key
 
-_Register = ModelRegister()
+    def __delitem__(self, key):
+        del self.inverse[self[key]]
+
+        super(ModelRegister, self).__delitem__(key)
 
 
 class MetaModel(type):
@@ -39,7 +42,7 @@ class MetaModel(type):
 
     def __init__(cls, *args, **kwargs):
         name = cls.__table__ or inflection.tableize(cls.__name__)
-        _Register[name] = cls
+        cls._register[name] = cls
 
         super(MetaModel, cls).__init__(*args, **kwargs)
 
@@ -78,7 +81,7 @@ class Model(object):
 
     __touches__ = []
 
-    __morph_class__ = None
+    __morph_name__ = None
 
     _per_page = 15
 
@@ -97,7 +100,7 @@ class Model(object):
     __dispatcher__ = Event()
     __observables__ = []
 
-    __register__ = {}
+    _register = ModelRegister()
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
@@ -108,12 +111,12 @@ class Model(object):
         """
         :param attributes: The instance attributes
         """
-        self.__exists = False
-        self.__original = {}
-        self.__attributes = {}
-        self.__relations = {}
-
         self._boot_if_not_booted()
+
+        self._exists = False
+        self._original = {}
+        self._attributes = {}
+        self._relations = {}
 
         self.sync_original()
 
@@ -163,6 +166,9 @@ class Model(object):
         Boot the mixins
         """
         for mixin in cls.__bases__:
+            #if mixin == Model:
+            #    continue
+
             method = 'boot_%s' % inflection.underscore(mixin.__name__)
             if hasattr(mixin, method):
                 getattr(mixin, method)(cls)
@@ -336,7 +342,7 @@ class Model(object):
 
         collection = instance.new_collection(items)
 
-        return Collection(list(map(lambda item: instance.new_from_builder(item), collection)))
+        return collection.map(lambda item: instance.new_from_builder(item))
 
     @classmethod
     def hydrate_raw(cls, query, bindings=None, connection=None):
@@ -602,7 +608,7 @@ class Model(object):
 
         return instance.new_query().with_(*relations)
 
-    def has_one(self, related, foreign_key=None, local_key=None):
+    def has_one(self, related, foreign_key=None, local_key=None, relation=None):
         """
         Define a one to one relationship.
 
@@ -615,12 +621,18 @@ class Model(object):
         :param local_key: The local key
         :type local_key: str
 
+        :param relation: The name of the relation (defaults to method name)
+        :type relation: str
+
         :rtype: HasOne
         """
-        name = inspect.stack()[1][3]
+        if relation is None:
+            name = inspect.stack()[1][3]
+        else:
+            name = relation
 
-        if name in self.__relations:
-            return self.__relations[name]
+        if name in self._relations:
+            return self._relations[name]
 
         if not foreign_key:
             foreign_key = self.get_foreign_key()
@@ -635,11 +647,11 @@ class Model(object):
                      '%s.%s' % (instance.get_table(), foreign_key),
                      local_key)
 
-        self.__relations[name] = rel
+        self._relations[name] = rel
 
         return rel
 
-    def morph_one(self, related, name, type_column=None, id_column=None, local_key=None):
+    def morph_one(self, related, name, type_column=None, id_column=None, local_key=None, relation=None):
         """
         Define a polymorphic one to one relationship.
 
@@ -655,12 +667,16 @@ class Model(object):
         :param local_key: The local key
         :type local_key: str
 
+        :param relation: The name of the relation (defaults to method name)
+        :type relation: str
+
         :rtype: HasOne
         """
-        name = inspect.stack()[1][3]
+        if relation is None:
+            relation = inspect.stack()[1][3]
 
-        if name in self.__relations:
-            return self.__relations[name]
+        if relation in self._relations:
+            return self._relations[name]
 
         instance = self._get_related(related)()
 
@@ -675,7 +691,7 @@ class Model(object):
                        '%s.%s' % (table, type_column),
                        '%s.%s' % (table, id_column), local_key)
 
-        self.__relations[name] = rel
+        self._relations[relation] = rel
 
         return rel
 
@@ -699,8 +715,8 @@ class Model(object):
         if relation is None:
             relation = inspect.stack()[1][3]
 
-        if relation in self.__relations:
-            return self.__relations[relation]
+        if relation in self._relations:
+            return self._relations[relation]
 
         if foreign_key is None:
             foreign_key = '%s_id' % inflection.underscore(relation)
@@ -714,7 +730,7 @@ class Model(object):
 
         rel = BelongsTo(query, self, foreign_key, other_key, relation)
 
-        self.__relations[relation] = rel
+        self._relations[relation] = rel
 
         return rel
 
@@ -736,21 +752,21 @@ class Model(object):
         if not name:
             name = inspect.stack()[1][3]
 
-        if name in self.__relations:
-            return self.__relations[name]
+        if name in self._relations:
+            return self._relations[name]
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
+        # If the type value is null it is probably safe to assume we're eager loading
+        # the relationship. When that is the case we will pass in a dummy query as
+        # there are multiple types in the morph and we can't use single queries.
         if not hasattr(self, type_column):
             return MorphTo(self.new_query(), self, id_column, None, type_column, name)
 
-        klass = None
-        parent_type = getattr(self, type_column)
-        for cls in _Register.values():
-            morph_class = cls.__morph_class__ or cls.__name__
-            if morph_class == parent_type:
-                klass = cls
-                break
+        # If we are not eager loading the relationship we will essentially treat this
+        # as a belongs-to style relationship since morph-to extends that class and
+        # we will pass in the appropriate values so that it behaves as expected.
+        klass = self.get_actual_class_for_morph(getattr(self, type_column))
 
         instance = klass()
 
@@ -758,11 +774,23 @@ class Model(object):
                       self, id_column,
                       instance.get_key_name(), type_column, name)
 
-        self.__relations[name] = rel
+        self._relations[name] = rel
 
         return rel
 
-    def has_many(self, related, foreign_key=None, local_key=None):
+    def get_actual_class_for_morph(self, slug):
+        """
+        Retrieve the class from a slug.
+
+        :param slug: The slug
+        :type slug: str
+        """
+        for cls in self.__class__._register.values():
+            morph_name = cls.get_morph_name()
+            if morph_name == slug:
+                return cls
+
+    def has_many(self, related, foreign_key=None, local_key=None, relation=None):
         """
         Define a one to many relationship.
 
@@ -775,12 +803,18 @@ class Model(object):
         :param local_key: The local key
         :type local_key: str
 
+        :param relation: The name of the relation (defaults to method name)
+        :type relation: str
+
         :rtype: HasOne
         """
-        name = inspect.stack()[1][3]
+        if relation is None:
+            name = inspect.stack()[1][3]
+        else:
+            name = relation
 
-        if name in self.__relations:
-            return self.__relations[name]
+        if name in self._relations:
+            return self._relations[name]
 
         if not foreign_key:
             foreign_key = self.get_foreign_key()
@@ -795,11 +829,11 @@ class Model(object):
                       '%s.%s' % (instance.get_table(), foreign_key),
                       local_key)
 
-        self.__relations[name] = rel
+        self._relations[name] = rel
 
         return rel
 
-    def has_many_through(self, related, through, first_key=None, second_key=None):
+    def has_many_through(self, related, through, first_key=None, second_key=None, relation=None):
         """
         Define a has-many-through relationship.
 
@@ -815,12 +849,18 @@ class Model(object):
         :param second_key: The second_key
         :type second_key: str
 
+        :param relation: The name of the relation (defaults to method name)
+        :type relation: str
+
         :rtype: HasManyThrough
         """
-        name = inspect.stack()[1][3]
+        if relation is None:
+            name = inspect.stack()[1][3]
+        else:
+            name = relation
 
-        if name in self.__relations:
-            return self.__relations[name]
+        if name in self._relations:
+            return self._relations[name]
 
         through = self._get_related(through)()
 
@@ -833,11 +873,11 @@ class Model(object):
         rel = HasManyThrough(self._get_related(related)().new_query(),
                              self, through, first_key, second_key)
 
-        self.__relations[name] = rel
+        self._relations[name] = rel
 
         return rel
 
-    def morph_many(self, related, name, type_column=None, id_column=None, local_key=None):
+    def morph_many(self, related, name, type_column=None, id_column=None, local_key=None, relation=None):
         """
         Define a polymorphic one to many relationship.
 
@@ -853,12 +893,16 @@ class Model(object):
         :param local_key: The local key
         :type local_key: str
 
+        :param relation: The name of the relation (defaults to method name)
+        :type relation: str
+
         :rtype: MorphMany
         """
-        relation = inspect.stack()[1][3]
+        if relation is None:
+            relation = inspect.stack()[1][3]
 
-        if relation in self.__relations:
-            return self.__relations[relation]
+        if relation in self._relations:
+            return self._relations[relation]
 
         instance = self._get_related(related)()
 
@@ -873,7 +917,7 @@ class Model(object):
                         '%s.%s' % (table, type_column),
                         '%s.%s' % (table, id_column), local_key)
 
-        self.__relations[name] = rel
+        self._relations[name] = rel
 
         return rel
 
@@ -900,8 +944,8 @@ class Model(object):
         if relation is None:
             relation = inspect.stack()[1][3]
 
-        if relation in self.__relations:
-            return self.__relations[relation]
+        if relation in self._relations:
+            return self._relations[relation]
 
         if not foreign_key:
             foreign_key = self.get_foreign_key()
@@ -918,11 +962,13 @@ class Model(object):
 
         rel = BelongsToMany(query, self, table, foreign_key, other_key, relation)
 
-        self.__relations[relation] = rel
+        self._relations[relation] = rel
 
         return rel
 
-    def morph_to_many(self, related, name, table=None, foreign_key=None, other_key=None, inverse=False):
+    def morph_to_many(self, related, name, table=None,
+                      foreign_key=None, other_key=None,
+                      inverse=False, relation=None):
         """
         Define a polymorphic many-to-many relationship.
 
@@ -941,12 +987,18 @@ class Model(object):
         :param other_key: The other key
         :type other_key: str
 
+        :param relation: The name of the relation (defaults to method name)
+        :type relation: str
+
         :rtype: MorphToMany
         """
-        caller = inspect.stack()[1][3]
+        if relation is None:
+            caller = inspect.stack()[1][3]
+        else:
+            caller = relation
 
-        if caller in self.__relations:
-            return self.__relations[caller]
+        if caller in self._relations:
+            return self._relations[caller]
 
         if not foreign_key:
             foreign_key = name + '_id'
@@ -964,11 +1016,11 @@ class Model(object):
         rel = MorphToMany(query, self, name, table,
                           foreign_key, other_key, caller, inverse)
 
-        self.__relations[caller] = rel
+        self._relations[caller] = rel
 
         return rel
 
-    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None):
+    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None, relation=None):
         """
         Define a polymorphic many-to-many relationship.
 
@@ -987,6 +1039,9 @@ class Model(object):
         :param other_key: The other key
         :type other_key: str
 
+        :param relation: The name of the relation (defaults to method name)
+        :type relation: str
+
         :rtype: MorphToMany
         """
         if not foreign_key:
@@ -995,7 +1050,7 @@ class Model(object):
         if not other_key:
             other_key = name + '_id'
 
-        return self.morph_to_many(related, name, table, foreign_key, other_key, True)
+        return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation)
 
     def _get_related(self, related):
         """
@@ -1009,7 +1064,7 @@ class Model(object):
         if not isinstance(related, basestring) and issubclass(related, Model):
             return related
 
-        related_class = _Register.get(related)
+        related_class = self.__class__._register.get(related)
 
         if related_class:
             return related_class
@@ -1072,7 +1127,7 @@ class Model(object):
         if self.__primary_key__ is None:
             raise Exception('No primary key defined on the model.')
 
-        if self.__exists:
+        if self._exists:
             if self._fire_model_event('deleting') is False:
                 return False
 
@@ -1080,7 +1135,7 @@ class Model(object):
 
             self._perform_delete_on_model()
 
-            self.__exists = False
+            self._exists = False
 
             self._fire_model_event('deleted')
 
@@ -1261,7 +1316,7 @@ class Model(object):
         """
         query = self.new_query()
 
-        if not self.__exists:
+        if not self._exists:
             return getattr(query, method)(column, amount)
 
         self._increment_or_decrement_attribute_value(column, amount, method)
@@ -1299,7 +1354,7 @@ class Model(object):
         :return: The number of rows affected
         :rtype: int
         """
-        if not self.__exists:
+        if not self._exists:
             return self.new_query().update(**attributes)
 
         return self.fill(**attributes).save()
@@ -1311,7 +1366,7 @@ class Model(object):
         if not self.save():
             return False
 
-        for models in self.__relations.values():
+        for models in self._relations.values():
             if isinstance(models, Collection):
                 models = models.all()
             else:
@@ -1338,7 +1393,7 @@ class Model(object):
         if self._fire_model_event('saving') is False:
             return False
 
-        if self.__exists:
+        if self._exists:
             saved = self._perform_update(query, options)
         else:
             saved = self._perform_insert(query, options)
@@ -1409,14 +1464,14 @@ class Model(object):
         if self.__timestamps__ and options.get('timestamps', True):
             self._update_timestamps()
 
-        attributes = self.__attributes
+        attributes = self._attributes
 
         if self.__incrementing__:
             self._insert_and_set_id(query, attributes)
         else:
             query.insert(attributes)
 
-        self.__exists = True
+        self._exists = True
 
         self._fire_model_event('created')
 
@@ -1495,10 +1550,10 @@ class Model(object):
         """
         Get the primary key value for a save query.
         """
-        if self.get_key_name() in self.__original:
-            return self.__original[self.get_key_name()]
+        if self.get_key_name() in self._original:
+            return self._original[self.get_key_name()]
 
-        return self.__attributes[self.get_key_name()]
+        return self._attributes[self.get_key_name()]
 
     def touch(self):
         """
@@ -1522,7 +1577,7 @@ class Model(object):
         if not self.is_dirty(self.UPDATED_AT):
             self.set_updated_at(time)
 
-        if not self.__exists and not self.is_dirty(self.CREATED_AT):
+        if not self._exists and not self.is_dirty(self.CREATED_AT):
             self.set_created_at(time)
 
     def set_created_at(self, value):
@@ -1656,9 +1711,7 @@ class Model(object):
         """
         conn = self.get_connection()
 
-        grammar = conn.get_query_grammar()
-
-        return QueryBuilder(conn, grammar, conn.get_post_processor())
+        return conn.query()
 
     def new_collection(self, models=None):
         """
@@ -1704,7 +1757,7 @@ class Model(object):
         :return: The name of the table
         :rtype: str
         """
-        return _Register.inverse[self.__class__]
+        return self.__class__._register.inverse[self.__class__]
 
     def set_table(self, table):
         """
@@ -1713,13 +1766,13 @@ class Model(object):
         :param table: The table name
         :type table: str
         """
-        old_table = _Register.inverse.get(self.__class__, None)
+        old_table = self.__class__._register.inverse.get(self.__class__, None)
         self.__table__ = table
 
         if old_table:
-            del _Register[old_table]
+            del self.__class__._register[old_table]
 
-        _Register[self.__table__] = self.__class__
+        self.__class__._register[self.__table__] = self.__class__
 
     def get_key(self):
         """
@@ -1773,14 +1826,15 @@ class Model(object):
 
         return type, id
 
-    def get_morph_class(self):
+    @classmethod
+    def get_morph_name(cls):
         """
-        Get the class name for polymorphic relations.
+        Get the name for polymorphic relations.
         """
-        if not self.__morph_class__:
-            return self.__class__.__name__
+        if not cls.__morph_name__:
+            return inflection.tableize(cls.__name__)
 
-        return self.__morph_class__
+        return cls.__morph_name__
 
     def get_per_page(self):
         """
@@ -2046,7 +2100,7 @@ class Model(object):
 
         :rtype: dict
         """
-        return self._get_dictable_items(self.__attributes)
+        return self._get_dictable_items(self._attributes)
 
     def _get_dictable_appends(self):
         """
@@ -2086,7 +2140,7 @@ class Model(object):
         """
         Get an attribute dict of all dictable relations.
         """
-        return self._get_dictable_items(self.__relations)
+        return self._get_dictable_items(self._relations)
 
     def _get_dictable_items(self, values):
         """
@@ -2109,13 +2163,13 @@ class Model(object):
         :param key: The attribute to get
         :type key: str
         """
-        in_attributes = key in self.__attributes
+        in_attributes = key in self._attributes
 
         if in_attributes:
             return self._get_attribute_value(key)
 
-        if key in self.__relations:
-            return self.__relations[key]
+        if key in self._relations:
+            return self._relations[key]
 
         relation = original or super(Model, self).__getattribute__(key)
 
@@ -2131,7 +2185,7 @@ class Model(object):
         :param key: The attribute to get
         :type key: str
         """
-        return self.__attributes[key]
+        return self._attributes[key]
 
     def _get_attribute_value(self, key):
         """
@@ -2151,7 +2205,7 @@ class Model(object):
         return value
 
     def _get_attribute_from_dict(self, key):
-        return self.__attributes.get(key)
+        return self._attributes.get(key)
 
     def _get_relationship_from_method(self, method, relations=None):
         """
@@ -2167,14 +2221,9 @@ class Model(object):
         if not isinstance(relations, Relation):
             raise RuntimeError('Relationship method must return an object of type Relation')
 
-        def results_getter():
-            relations()
+        self._relations[method] = relations
 
-            return relations.get_results()
-
-        self.__relations[method] = relations
-
-        return self.__relations[method]
+        return self._relations[method]
 
     def has_get_mutator(self, key):
         """
@@ -2360,7 +2409,7 @@ class Model(object):
         if self._is_json_castable(key):
             value = json.dumps(value)
 
-        self.__attributes[key] = value
+        self._attributes[key] = value
 
     def replicate(self, except_=None):
         """
@@ -2378,11 +2427,11 @@ class Model(object):
                 self.get_updated_at_column()
             ]
 
-            attributes = {x: self.__attributes[x] for x in self.__attributes if x not in except_}
+            attributes = {x: self._attributes[x] for x in self._attributes if x not in except_}
 
             instance = self.new_instance(attributes)
 
-            instance.set_relations(dict(**self.__relations))
+            instance.set_relations(dict(**self._relations))
 
             return instance
 
@@ -2392,7 +2441,7 @@ class Model(object):
 
         :rtype: dict
         """
-        return self.__attributes
+        return self._attributes
 
     def set_raw_attributes(self, attributes, sync=False):
         """
@@ -2404,7 +2453,7 @@ class Model(object):
         :param sync: Whether to sync the attributes or not
         :type sync: bool
         """
-        self.__attributes = dict(attributes.items())
+        self._attributes = dict(attributes.items())
 
         if sync:
             self.sync_original()
@@ -2422,7 +2471,7 @@ class Model(object):
         :param sync: Whether to sync the attributes or not
         :type sync: bool
         """
-        self.__attributes[key] = value
+        self._attributes[key] = value
 
         if sync:
             self.sync_original()
@@ -2440,9 +2489,9 @@ class Model(object):
         :rtype: mixed
         """
         if key is None:
-            return self.__original
+            return self._original
 
-        return self.__original.get(key, default)
+        return self._original.get(key, default)
 
     def sync_original(self):
         """
@@ -2450,7 +2499,7 @@ class Model(object):
 
         :rtype: Builder
         """
-        self.__original = dict(self.__attributes.items())
+        self._original = dict(self._attributes.items())
 
         return self
 
@@ -2463,7 +2512,7 @@ class Model(object):
 
         :rtype: Model
         """
-        self.__original[attribute] = self.__attributes[attribute]
+        self._original[attribute] = self._attributes[attribute]
 
         return self
 
@@ -2495,20 +2544,20 @@ class Model(object):
         """
         dirty = {}
 
-        for key, value in self.__attributes.items():
-            if key not in self.__original:
+        for key, value in self._attributes.items():
+            if key not in self._original:
                 dirty[key] = value
-            elif value != self.__original[key]:
+            elif value != self._original[key]:
                 dirty[key] = value
 
         return dirty
 
     @property
     def exists(self):
-        return self.__exists
+        return self._exists
 
     def set_exists(self, exists):
-        self.__exists = exists
+        self._exists = exists
 
     def set_appends(self, appends):
         """
@@ -2527,7 +2576,7 @@ class Model(object):
 
         :rtype: dict
         """
-        return self.__relations
+        return self._relations
 
     def get_relation(self, relation):
         """
@@ -2538,7 +2587,7 @@ class Model(object):
 
         :rtype: mixed
         """
-        return self.__relations[relation]
+        return self._relations[relation]
 
     def set_relation(self, relation, value):
         """
@@ -2553,12 +2602,12 @@ class Model(object):
         :return: The current Model instance
         :rtype: Model
         """
-        self.__relations[relation] = value
+        self._relations[relation] = value
 
         return self
 
     def set_relations(self, relations):
-        self.__relations = relations
+        self._relations = relations
 
         return self
 
@@ -2642,11 +2691,17 @@ class Model(object):
         return self.get_attribute(item)
 
     def __setattr__(self, key, value):
-        if key.startswith(('_Model__', '_%s__' % self.__class__.__name__, '__')):
-            return super(Model, self).__setattr__(key, value)
+        if key in ['_attributes', '_exists', '_relations', '_original'] or key.startswith('__'):
+            return object.__setattr__(self, key, value)
 
         if self._has_set_mutator(key):
             return self.set_attribute(key, value)
+
+        try:
+            if object.__getattribute__(self, key):
+                return object.__setattr__(self, key, value)
+        except AttributeError:
+            pass
 
         if callable(getattr(self, key, None)):
             return super(Model, self).__setattr__(key, value)
@@ -2657,4 +2712,18 @@ class Model(object):
         try:
             super(Model, self).__delattr__(item)
         except AttributeError:
-            del self.__attributes[item]
+            del self._attributes[item]
+
+    def __getstate__(self):
+        return {
+            'attributes': self._attributes,
+            'relations': self._relations,
+            'exists': self._exists
+        }
+
+    def __setstate__(self, state):
+        self._boot_if_not_booted()
+
+        self.set_raw_attributes(state['attributes'], True)
+        self.set_relations(state['relations'])
+        self.set_exists(state['exists'])

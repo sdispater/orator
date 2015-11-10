@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import orator.orm.model
 from .belongs_to import BelongsTo
 from ..collection import Collection
 from ...support.collection import Collection as BaseCollection
+from .result import Result
 
 
 class MorphTo(BelongsTo):
@@ -75,7 +75,7 @@ class MorphTo(BelongsTo):
         """
         Match the eagerly loaded results to their parents.
 
-        :type models: list
+        :type models: Collection
         :type results: Collection
         :type relation:  str
         """
@@ -90,9 +90,9 @@ class MorphTo(BelongsTo):
         :rtype: orator.Model
         """
         self._parent.set_attribute(self._foreign_key, model.get_key())
-        self._parent.set_attribute(self._morph_type, model.get_morph_class())
+        self._parent.set_attribute(self._morph_type, model.get_morph_name())
 
-        return self._parent.set_relation(self._relation, model)
+        return self._parent.set_relation(self._relation, Result(model, self, self._parent))
 
     def get_eager(self):
         """
@@ -118,7 +118,13 @@ class MorphTo(BelongsTo):
         for result in results:
             if result.get_key() in self._dictionary.get(type, []):
                 for model in self._dictionary[type][result.get_key()]:
-                    model.set_relation(self._relation, result)
+                    model.set_relation(
+                        self._relation,
+                        Result(
+                            result, self, model,
+                            related=result
+                        )
+                    )
 
     def _get_results_by_type(self, type):
         """
@@ -162,14 +168,7 @@ class MorphTo(BelongsTo):
 
         :rtype: Model
         """
-        from ..model import _Register
-
-        klass = None
-        for cls in _Register.values():
-            morph_class = cls.__morph_class__ or cls.__name__
-            if morph_class == type:
-                klass = cls
-                break
+        klass = self._parent.get_actual_class_for_morph(type)
 
         return klass()
 
@@ -192,12 +191,12 @@ class MorphTo(BelongsTo):
 
         return query
 
-    def new_instance(self, model):
+    def new_instance(self, model, related=None):
         return MorphTo(
-            self._related.new_query(),
+            self._related.new_query() if not related else related.new_query(),
             model,
             self._foreign_key,
-            self._other_key,
+            self._other_key if not related else related.get_key_name(),
             self._morph_type,
             self._relation
         )

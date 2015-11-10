@@ -954,8 +954,6 @@ class OrmModelSaveStub(Model):
 
     __guarded__ = []
 
-    __saved = False
-
     def save(self, options=None):
         self.__saved = True
 

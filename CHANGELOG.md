@@ -1,3 +1,23 @@
+### 0.7
+
+(November 10th, 2015)
+
+##### Improvements
+
+- [#15](https://github.com/sdispater/orator/issues/9) Execute migrations inside a transaction.
+- [#13](https://github.com/sdispater/orator/issues/9) Support database seeding and model factories.
+- [#9](https://github.com/sdispater/orator/issues/9) Support for SQLite foreign keys.
+- Relationships decorators.
+- Morph relationships now using a name (default being the table name) rather than a class name.
+
+##### Fixes
+
+- [#14](https://github.com/sdispater/orator/issues/14) Changing columns with SchemaBuilder does not work with some types.
+- [#16](https://github.com/sdispater/orator/issues/16) The last page of LengthAwarePaginator is not calculated properly in Python 2.7.
+- Avoid an error when psycopg2 is not installed.
+- Fix dynamic properties for eagerloaded relationships.
+
+
 ### 0.6.4
 
 (July 7th, 2015)

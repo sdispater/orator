@@ -102,7 +102,7 @@ class OrmMorphToTestCase(OratorTestCase):
 
         associate = flexmock(Model())
         associate.should_receive('get_key').once().and_return(1)
-        associate.should_receive('get_morph_class').once().and_return('Model')
+        associate.should_receive('get_morph_name').once().and_return('Model')
 
         parent.should_receive('set_attribute').once().with_args('foreign_key', 1)
         parent.should_receive('set_attribute').once().with_args('morph_type', 'Model')

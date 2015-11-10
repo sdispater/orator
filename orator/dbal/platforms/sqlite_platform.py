@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from .platform import Platform
+from .keywords.sqlite_keywords import SQLiteKeywords
 from ..table import Table
 from ..column import Column
+from ..identifier import Identifier
 
 
 class SQLitePlatform(Platform):
@@ -66,7 +68,9 @@ class SQLitePlatform(Platform):
 
         :rtype: list
         """
-        #sql = self._get_simple_alter_table_sql(diff)
+        sql = self._get_simple_alter_table_sql(diff)
+        if sql is not False:
+            return sql
 
         from_table = diff.from_table
         if not isinstance(from_table, Table):
@@ -113,7 +117,6 @@ class SQLitePlatform(Platform):
         for column_name, column in diff.added_columns.items():
             columns[column_name.lower()] = column
 
-        sql = []
         table_sql = []
 
         data_table = Table('__temp__' + table.get_name())
@@ -177,6 +180,30 @@ class SQLitePlatform(Platform):
                 'default': None
             }
             field.update(column.to_dict())
+
+            type_ = field['type']
+            if 'column_definition' in field or field['autoincrement'] or field['unique']:
+                return False
+            elif type_ == 'datetime' and field['default'] == self.get_current_timestamp_sql():
+                return False
+            elif type_ == 'date' and field['default'] == self.get_current_date_sql():
+                return False
+            elif type_ == 'time' and field['default'] == self.get_current_time_sql():
+                return False
+
+            field['name'] = column.get_quoted_name(self)
+            if field['type'].lower() == 'string' and field['length'] is None:
+                field['length'] = 255
+
+            sql.append('ALTER TABLE ' + table.get_quoted_name(self) +
+                       ' ADD COLUMN ' + self.get_column_declaration_sql(field['name'], field))
+
+        if diff.new_name is not False:
+            new_table = Identifier(diff.new_name)
+            sql.append('ALTER TABLE ' + table.get_quoted_name(self) +
+                       ' RENAME TO ' + new_table.get_quoted_name(self))
+
+        return sql
 
     def get_foreign_keys_in_altered_table(self, diff):
         """
@@ -273,3 +300,6 @@ class SQLitePlatform(Platform):
 
     def get_column_options(self):
         return ['pk']
+
+    def _get_reserved_keywords_class(self):
+        return SQLiteKeywords

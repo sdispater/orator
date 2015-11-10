@@ -26,9 +26,9 @@ class ConnectionTestCase(OratorTestCase):
 
     def test_transaction(self):
         connection = Connection(None, 'database')
-        connection.begin_transaction = mock.MagicMock()
-        connection.commit = mock.MagicMock()
-        connection.rollback = mock.MagicMock()
+        connection.begin_transaction = mock.MagicMock(unsafe=True)
+        connection.commit = mock.MagicMock(unsafe=True)
+        connection.rollback = mock.MagicMock(unsafe=True)
         connection.insert = mock.MagicMock(return_value=1)
 
         with connection.transaction():

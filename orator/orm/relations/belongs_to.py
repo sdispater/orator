@@ -2,6 +2,7 @@
 
 from ...query.expression import QueryExpression
 from .relation import Relation
+from .result import Result
 
 
 class BelongsTo(Relation):
@@ -104,7 +105,7 @@ class BelongsTo(Relation):
         :type relation:  str
         """
         for model in models:
-            model.set_relation(relation, None)
+            model.set_relation(relation, Result(None, self, model))
 
         return models
 
@@ -126,17 +127,14 @@ class BelongsTo(Relation):
             dictionary[result.get_attribute(other)] = result
 
         for model in models:
-            value = model.get_attribute(foreign)
-            relationship = self.new_instance(model)
+            value = getattr(model, foreign)
 
             if value in dictionary:
-                results = dictionary[value]
+                results = Result(dictionary[value], self, model)
             else:
-                results = None
+                results = Result(None, self, model)
 
-            relationship.set_results(results)
-
-            model.set_relation(relation, relationship)
+            model.set_relation(relation, results)
 
         return models
 
@@ -150,7 +148,7 @@ class BelongsTo(Relation):
         """
         self._parent.set_attribute(self._foreign_key, model.get_attribute(self._other_key))
 
-        return self._parent.set_relation(self._relation, model)
+        return self._parent.set_relation(self._relation, Result(model, self, self._parent))
 
     def dissociate(self):
         """
@@ -160,7 +158,7 @@ class BelongsTo(Relation):
         """
         self._parent.set_attribute(self._foreign_key, None)
 
-        return self._parent.set_relation(self._relation, None)
+        return self._parent.set_relation(self._relation, Result(None, self, self._parent))
 
     def update(self, _attributes=None, **attributes):
         """

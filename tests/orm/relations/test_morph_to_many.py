@@ -96,7 +96,7 @@ class OrmMorphToManyTestCase(OratorTestCase):
 
     def _get_relation_arguments(self):
         parent = flexmock(Model())
-        parent.should_receive('get_morph_class').and_return(parent.__class__.__name__)
+        parent.should_receive('get_morph_name').and_return(parent.__class__.__name__)
         parent.should_receive('get_key').and_return(1)
         parent.should_receive('get_created_at_column').and_return('created_at')
         parent.should_receive('get_updated_at_column').and_return('updated_at')
@@ -111,7 +111,7 @@ class OrmMorphToManyTestCase(OratorTestCase):
 
         related.should_receive('get_key_name').and_return('id')
         related.should_receive('get_table').and_return('tags')
-        related.should_receive('get_morph_class').and_return(parent.__class__.__name__)
+        related.should_receive('get_morph_name').and_return(parent.__class__.__name__)
 
         builder.get_query().should_receive('join').once().with_args('taggables', 'tags.id', '=', 'taggables.tag_id')
         builder.should_receive('where').once().with_args('taggables.taggable_id', '=', 1)

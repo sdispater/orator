@@ -289,7 +289,7 @@ class SchemaGrammar(Grammar):
         """
         options = {
             'name': fluent.name,
-            'type': fluent.type,
+            'type': self._get_dbal_column_type(fluent.type),
             'default': fluent.get('default')
         }
 
@@ -297,6 +297,26 @@ class SchemaGrammar(Grammar):
             options['length'] = fluent.length
 
         return options
+
+    def _get_dbal_column_type(self, type_):
+        """
+        Get the dbal column type.
+
+        :param type_: The fluent type
+        :type type_: str
+
+        :rtype: str
+        """
+        type_ = type_.lower()
+
+        if type_ == 'big_integer':
+            type_ = 'bigint'
+        elif type == 'small_integer':
+            type_ = 'smallint'
+        elif type_ in ['medium_text', 'long_text']:
+            type_ = 'text'
+
+        return type_
 
     def _map_fluent_option(self, attribute):
         if attribute in ['type', 'name']:

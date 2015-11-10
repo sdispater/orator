@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from .table import Table
+from .identifier import Identifier
+
 
 class TableDiff(object):
 
@@ -20,3 +23,17 @@ class TableDiff(object):
         self.renamed_columns = {}
         self.renamed_indexes = {}
         self.from_table = from_table
+
+    def get_name(self, platform):
+        if isinstance(self.from_table, Table):
+            name = self.from_table.get_quoted_name(platform)
+        else:
+            name = self.name
+
+        return Identifier(name)
+
+    def get_new_name(self):
+        if self.new_name:
+            return Identifier(self.new_name)
+
+        return self.new_name

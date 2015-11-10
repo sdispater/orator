@@ -3,6 +3,7 @@
 import arrow
 from . import OratorTestCase
 from orator import Model, Collection
+from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to
 from orator.connections import SQLiteConnection
 from orator.connectors.sqlite_connector import SQLiteConnector
 from orator.exceptions.orm import ModelNotFound
@@ -122,11 +123,11 @@ class OratorIntegrationTestCase(OratorTestCase):
         post2 = user.posts().where('name', 'Second Post').first()
 
         self.assertEqual(2, len(posts))
-        #self.assertIsInstance(posts[0], OratorTestPost)
-        #self.assertIsInstance(posts[1], OratorTestPost)
-        #self.assertIsInstance(post2, OratorTestPost)
+        self.assertIsInstance(posts[0], OratorTestPost)
+        self.assertIsInstance(posts[1], OratorTestPost)
+        self.assertIsInstance(post2, OratorTestPost)
         self.assertEqual('Second Post', post2.name)
-        #self.assertIsInstance(post2.user.instance, OratorTestUser)
+        self.assertIsInstance(post2.user, OratorTestUser)
         self.assertEqual('john@doe.com', post2.user.email)
 
     def test_basic_model_hydrate(self):
@@ -172,9 +173,10 @@ class OratorIntegrationTestCase(OratorTestCase):
         post.photos().create(name='Hero 2')
 
         self.assertIsInstance(user.photos, Collection)
-        #self.assertIsInstance(user.photos[0], OratorTestPhoto)
+        self.assertIsInstance(user.photos[0], OratorTestPhoto)
+
         self.assertIsInstance(post.photos, Collection)
-        #self.assertIsInstance(post.photos[0], OratorTestPhoto)
+        self.assertIsInstance(post.photos[0], OratorTestPhoto)
         self.assertEqual(2, len(user.photos))
         self.assertEqual(2, len(post.photos))
         self.assertEqual('Avatar 1', user.photos[0].name)
@@ -186,8 +188,8 @@ class OratorIntegrationTestCase(OratorTestCase):
 
         self.assertIsInstance(photos, Collection)
         self.assertEqual(4, len(photos))
-        #self.assertIsInstance(photos[0].imageable.instance, OratorTestUser)
-        #self.assertIsInstance(photos[2].imageable.instance, OratorTestPost)
+        self.assertIsInstance(photos[0].imageable, OratorTestUser)
+        self.assertIsInstance(photos[2].imageable, OratorTestPost)
         self.assertEqual('john@doe.com', photos[1].imageable.email)
         self.assertEqual('First Post', photos[3].imageable.name)
 
@@ -234,6 +236,42 @@ class OratorIntegrationTestCase(OratorTestCase):
 
         self.assertIsInstance(user.friends().with_pivot('id'), RelationWrapper)
 
+    def test_belongs_to_morph_many_eagerload(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        user.photos().create(name='Avatar 1')
+        user.photos().create(name='Avatar 2')
+        post = user.posts().create(name='First Post')
+        post.photos().create(name='Hero 1')
+        post.photos().create(name='Hero 2')
+
+        posts = OratorTestPost.with_('user', 'photos').get()
+        self.assertIsInstance(posts[0].user, OratorTestUser)
+        self.assertEqual(user.id, posts[0].user().first().id)
+        self.assertIsInstance(posts[0].photos, Collection)
+        self.assertEqual(posts[0].photos().where('name', 'Hero 2').first().name, 'Hero 2')
+
+    def test_has_many_eagerload(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        post1 = user.posts().create(name='First Post')
+        post2 = user.posts().create(name='Second Post')
+
+        user = OratorTestUser.with_('posts').first()
+        self.assertIsInstance(user.posts, Collection)
+        self.assertEqual(user.posts().where('name', 'Second Post').first().id, post2.id)
+
+    def test_morph_to_eagerload(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        user.photos().create(name='Avatar 1')
+        user.photos().create(name='Avatar 2')
+        post = user.posts().create(name='First Post')
+        post.photos().create(name='Hero 1')
+        post.photos().create(name='Hero 2')
+
+        photo = OratorTestPhoto.with_('imageable').where('name', 'Hero 2').first()
+        self.assertIsInstance(photo.imageable, OratorTestPost)
+        self.assertEqual(post.id, photo.imageable.id)
+        self.assertEqual(post.id, photo.imageable().where('name', 'First Post').first().id)
+
     def connection(self):
         return Model.get_connection_resolver().connection()
 
@@ -246,26 +284,21 @@ class OratorTestUser(Model):
     __table__ = 'test_users'
     __guarded__ = []
 
-    @property
+    @belongs_to_many('test_friends', 'user_id', 'friend_id', with_pivot=['id'])
     def friends(self):
-        return self.belongs_to_many(
-            OratorTestUser,
-            'test_friends',
-            'user_id',
-            'friend_id'
-        ).with_pivot('id')
+        return OratorTestUser
 
-    @property
+    @has_many('user_id')
     def posts(self):
-        return self.has_many('test_posts', 'user_id')
+        return 'test_posts'
 
-    @property
+    @has_one('user_id')
     def post(self):
-        return self.has_one(OratorTestPost, 'user_id')
+        return OratorTestPost
 
-    @property
+    @morph_many('imageable')
     def photos(self):
-        return self.morph_many('test_photos', 'imageable')
+        return 'test_photos'
 
 
 class OratorTestPost(Model):
@@ -273,13 +306,13 @@ class OratorTestPost(Model):
     __table__ = 'test_posts'
     __guarded__ = []
 
-    @property
+    @belongs_to('user_id')
     def user(self):
-        return self.belongs_to(OratorTestUser, 'user_id')
+        return OratorTestUser
 
-    @property
+    @morph_many('imageable')
     def photos(self):
-        return self.morph_many('test_photos', 'imageable')
+        return 'test_photos'
 
 
 class OratorTestPhoto(Model):
@@ -287,9 +320,9 @@ class OratorTestPhoto(Model):
     __table__ = 'test_photos'
     __guarded__ = []
 
-    @property
+    @morph_to
     def imageable(self):
-        return self.morph_to()
+        return
 
 
 class DatabaseIntegrationConnectionResolver(object):

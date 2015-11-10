@@ -29,7 +29,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         """
         # The code is a little complex. It will propably change
         # if we support complete diffs in dbal
-        sql = []
+        sql = ['PRAGMA foreign_keys = OFF']
 
         schema = connection.get_schema_manager()
         table = self.get_table_prefix() + blueprint.get_table()
@@ -182,7 +182,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         :rtype: list
         """
-        sql = []
+        sql = ['PRAGMA foreign_keys = OFF']
 
         schema = connection.get_schema_manager()
         table = self.get_table_prefix() + blueprint.get_table()

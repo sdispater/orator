@@ -259,7 +259,7 @@ class BuilderTestCase(OratorTestCase):
         model.hydrate = mock.MagicMock(return_value=Collection(['hydrated']))
         models = builder.get_models(['foo'])
 
-        self.assertEqual(models, ['hydrated'])
+        self.assertEqual(models.all(), ['hydrated'])
 
         model.get_table.assert_called_once_with()
         model.get_connection_name.assert_called_once_with()
@@ -447,7 +447,7 @@ class BuilderTestCase(OratorTestCase):
         return builder
 
 
-class TestModel(Model):
+class OratorTestModel(Model):
 
     @classmethod
     def _boot_columns(cls):
@@ -458,25 +458,25 @@ class TestModel(Model):
         return flexmock(Connection(None))
 
 
-class OrmBuilderTestModelFarRelatedStub(TestModel):
+class OrmBuilderTestModelFarRelatedStub(OratorTestModel):
 
     pass
 
 
-class OrmBuilderTestModelScopeStub(TestModel):
+class OrmBuilderTestModelScopeStub(OratorTestModel):
 
     def scope_approved(self, query):
         query.where('foo', 'bar')
 
 
-class OrmBuilderTestModelCloseRelated(TestModel):
+class OrmBuilderTestModelCloseRelated(OratorTestModel):
 
     @property
     def bar(self):
         return self.has_many(OrmBuilderTestModelFarRelatedStub)
 
 
-class OrmBuilderTestModelParentStub(TestModel):
+class OrmBuilderTestModelParentStub(OratorTestModel):
 
     @property
     def foo(self):

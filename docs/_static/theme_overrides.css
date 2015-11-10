@@ -1,15 +1,16 @@
 @import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
 @import url(http://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600);
+@import url(http://fonts.googleapis.com/css?family=Material+Icons);
 
 body {
     font: 400 13px/26px "Open Sans",sans-serif;
     color: #7A7A7A;
     text-rendering: optimizelegibility;
-    background-color: #FAFAFA;
+    background-color: #FFFFFF;
 }
 
 .wy-body-for-nav {
-    background: #FAFAFA;
+    background: #FFFFFF;
 }
 
 .wy-nav-content {
@@ -21,7 +22,7 @@ body {
     margin-left: 300px;
     padding-left: 70px;
     padding-right: 70px;
-    box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+    /*box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);*/
     max-width: 940px;
 }
 
@@ -29,7 +30,12 @@ body {
     .wy-nav-content-wrap {
         margin-left: 0;
         padding-left: 0;
+        padding-right: 0;
     }
+}
+
+.wy-nav-top {
+    background: #1A1A1A;
 }
 
 .rst-content h1:hover .headerlink,
@@ -43,6 +49,17 @@ body {
     vertical-align: middle;
 }
 
+.rst-content h1 .headerlink:after,
+.rst-content h2 .headerlink:after,
+.rst-content h3 .headerlink:after,
+.rst-content h4 .headerlink:after,
+.rst-content h5 .headerlink:after,
+.rst-content h6 .headerlink:after,
+.rst-content dl dt .headerlink:after {
+    font-family: "Material Icons";
+    content: "insert_link"
+}
+
 .wy-plain-list-disc li,
 .rst-content .section ul li,
 .rst-content .toctree-wrapper ul li,
@@ -52,11 +69,11 @@ article ul li {
 }
 
 .wy-nav-side {
-    position: absolute;
-    background: #FAFAFA;
-    box-shadow: 0px 0 1px rgba(0, 0, 0, 0.1) inset;
-    overflow: visible;
-    bottom: inherit;
+    position: fixed;
+    background: #1A1A1A;
+    /*box-shadow: 0px 0 1px rgba(0, 0, 0, 0.1) inset;
+    overflow: scroll;
+    bottom: inherit;*/
 }
 
 .wy-side-nav-search {
@@ -114,7 +131,18 @@ article ul li {
 .wy-menu-vertical > ul > li > a,
 .wy-menu-vertical > ul > li > a:visited
 {
-    color: #5A5A5A;
+    color: #9A9A9A;
+    opacity: 1;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -ms-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.wy-menu-vertical > ul > li > a:hover
+{
+    color: #FAC322;
     opacity: 1;
 }
 
@@ -141,7 +169,8 @@ article ul li {
 .wy-menu-vertical li.toctree-l2.current > a {
     background: none;
     font-size: 13px;
-    color: #F3888B !important;
+    color: #EF6155 !important;
+    padding-left: 3.027em;
 }
 
 .wy-menu-vertical li.toctree-l1.current > ul > li > a::before {
@@ -157,8 +186,8 @@ article ul li {
 }
 
 .wy-menu-vertical li.toctree-l1.current > ul > li.toctree-l2.current > a::before {
-    content: "#";
-    color: #F3888B;
+    content: "##";
+    color: #EF6155;
     font-size: 13px;
     position: absolute;
     top: 6px;
@@ -183,20 +212,20 @@ article ul li {
 
 .wy-menu-vertical a,
 .wy-menu-vertical a:visited {
-    color: #9A9A9A;
+    color: #7A7A7A;
     line-height: 20px;
     font-size: 13px;
 }
 
 .wy-menu-vertical a:hover {
-    color: #7A7A7A;
+    color: #5A5A5A;
 }
 
 .wy-menu-vertical > ul > li > ul > li > a,
 .wy-menu-vertical > ul > li > ul > li > a:visited,
 .wy-menu-vertical li.current a,
 .wy-menu-vertical li.current a:visited {
-    color: #9A9A9A;
+    color: #7A7A7A;
     background: transparent;
     -webkit-transition: all 0.3s;
     -moz-transition: all 0.3s;
@@ -207,12 +236,12 @@ article ul li {
 
 .wy-menu-vertical > ul > li > ul > li > a:hover,
 .wy-menu-vertical li.current a:hover {
-    color: #F3888B;
+    color: #EF6155;
     background: transparent;
 }
 
 .wy-menu-vertical li.current > a {
-    color: #1999B3 !important;
+    color: #FAC322 !important;
     padding-left: 2.427em;
 }
 
@@ -220,15 +249,16 @@ article ul li {
 }
 
 .wy-side-nav-search input[type="text"] {
+    font-family: "Open Sans", "Roboto", sans-serif;
     border: 0;
     background: none;
     box-shadow: none;
-    color: #8A8A8A;
+    color: #7A7A7A;
     font-size: 13px;
     width: 90%;
     border-radius: 0;
     border-bottom: 1px solid rgba(129, 150, 154, 0.7);
-    opacity: 0.7;
+    opacity: 1;
     padding: 6px 0;
 }
 
@@ -261,7 +291,7 @@ article ul li {
 
 .wy-menu-vertical li.toctree-l1.current:before {
     content: "#";
-    color: #1999B3;
+    color: #FAC322;
     font-size: 13px;
     position: absolute;
     top: 3px;
@@ -325,17 +355,17 @@ article ul li {
     border: 0;
     background: none;
     padding: 0.3em 0;
-    color: #1999B3;
+    color: #26A6A6;
 }
 
 .rst-content .highlighted {
-    background: rgba(138, 179, 181, 0.15) none repeat scroll 0% 0%;
-    border: 1px solid rgba(138, 179, 181, 0.2);
-    padding: 2px 3px;
+    border: 1px solid rgb(250, 195, 34);
+    padding: 0 4px;
     border-radius: 3px;
-    color: inherit;
+    color: #BA8300;
     display: inline;
     font-weight: inherit;
+    background: rgba(250, 195, 34, 0.6) none repeat scroll 0% 0%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -390,6 +420,10 @@ a, a:visited {
     color: #00BCD4;
 }
 
+a:hover {
+    color: #48B0F7;
+}
+
 a > em {
     font-style: normal;
 }
@@ -405,7 +439,7 @@ b, strong {
 
 pre, pre code, .rst-content tt, code.docutils {
     font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
-    color: #1999B3;
+    color: #26A6A6;
     background-color: #FFFFFF;
     font-size: 13px;
     font-weight: 400;
@@ -431,12 +465,15 @@ div[class^="highlight"] {
     font-size: 13px;
     padding: 2% 4%;
     margin-left: 1%;
-    color: #7A7A7A;
+    color: #777F84;
     /*background-color: #FAFAFA;*/
 }
 
-code {
+code, .rst-content tt, .rst-content code {
     font-family: "Source Code Pro", "Consolas", "Menlo", "Monaco", "Courier New", Courier, monospace;
+}
+
+code {
     color: #CB6077;
     background-color: #FFFFFF;
     font-size: 13px;
@@ -446,12 +483,16 @@ code {
 p > code,
 .rst-content tt,
 p > code.docutils {
-    color: #1999B3;
+    color: #26A6A6;
     padding: 0;
     display: inline;
     font-weight: 400;
     border: 0;
     background-color: #FFFFFF;
+}
+
+.rst-content tt.literal, .rst-content tt.literal, .rst-content code.literal {
+    color: #1976BF;
 }
 
 .rst-content .admonition-title {
@@ -460,7 +501,6 @@ p > code.docutils {
 
 .rst-content .note,
 .rst-content .warning,
-.rst-content .versionadded,
 .rst-content .tip,
 .rst-content .caution{
     padding: 0px 4%;
@@ -483,14 +523,14 @@ p > code.docutils {
 }
 
 .rst-content .note {
-    border-left: 1px solid rgba(111, 179, 210, 0.4);
-    color: #6FB3D2 !important;
+    border-left: 1px solid rgba(50, 154, 188, 0.4);
+    color: #3399BB !important;
 }
 
 .rst-content .warning,
 .rst-content .caution {
-    border-left: 1px solid rgba(244, 191, 117, 0.4);
-    color: #F4BF75 !important;
+    border-left: 1px solid rgba(249, 145, 87, 0.4);
+    color: #F99157 !important;
 }
 
 .rst-content .tip {
@@ -500,14 +540,14 @@ p > code.docutils {
 
 .rst-content .note > p {
     padding: 12px 12px 12px 0;
-    color: #6FB3D2 !important;
+    color: #3399BB !important;
 }
 
 .rst-content .warning > p,
 .rst-content .caution > p
 {
     padding: 12px 12px 12px 0;
-    color: #F4BF75 !important;
+    color: #F99157 !important;
 }
 
 .rst-content .tip > p {
@@ -518,20 +558,35 @@ p > code.docutils {
 .rst-content .versionadded,
 .rst-content .versionchanged
 {
-    color: #AA759F !important;
+    color: #6677BB !important;
+    margin-bottom: 20px;
+    position: relative;
 }
 
 .rst-content .versionadded > p,
 .rst-content .versionchanged > p
 {
-    color: #AA759F !important;
+    color: #6677BB !important;
 }
 
-.rst-content .versionadded > p:before {
+.rst-content .versionadded:before,
+.rst-content .versionchanged:before {
     font-family: FontAwesome;
     content: '';
-    position: relative;
+    position: absolute;
     left: -20px;
+}
+
+.rst-content .versionadded > p,
+.rst-content .versionchanged > p {
+    margin-bottom: 0;
+}
+
+.rst-content .versionadded > p > span,
+.rst-content .versionchanged > p > span {
+    display: block;
+    font-size: 1.1em;
+    margin-bottom: 20px;
 }
 
 .rst-content .note .versionchanged
@@ -555,7 +610,7 @@ p > code.docutils {
     border: 0;
     padding: 0;
     display: inline;
-    color: #F99157 !important;
+    color: #D9664F !important;
 }
 
 .btn-neutral,
@@ -602,6 +657,87 @@ p > code.docutils {
 
 .btn-neutral span.fa-arrow-circle-right:before {
     content: ''
+}
+
+
+/* Autodoc */
+.rst-content table.field-list .field-name {
+    text-align: left;
+    white-space: nowrap;
+    padding-right: 10px;
+    width: 140px;
+    font-weight: 600;
+}
+
+.rst-content table.field-list .field-body {
+    padding: 8px 16px;
+    text-align: left;
+    vertical-align: top;
+    border: 0;
+}
+
+.rst-content table.field-list .field-body ul {
+    line-height: 0;
+}
+
+.rst-content table.field-list .field-body ul li {
+    list-style: none;
+    margin-left: 0;
+    font-size: 100%;
+}
+
+.rst-content table.field-list td p {
+    line-height: inherit;
+}
+
+.rst-content table.field-list .field-body strong {
+    color: #F3888B;
+    font-weight: 400;
+    margin-top: 0;
+}
+
+.rst-content dl:not(.docutils).class > dt {
+    border: 0;
+    background: transparent;
+    font-size: inherit;
+    margin-bottom: 24px;
+    color: #579ED1;
+    font-weight: 600;
+}
+
+.rst-content dl:not(.docutils).class > dt > em,
+.rst-content dl:not(.docutils).class > dt > em.property {
+    font-weight: 400;
+    font-style: normal;
+}
+
+.rst-content dl:not(.docutils).class > dt > code {
+    color: #F9A167;
+    font-weight: 400;
+}
+
+.rst-content dl:not(.docutils) dl.classmethod > dt,
+.rst-content dl:not(.docutils) dl.method > dt {
+    border-left: 1px solid #F2F2F2;
+    background: transparent;
+    font-size: inherit;
+}
+
+.rst-content dl:not(.docutils) dl.classmethod > dt > code,
+.rst-content dl:not(.docutils) dl.method > dt > code {
+    color: #D9664F;
+    font-weight: 400;
+}
+
+.rst-content dl:not(.docutils) dl.classmethod > dt > em,
+.rst-content dl:not(.docutils) dl.method > dt > em {
+    font-weight: 400;
+}
+
+.rst-content dl:not(.docutils) dl.classmethod > dt > em.property,
+.rst-content dl:not(.docutils) dl.method > dt > em.property {
+    font-weight: 400;
+    color: #7AC;
 }
 
 
@@ -743,35 +879,35 @@ tt.code .integer, code.code .integer { color: #F4BC87 }
 
 /***** Eighties *****/
 
-.highlight .s { color: #AFCE79 } /* Literal.String */
-.highlight .s1 { color: #AFCE79 } /* Literal.String */
-.highlight .si { color: #5FAEA9 } /* Literal.String */
-.highlight .m { color: #7BB } /* Literal.Number */
-.highlight .mf { color: #7BB } /* Literal.Number */
-.highlight .mh { color: #7BB } /* Literal.Number */
-.highlight .mi { color: #7BB } /* Literal.Number */
-.highlight .mo { color: #7BB } /* Literal.Number */
-.highlight .k { color: #DAC322; font-weight: normal; } /* Keyword */
-.highlight .kn { color: #DAC322; font-weight: normal; } /* Keyword */
-.highlight .ow { color: #DAC322; font-weight: normal } /* Operator.Word */
-.highlight .nc { color: #F9A167; font-weight: 400 } /* Name.Class */
-.highlight .nf { color: #77BBBB; font-weight: normal; } /* Name.Function */
-.highlight .bp { color: #F3888B } /* Name.Builtin.Pseudo */
-.highlight .vc { color: #F3888B } /* Name.Variable.Class */
-.highlight .vg { color: #F3888B } /* Name.Variable.Global */
-.highlight .vi { color: #F3888B } /* Name.Variable.Instance */
-.highlight .nd { color: #E3AB83 } /* Name.Decorator */
+.highlight .s { color: #59B6CF } /* Literal.String */
+.highlight .s1 { color: #59B6CF } /* Literal.String */
+.highlight .si { color: #8986BF } /* Literal.String */
+.highlight .m { color: #E9767F } /* Literal.Number */
+.highlight .mf { color: #E9767F } /* Literal.Number */
+.highlight .mh { color: #E9767F } /* Literal.Number */
+.highlight .mi { color: #E9767F } /* Literal.Number */
+.highlight .mo { color: #E9767F } /* Literal.Number */
+.highlight .k { color: #579ED1; font-weight: normal; } /* Keyword */
+.highlight .kn { color: #579ED1; font-weight: normal; } /* Keyword */
+.highlight .ow { color: #579ED1; font-weight: normal } /* Operator.Word */
+.highlight .nc { color: #69B69F; font-weight: 400 } /* Name.Class */
+.highlight .nf { color: #8986BF; font-weight: normal; } /* Name.Function */
+.highlight .bp { color: #69B69F } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #69B69F } /* Name.Variable.Class */
+.highlight .vg { color: #69B69F } /* Name.Variable.Global */
+.highlight .vi { color: #69B69F } /* Name.Variable.Instance */
+.highlight .nd { color: #879ED1 } /* Name.Decorator */
 .highlight .ne { color: #CB6077; font-weight: 400 } /* Name.Exception */
-.highlight .o { color: #8A8A8A } /* Operator */
-.highlight .n { color: #8A8A8A }
-.highlight .c { color: #B8AFAD; font-style: normal; }
-.highlight .sd { color: #B8AFAD; font-style: normal; }
-.highlight .nl { color: #7BB } /* Name.Label */
-.highlight .nn { color: #7AC } /* Name.Namespace */
-.highlight .nx { color: #7BB } /* Name.Other */
-.highlight .py { color: #7BB } /* Name.Property */
-.highlight .nb { color: #E3AB83 } /* Name.Builtin */
-.highlight .p { color: #8A8A8A } /* Punctuation */
+.highlight .o { color: #878F84 } /* Operator */
+.highlight .n { color: #878F84 }
+.highlight .c { color: #A8AFAD; font-style: normal; }
+.highlight .sd { color: #A8AFAD; font-style: normal; }
+.highlight .nl { color: #E9767F } /* Name.Label */
+.highlight .nn { color: #8986BF } /* Name.Namespace */
+.highlight .nx { color: #E9767F } /* Name.Other */
+.highlight .py { color: #E9767F } /* Name.Property */
+.highlight .nb { color: #63ABA3 } /* Name.Builtin */
+.highlight .p { color: #878F84 } /* Punctuation */
 
 /* Inline code */
 
@@ -782,9 +918,9 @@ tt.code, code.code {
     padding: 0.3em 0.5em;
     background-color: #FAFAFA;
 }
-tt.code .name, code.code .name { color: #8A8A8A }
-tt.code .operator, code.code .operator { color: #8A8A8A }
-tt.code .punctuation, code.code .punctuation { color: #8A8A8A }
-tt.code .string, code.code .string { color: #AFCE79 }
-tt.code .number, code.code .number { color: #7BB }
-tt.code .integer, code.code .integer { color: #7BB }
+tt.code .name, code.code .name { color: #878F84 }
+tt.code .operator, code.code .operator { color: #878F84 }
+tt.code .punctuation, code.code .punctuation { color: #878F84 }
+tt.code .string, code.code .string { color: #59B6CF }
+tt.code .number, code.code .number { color: #E9767F }
+tt.code .integer, code.code .integer { color: #E9767F }

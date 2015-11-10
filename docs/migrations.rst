@@ -123,6 +123,12 @@ These commands would respectively create the following migrations:
             self.schema.drop('users')
 
 
+.. note::
+
+    ``Migration`` instances have a ``db`` attribute which is an instance of the current
+    ``Connection``.
+
+
 Running Migrations
 ==================
 
@@ -131,6 +137,34 @@ To run all outstanding migrations, just use the ``migrations:run`` command:
 .. code-block:: bash
 
     orator migrations:run -c databases.py
+
+.. note::
+
+    By default, all migrations are run inside a transaction.
+    If you want queries to be executed directly just set the ``transactional`` attribute to ``False``. You
+    then must explicitely declare the transactions:
+
+    .. code-block:: python
+
+        class CreateTableUsers(Migration):
+
+            transactional = False
+
+            def up(self):
+                """
+                Run the migrations.
+                """
+                with self.db.transaction():
+                    with self.schema.create('users') as table:
+                        table.increments('id')
+                        table.timestamps()
+
+            def down(self):
+                """
+                Revert the migrations.
+                """
+                with self.db.transaction():
+                    self.schema.drop('users')
 
 
 Rolling back migrations

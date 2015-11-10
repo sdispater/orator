@@ -10,7 +10,7 @@ class Collection(object):
         Creates a new Collection
 
         :param items: The collection items
-        :type items: dict or list or Collection
+        :type items: dict or list or Collection or map
 
         :rtype: None
         """
@@ -23,6 +23,10 @@ class Collection(object):
             self._items = [items]
         else:
             self._items = items
+
+    @property
+    def items(self):
+        return self._items
 
     @classmethod
     def make(cls, items=None):
@@ -47,7 +51,7 @@ class Collection(object):
         :return: The items in the collections
         :type: mixed
         """
-        return self._items
+        return self.items
 
     def collapse(self):
         """
@@ -59,7 +63,9 @@ class Collection(object):
         results = []
 
         if isinstance(self._items, dict):
-            items = self._items.values()
+            items = self.items.values()
+        else:
+            items = self.items
 
         for values in items:
             if isinstance(values, Collection):
@@ -83,12 +89,12 @@ class Collection(object):
         :rtype: bool
         """
         if value is not None:
-            if isinstance(self._items, list):
-                return key in self._items and self._items[self._items.index(key)] == value
+            if isinstance(self.items, list):
+                return key in self.items and self._items[self.items.index(key)] == value
 
-            return self._items.get(key) == value
+            return self.items.get(key) == value
 
-        return key in self._items
+        return key in self.items
 
     def __contains__(self, item):
         return self.contains(item)
@@ -112,8 +118,8 @@ class Collection(object):
         :param default: The default value
         :type default: mixed
         """
-        if len(self._items) > 0:
-            return self._items[0]
+        if len(self.items) > 0:
+            return self.items[0]
         else:
             return default
 
@@ -123,7 +129,7 @@ class Collection(object):
 
         :rtype: list
         """
-        results = map(lambda x: x[value], self._items)
+        results = map(lambda x: x[value], self.items)
 
         return list(results)
 
@@ -136,10 +142,22 @@ class Collection(object):
 
         :rtype: Collection
         """
-        if isinstance(self._items, dict):
-            return Collection(list(map(callback, self._items.values())))
+        if isinstance(self.items, dict):
+            return self.__class__(list(map(callback, self.items.values())))
 
-        return Collection(list(map(callback, self._items)))
+        return self.__class__(list(map(callback, self.items)))
+
+    def each(self, callback):
+        if isinstance(self.items, dict):
+            items = self.items.values()
+        else:
+            items = self.items
+
+        for item in items:
+            if callback(item) is False:
+                break
+
+        return self
 
     def unique(self):
         """
@@ -150,10 +168,10 @@ class Collection(object):
         seen = set()
         seen_add = seen.add
 
-        return Collection([x for x in self._items if not (x in seen or seen_add(x))])
+        return Collection([x for x in self.items if not (x in seen or seen_add(x))])
 
     def is_empty(self):
-        return len(self._items) == 0
+        return len(self) == 0
 
     def _get_items(self, items):
         if isinstance(items, Collection):
@@ -167,20 +185,20 @@ class Collection(object):
 
     def to_dict(self):
         return list(map(lambda value: value.to_dict() if hasattr(value, 'to_dict') else value,
-                        self._items))
+                        self.items))
 
     def to_json(self, **options):
         return json.dumps(self.to_dict(), **options)
 
     def __len__(self):
-        return len(self._items)
+        return len(self.items)
 
     def __iter__(self):
-        for item in self._items:
+        for item in self.items:
             yield item
 
     def __getitem__(self, item):
         if isinstance(item, slice):
-            return Collection.make(self._items[item])
+            return Collection.make(self.items[item])
 
-        return self._items[item]
+        return self.items[item]

@@ -6,7 +6,7 @@ from .has_one_or_many import HasOneOrMany
 class MorphOneOrMany(HasOneOrMany):
 
     _morph_type = None
-    _morph_class = None
+    _morph_name = None
 
     def __init__(self, query, parent, morph_type, foreign_key, local_key):
         """
@@ -25,7 +25,7 @@ class MorphOneOrMany(HasOneOrMany):
         :type local_key: str
         """
         self._morph_type = morph_type
-        self._morph_class = parent.get_morph_class()
+        self._morph_name = parent.get_morph_name()
 
         super(MorphOneOrMany, self).__init__(query, parent, foreign_key, local_key)
 
@@ -36,7 +36,7 @@ class MorphOneOrMany(HasOneOrMany):
         if self._constraints:
             super(MorphOneOrMany, self).add_constraints()
 
-            self._query.where(self._morph_type, self._morph_class)
+            self._query.where(self._morph_type, self._morph_name)
 
     def get_relation_count_query(self, query, parent):
         """
@@ -49,7 +49,7 @@ class MorphOneOrMany(HasOneOrMany):
         """
         query = super(MorphOneOrMany, self).get_relation_count_query(query, parent)
 
-        return query.where(self._morph_type, self._morph_class)
+        return query.where(self._morph_type, self._morph_name)
 
     def add_eager_constraints(self, models):
         """
@@ -59,7 +59,7 @@ class MorphOneOrMany(HasOneOrMany):
         """
         super(MorphOneOrMany, self).add_eager_constraints(models)
 
-        self._query.where(self._morph_type, self._morph_class)
+        self._query.where(self._morph_type, self._morph_name)
 
     def save(self, model):
         """
@@ -70,7 +70,7 @@ class MorphOneOrMany(HasOneOrMany):
 
         :rtype: Model
         """
-        model.set_attribute(self.get_plain_morph_type(), self._morph_class)
+        model.set_attribute(self.get_plain_morph_type(), self._morph_name)
 
         return super(MorphOneOrMany, self).save(model)
 
@@ -182,7 +182,7 @@ class MorphOneOrMany(HasOneOrMany):
         """
         model.set_attribute(self.get_plain_foreign_key(), self.get_parent_key())
 
-        model.set_attribute(self.get_plain_morph_type(), self._morph_class)
+        model.set_attribute(self.get_plain_morph_type(), self._morph_name)
 
     def get_morph_type(self):
         return self._morph_type
@@ -190,5 +190,5 @@ class MorphOneOrMany(HasOneOrMany):
     def get_plain_morph_type(self):
         return self._morph_type.split('.')[-1]
 
-    def get_morph_class(self):
-        return self._morph_class
+    def get_morph_name(self):
+        return self._morph_name

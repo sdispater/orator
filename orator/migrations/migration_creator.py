@@ -38,6 +38,11 @@ class MigrationCreator(object):
         if not os.path.exists(os.path.dirname(path)):
             mkdir_p(os.path.dirname(path))
 
+        parent = os.path.join(os.path.dirname(path), '__init__.py')
+        if not os.path.exists(parent):
+            with open(parent, 'w'):
+                pass
+
         stub = self._get_stub(table, create)
 
         with open(path, 'w') as fh:

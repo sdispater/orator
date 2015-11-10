@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import types
 from functools import update_wrapper
 
 
@@ -101,3 +102,341 @@ class column(object):
         self.accessor_ = f
 
         return accessor(f, self.attribute)
+
+
+# Relations decorators
+class relation(object):
+    """
+    Base relation decorator
+    """
+
+    def __init__(self, func=None, relation=None):
+        self._relation = relation
+
+        self.set_func(func)
+
+    def set_func(self, func):
+        self.func = func
+
+        if self._relation is None:
+            if isinstance(func, property):
+                self._relation = func.fget.__name__ if func else None
+            else:
+                self._relation = func.__name__ if func else None
+
+        self.expr = func
+        if func is not None:
+            update_wrapper(self, func)
+
+    def __call__(self, func):
+        self.set_func(func)
+
+        return self
+
+
+class has_one(relation):
+    """
+    Has One relationship decorator
+    """
+
+    def __init__(self, foreign_key=None, local_key=None, relation=None):
+        if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
+            func = foreign_key
+            foreign_key = None
+        else:
+            func = None
+
+        self._foreign_key = foreign_key
+        self._local_key = local_key
+
+        super(has_one, self).__init__(func, relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.has_one(self.func(instance), self._foreign_key, self._local_key, self._relation)
+
+        return r
+
+
+class morph_one(relation):
+    """
+    Morph One relationship decorator
+    """
+
+    def __init__(self, name, type_column=None, id_column=None, local_key=None, relation=None):
+        if isinstance(name, (types.FunctionType, types.MethodType)):
+            raise RuntimeError('morph_one relation requires a name')
+
+        self._name = name
+        self._type_column = type_column
+        self._id_column = id_column
+        self._local_key = local_key
+
+        super(morph_one, self).__init__(relation=relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.morph_one(
+                self.func(instance), self._name,
+                self._type_column, self._id_column,
+                self._local_key, self._relation
+            )
+
+        return r
+
+
+class belongs_to(relation):
+    """
+    Belongs to relationship decorator
+    """
+
+    def __init__(self, foreign_key=None, other_key=None, relation=None):
+        if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
+            func = foreign_key
+            foreign_key = None
+        else:
+            func = None
+
+        self._foreign_key = foreign_key
+        self._other_key = other_key
+
+        super(belongs_to, self).__init__(func, relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.belongs_to(self.func(instance), self._foreign_key, self._other_key, self._relation)
+
+        return r
+
+
+class morph_to(relation):
+    """
+    Morph To relationship decorator
+    """
+
+    def __init__(self, name=None, type_column=None, id_column=None):
+        if isinstance(name, (types.FunctionType, types.MethodType)):
+            func = name
+            name = None
+        else:
+            func = None
+
+        self._name = name
+        self._type_column = type_column
+        self._id_column = id_column
+
+        super(morph_to, self).__init__(func, name)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.morph_to(
+                self._relation,
+                self._type_column, self._id_column
+            )
+
+        return r
+
+
+class has_many(relation):
+    """
+    Has Many relationship decorator
+    """
+
+    def __init__(self, foreign_key=None, local_key=None, relation=None):
+        if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
+            func = foreign_key
+            foreign_key = None
+        else:
+            func = None
+
+        self._foreign_key = foreign_key
+        self._local_key = local_key
+
+        super(has_many, self).__init__(func, relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.has_many(
+                self.func(instance),
+                self._foreign_key,
+                self._local_key,
+                self._relation
+            )
+
+        return r
+
+
+class has_many_through(relation):
+    """
+    Has Many Through relationship decorator
+    """
+
+    def __init__(self, through, first_key=None, second_key=None, relation=None):
+        if isinstance(through, (types.FunctionType, types.MethodType)):
+            raise RuntimeError('has_many_through relation requires the through parameter')
+
+        self._through = through
+        self._first_key = first_key
+        self._second_key = second_key
+
+        super(has_many_through, self).__init__(relation=relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.has_many_through(
+                self.func(instance),
+                self._through,
+                self._first_key,
+                self._second_key,
+                self._relation
+            )
+
+        return r
+
+
+class morph_many(relation):
+    """
+    Morph Many relationship decorator
+    """
+
+    def __init__(self, name, type_column=None, id_column=None, local_key=None, relation=None):
+        if isinstance(name, (types.FunctionType, types.MethodType)):
+            raise RuntimeError('morph_many relation requires a name')
+
+        self._name = name
+        self._type_column = type_column
+        self._id_column = id_column
+        self._local_key = local_key
+
+        super(morph_many, self).__init__(relation=relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.morph_many(
+                self.func(instance), self._name,
+                self._type_column, self._id_column,
+                self._local_key, self._relation
+            )
+
+        return r
+
+
+class belongs_to_many(relation):
+    """
+    Belongs To Many relationship decorator
+    """
+
+    def __init__(self, table=None, foreign_key=None, other_key=None,
+                 relation=None, with_timestamps=False, with_pivot=None):
+        if isinstance(table, (types.FunctionType, types.MethodType)):
+            func = table
+            table = None
+        else:
+            func = None
+
+        self._table = table
+        self._foreign_key = foreign_key
+        self._other_key = other_key
+
+        self._timestamps = with_timestamps
+        self._pivot = with_pivot
+
+        super(belongs_to_many, self).__init__(func, relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.belongs_to_many(
+                self.func(instance),
+                self._table,
+                self._foreign_key,
+                self._other_key,
+                self._relation
+            )
+
+            if self._timestamps:
+                r = r.with_timestamps()
+
+            if self._pivot:
+                r = r.with_pivot(*self._pivot)
+
+        return r
+
+
+class morph_to_many(relation):
+    """
+    Morph To Many relationship decorator
+    """
+
+    def __init__(self, name, table=None, foreign_key=None, other_key=None, relation=None):
+        if isinstance(name, (types.FunctionType, types.MethodType)):
+            raise RuntimeError('morph_to_many relation required a name')
+
+        self._name = name
+        self._table = table
+        self._foreign_key = foreign_key
+        self._other_key = other_key
+
+        super(morph_to_many, self).__init__(relation=relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.morph_to_many(
+                self.func(instance),
+                self._name,
+                self._table,
+                self._foreign_key,
+                self._other_key,
+                relation=self._relation
+            )
+
+        return r
+
+
+class morphed_by_many(relation):
+    """
+    Morphed By Many relationship decorator
+    """
+
+    def __init__(self, name, table=None, foreign_key=None, other_key=None, relation=None):
+        if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
+            raise RuntimeError('morphed_by_many relation requires a name')
+
+        self._name = name
+        self._table = table
+        self._foreign_key = foreign_key
+        self._other_key = other_key
+
+        super(morphed_by_many, self).__init__(relation=relation)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            r = self.expr
+        else:
+            r = instance.morphed_by_many(
+                self.func(instance),
+                self._name,
+                self._table,
+                self._foreign_key,
+                self._other_key,
+                self._relation
+            )
+
+        return r

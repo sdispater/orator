@@ -2,6 +2,7 @@
 
 from ...query.expression import QueryExpression
 from .relation import Relation
+from .result import Result
 
 
 class HasManyThrough(Relation):
@@ -91,7 +92,7 @@ class HasManyThrough(Relation):
         :type relation:  str
         """
         for model in models:
-            model.set_relation(relation, self._related.new_collection())
+            model.set_relation(relation, Result(self._related.new_collection(), self, model))
 
         return models
 
@@ -107,16 +108,13 @@ class HasManyThrough(Relation):
 
         for model in models:
             key = model.get_key()
-            relationship = self.new_instance(model)
 
             if key in dictionary:
-                value = self._related.new_collection(dictionary[key])
+                value = Result(self._related.new_collection(dictionary[key]), self, model)
             else:
-                value = self._related.new_collection()
+                value = Result(self._related.new_collection(), self, model)
 
-            relationship.set_results(value)
-
-            model.set_relation(relation, relationship)
+            model.set_relation(relation, value)
 
         return models
 

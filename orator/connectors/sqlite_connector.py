@@ -29,10 +29,19 @@ class DictCursor(object):
 
 class SQLiteConnector(Connector):
 
+    RESERVED_KEYWORDS = [
+        'log_queries', 'driver', 'prefix', 'name',
+        'foreign_keys'
+    ]
+
     def connect(self, config):
         connection = self.get_api().connect(**self.get_config(config))
         connection.isolation_level = None
         connection.row_factory = DictCursor
+
+        # We activate foreign keys support by default
+        if config.get('foreign_keys', True):
+            connection.execute("PRAGMA foreign_keys = ON")
 
         return connection
 
