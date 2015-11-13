@@ -62,7 +62,7 @@ Here is an example of how read / write connections should be configured:
             'read': [
                 'host': '192.168.1.1'
             ],
-            'read': [
+            'write': [
                 'host': '192.168.1.2'
             ],
             'driver': 'mysql',
