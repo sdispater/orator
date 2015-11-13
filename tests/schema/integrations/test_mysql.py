@@ -218,7 +218,7 @@ class DatabaseIntegrationConnectionResolver(object):
         if ci:
             database = 'orator_test'
             user = 'root'
-            password = None
+            password = ''
         else:
             database = 'orator_test'
             user = 'orator'
