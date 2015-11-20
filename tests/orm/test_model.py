@@ -678,6 +678,12 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual('foo', model.name)
         self.assertEqual(28, model.age)
 
+    def test_fill_with_dict(self):
+        model = OrmModelStub()
+        model.fill({'name': 'foo', 'age': 28})
+        self.assertEqual('foo', model.name)
+        self.assertEqual(28, model.age)
+
     def test_unguard_allows_anything(self):
         model = OrmModelStub()
         model.unguard()

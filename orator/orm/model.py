@@ -107,7 +107,7 @@ class Model(object):
     CREATED_AT = 'created_at'
     UPDATED_AT = 'updated_at'
 
-    def __init__(self, **attributes):
+    def __init__(self, _attributes=None, **attributes):
         """
         :param attributes: The instance attributes
         """
@@ -119,6 +119,9 @@ class Model(object):
         self._relations = {}
 
         self.sync_original()
+
+        if _attributes is not None:
+            attributes.update(_attributes)
 
         self.fill(**attributes)
 
@@ -227,7 +230,7 @@ class Model(object):
             if hasattr(observer, event):
                 cls._register_model_event(event, getattr(observer, event))
 
-    def fill(self, **attributes):
+    def fill(self, _attributes=None, **attributes):
         """
         Fill the model with attributes.
 
@@ -239,6 +242,9 @@ class Model(object):
 
         :raises: MassAssignmentError
         """
+        if _attributes is not None:
+            attributes.update(_attributes)
+
         totally_guarded = self.totally_guarded()
 
         for key, value in self._fillable_from_dict(attributes).items():
@@ -251,7 +257,7 @@ class Model(object):
 
         return self
 
-    def force_fill(self, **attributes):
+    def force_fill(self, _attributes=None, **attributes):
         """
         Fill the model with attributes. Force mass assignment.
 
@@ -261,6 +267,9 @@ class Model(object):
         :return: The model instance
         :rtype: Model
         """
+        if _attributes is not None:
+            attributes.update(_attributes)
+
         self.unguard()
 
         self.fill(**attributes)
@@ -366,7 +375,7 @@ class Model(object):
         return cls.hydrate(items, connection)
 
     @classmethod
-    def create(cls, **attributes):
+    def create(cls, _attributes=None, **attributes):
         """
         Save a new model an return the instance.
 
@@ -376,6 +385,9 @@ class Model(object):
         :return: The new instance
         :rtype: Model
         """
+        if _attributes is not None:
+            attributes.update(_attributes)
+
         model = cls(**attributes)
 
         model.save()
@@ -1344,7 +1356,7 @@ class Model(object):
 
         self.sync_original_attribute(column)
 
-    def update(self, **attributes):
+    def update(self, _attributes=None, **attributes):
         """
         Update the model in the database.
 
@@ -1354,6 +1366,9 @@ class Model(object):
         :return: The number of rows affected
         :rtype: int
         """
+        if _attributes is not None:
+            attributes.update(_attributes)
+
         if not self._exists:
             return self.new_query().update(**attributes)
 
