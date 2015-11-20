@@ -1,6 +1,7 @@
 @import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
-@import url(http://fonts.googleapis.com/css?family=Source+Code+Pro:400,500,600);
+@import url(http://fonts.googleapis.com/css?family=Source+Code+Pro:300,400,500,600);
 @import url(http://fonts.googleapis.com/css?family=Material+Icons);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:600,400,300);
 
 body {
     font: 400 13px/26px "Open Sans",sans-serif;
@@ -691,15 +692,15 @@ p > code.docutils {
 }
 
 .rst-content table.field-list .field-body strong {
-    color: #F3888B;
-    font-weight: 400;
+    color: #E9767F;
+    font-weight: 600;
     margin-top: 0;
 }
 
 .rst-content dl:not(.docutils).class > dt {
     border: 0;
     background: transparent;
-    font-size: inherit;
+    font-size: 13px;
     margin-bottom: 24px;
     color: #579ED1;
     font-weight: 600;
@@ -709,10 +710,11 @@ p > code.docutils {
 .rst-content dl:not(.docutils).class > dt > em.property {
     font-weight: 400;
     font-style: normal;
+    font-family: "Source Code Pro","Consolas","Menlo","Monaco","Courier New",Courier,monospace;
 }
 
 .rst-content dl:not(.docutils).class > dt > code {
-    color: #F9A167;
+    color: #69B69F;
     font-weight: 400;
 }
 
@@ -720,24 +722,47 @@ p > code.docutils {
 .rst-content dl:not(.docutils) dl.method > dt {
     border-left: 1px solid #F2F2F2;
     background: transparent;
-    font-size: inherit;
+    font-size: 13px;
 }
 
 .rst-content dl:not(.docutils) dl.classmethod > dt > code,
 .rst-content dl:not(.docutils) dl.method > dt > code {
-    color: #D9664F;
+    color: #8986BF;
     font-weight: 400;
 }
 
 .rst-content dl:not(.docutils) dl.classmethod > dt > em,
 .rst-content dl:not(.docutils) dl.method > dt > em {
     font-weight: 400;
+    font-family: "Source Code Pro","Consolas","Menlo","Monaco","Courier New",Courier,monospace;
+    font-size: 13px;
+    font-style: normal;
 }
 
 .rst-content dl:not(.docutils) dl.classmethod > dt > em.property,
 .rst-content dl:not(.docutils) dl.method > dt > em.property {
     font-weight: 400;
-    color: #7AC;
+    color: #579ED1;
+    font-style: normal;
+}
+
+/* Sections styles */
+
+#available-methods ul {
+    list-style: none;
+    -webkit-column-count: 3; /* Chrome, Safari, Opera */
+    -moz-column-count: 3; /* Firefox */
+    column-count: 3;
+}
+
+#available-methods ul > li {
+    list-style: none;
+}
+
+h3 > code.docutils {
+    font-size: 17px;
+    font-weight: 300;
+    margin: 0;
 }
 
 
@@ -898,8 +923,8 @@ tt.code .integer, code.code .integer { color: #F4BC87 }
 .highlight .vi { color: #69B69F } /* Name.Variable.Instance */
 .highlight .nd { color: #879ED1 } /* Name.Decorator */
 .highlight .ne { color: #CB6077; font-weight: 400 } /* Name.Exception */
-.highlight .o { color: #878F84 } /* Operator */
-.highlight .n { color: #878F84 }
+.highlight .o { color: #878787 } /* Operator */
+.highlight .n { color: #878787 }
 .highlight .c { color: #A8AFAD; font-style: normal; }
 .highlight .sd { color: #A8AFAD; font-style: normal; }
 .highlight .nl { color: #E9767F } /* Name.Label */
@@ -907,7 +932,7 @@ tt.code .integer, code.code .integer { color: #F4BC87 }
 .highlight .nx { color: #E9767F } /* Name.Other */
 .highlight .py { color: #E9767F } /* Name.Property */
 .highlight .nb { color: #63ABA3 } /* Name.Builtin */
-.highlight .p { color: #878F84 } /* Punctuation */
+.highlight .p { color: #878787 } /* Punctuation */
 
 /* Inline code */
 
@@ -918,9 +943,9 @@ tt.code, code.code {
     padding: 0.3em 0.5em;
     background-color: #FAFAFA;
 }
-tt.code .name, code.code .name { color: #878F84 }
-tt.code .operator, code.code .operator { color: #878F84 }
-tt.code .punctuation, code.code .punctuation { color: #878F84 }
+tt.code .name, code.code .name { color: #878787 }
+tt.code .operator, code.code .operator { color: #878787 }
+tt.code .punctuation, code.code .punctuation { color: #878787 }
 tt.code .string, code.code .string { color: #59B6CF }
 tt.code .number, code.code .number { color: #E9767F }
 tt.code .integer, code.code .integer { color: #E9767F }

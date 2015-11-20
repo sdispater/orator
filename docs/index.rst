@@ -30,4 +30,5 @@ THe Orator ORM supports python versions **2.7+** and **3.2+**
     migrations
     seeding
     testing
+    collections
     extensions
