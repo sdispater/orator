@@ -376,12 +376,13 @@ The ``with_trashed`` method may be used on a defined relationship:
 Relationships
 =============
 
-.. versionchanged:: 0.7
+.. versionchanged:: 0.7.1
 
 
-    As of version 0.7, the decorator notation is preferred and more efficient.
+    As of version 0.7.1, the decorator notation is the only one supported.
 
-    However, the previous notation (via properties) is still supported.
+    The previous notation (via properties) is now deprecated and is no longer supported.
+    It will be removed in the next major version.
 
 Orator makes managing and working with relationships easy. It supports many types of relationships:
 

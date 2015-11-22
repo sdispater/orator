@@ -8,6 +8,7 @@ from orator.query.grammars.grammar import QueryGrammar
 from orator.query.builder import QueryBuilder
 from orator.orm.builder import Builder
 from orator.orm.model import Model
+from orator.orm import belongs_to, has_many
 from orator.exceptions.orm import ModelNotFound
 from orator.orm.collection import Collection
 from orator.connections import Connection
@@ -471,13 +472,13 @@ class OrmBuilderTestModelScopeStub(OratorTestModel):
 
 class OrmBuilderTestModelCloseRelated(OratorTestModel):
 
-    @property
+    @has_many
     def bar(self):
-        return self.has_many(OrmBuilderTestModelFarRelatedStub)
+        return OrmBuilderTestModelFarRelatedStub
 
 
 class OrmBuilderTestModelParentStub(OratorTestModel):
 
-    @property
+    @belongs_to
     def foo(self):
-        return self.belongs_to(OrmBuilderTestModelCloseRelated)
+        return OrmBuilderTestModelCloseRelated
