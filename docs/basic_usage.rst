@@ -59,12 +59,12 @@ Here is an example of how read / write connections should be configured:
 
     config = {
         'mysql': {
-            'read': [
+            'read': {
                 'host': '192.168.1.1'
-            ],
-            'write': [
+            },
+            'write': {
                 'host': '192.168.1.2'
-            ],
+            },
             'driver': 'mysql',
             'database': 'database',
             'username': 'root',

@@ -87,7 +87,7 @@ The ``all`` method simply returns the underlying list or dict represented by the
 
 .. code-block:: python
 
-    Collection([1, 2, 3]).all
+    Collection([1, 2, 3]).all()
 
     # [1, 2, 3]
 

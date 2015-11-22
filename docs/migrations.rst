@@ -26,7 +26,7 @@ Migrations are typically paired with the :ref:`SchemaBuilder` to easily manage y
             }
         }
 
-    This file needs to be precised when using migrations commands.
+    This file needs to be specified when using migrations commands.
 
 
 Creating Migrations
