@@ -24,6 +24,12 @@ class SoftDeletes(object):
 
         self._force_deleting = False
 
+    def _perform_delete_on_model(self):
+        """
+        Perform the actual delete query on this model instance.
+        """
+        return self._do_perform_delete_on_model()
+
     def _do_perform_delete_on_model(self):
         """
         Perform the actual delete query on this model instance.
