@@ -67,9 +67,11 @@ class MigrateCommand(BaseCommand):
         if i.get_option('seed'):
             options = [
                 ('--database', database),
-                ('--config', i.get_option('config')),
                 ('-n', True)
             ]
+
+            if self.get_definition().has_option('config'):
+                options.append(('--config', i.get_option('config')))
 
             if i.get_option('seed-path'):
                 options.append(('--path', i.get_option('seed-path')))
@@ -81,8 +83,10 @@ class MigrateCommand(BaseCommand):
 
         if not migrator.repository_exists():
             options = [
-                ('--database', database),
-                ('--config', i.get_option('config'))
+                ('--database', database)
             ]
+
+            if self.get_definition().has_option('config'):
+                options.append(('--config', i.get_option('config')))
 
             self.call('migrations:install', options, o)

@@ -46,25 +46,23 @@ class RefreshCommand(BaseCommand):
 
         database = i.get_option('database')
 
+        options = [
+            ('--database', database),
+            ('--path', i.get_option('path')),
+            ('-n', True)
+        ]
+        if self.get_definition().has_option('config'):
+            options.append(('--config', i.get_option('config')))
+
         self.call(
             'migrations:reset',
-            [
-                ('--database', database),
-                ('--config', i.get_option('config')),
-                ('--path', i.get_option('path')),
-                ('-n', True)
-            ],
+            options,
             o
         )
 
         self.call(
             'migrations:run',
-            [
-                ('--database', database),
-                ('--config', i.get_option('config')),
-                ('--path', i.get_option('path')),
-                ('-n', True)
-            ],
+            options,
             o
         )
 
@@ -77,10 +75,13 @@ class RefreshCommand(BaseCommand):
     def _run_seeder(self, i, database, o):
         options = [
             ('--database', database),
-            ('--config', i.get_option('config')),
             ('--seeder', i.get_option('seeder')),
             ('-n', True)
         ]
+
+        if self.get_definition().has_option('config'):
+            options.append(('--config', i.get_option('config')))
+
         if i.get_option('seed-path'):
             options.append(('--path', i.get_option('seed-path')))
 
