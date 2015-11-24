@@ -81,7 +81,7 @@ def encode(string, encodings=None):
     if not PY2 and isinstance(string, bytes):
         return string
 
-    if PY2 and isinstance(string, unicode):
+    if PY2 and isinstance(string, str):
         return string
 
     if encodings is None:
