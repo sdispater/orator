@@ -25,5 +25,6 @@ config.py
 /migrations
 /seeders
 development.db
+orator.yml
 
 Makefile

@@ -1,42 +1,42 @@
 # -*- coding: utf-8 -*-
 
-from cleo import InputOption
 from orator.migrations import Migrator, DatabaseMigrationRepository
 from .base_command import BaseCommand
 
 
 class StatusCommand(BaseCommand):
 
-    def configure(self):
-        super(StatusCommand, self).configure()
+    name = 'migrations:status'
 
-        self.set_name('migrations:status')
-        self.set_description('Show a list of migrations up/down')
-        self.add_option('database', 'd', InputOption.VALUE_OPTIONAL,
-                        'The database connection to use')
-        self.add_option('path', 'p', InputOption.VALUE_OPTIONAL,
-                        'The path of migrations files to be executed.')
+    description = 'Show a list of migrations up/down'
 
-    def execute(self, i, o):
+    options = [{
+        'name': 'database',
+        'shortcut': 'd',
+        'description': 'The database connection to use.',
+        'value_required': True
+    }, {
+        'name': 'path',
+        'shortcut': 'p',
+        'description': 'The path of migrations files to be executed.',
+        'value_required': True
+    }]
+
+    def fire(self):
         """
         Executes the command.
-
-        :type i: cleo.inputs.input.Input
-        :type o: cleo.outputs.output.Output
         """
-        super(StatusCommand, self).execute(i, o)
+        database = self.option('database')
+        repository = DatabaseMigrationRepository(self.resolver, 'migrations')
 
-        database = i.get_option('database')
-        repository = DatabaseMigrationRepository(self._resolver, 'migrations')
-
-        migrator = Migrator(repository, self._resolver)
+        migrator = Migrator(repository, self.resolver)
 
         if not migrator.repository_exists():
-            return o.writeln('<error>No migrations found</error>')
+            return self.error('No migrations found')
 
-        self._prepare_database(migrator, database, i, o)
+        self._prepare_database(migrator, database)
 
-        path = i.get_option('path')
+        path = self.option('path')
 
         if path is None:
             path = self._get_migration_path()
@@ -54,12 +54,12 @@ class StatusCommand(BaseCommand):
             table = self.get_helper('table')
             table.set_headers(['Migration', 'Ran?'])
             table.set_rows(migrations)
-            table.render(o)
+            table.render(self.output)
         else:
-            return o.writeln('<error>No migrations found</error>')
+            return self.error('No migrations found')
 
         for note in migrator.get_notes():
-            o.writeln(note)
+            self.line(note)
 
-    def _prepare_database(self, migrator, database, i, o):
+    def _prepare_database(self, migrator, database):
         migrator.set_connection(database)

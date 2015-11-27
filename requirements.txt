@@ -2,8 +2,9 @@ simplejson
 arrow
 inflection
 six
-cleo
+cleo>=0.3
 blinker
 lazy-object-proxy
 fake-factory
 wrapt
+pyaml

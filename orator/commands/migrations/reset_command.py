@@ -1,53 +1,55 @@
 # -*- coding: utf-8 -*-
 
-import os
-from cleo import InputOption, ListInput
 from orator.migrations import Migrator, DatabaseMigrationRepository
 from .base_command import BaseCommand
 
 
 class ResetCommand(BaseCommand):
 
-    def configure(self):
-        super(ResetCommand, self).configure()
+    name = 'migrations:reset'
 
-        self.set_name('migrations:reset')
-        self.set_description('Rollback all database migrations')
-        self.add_option('database', 'd', InputOption.VALUE_OPTIONAL,
-                        'The database connection to use')
-        self.add_option('path', 'p', InputOption.VALUE_OPTIONAL,
-                        'The path of migrations files to be executed.')
-        self.add_option('pretend', 'P', InputOption.VALUE_NONE,
-                        'Dump the SQL queries that would be run.')
+    description = 'Rollback all database migrations.'
 
-    def execute(self, i, o):
+    options = [{
+        'name': 'database',
+        'shortcut': 'd',
+        'description': 'The database connection to use.',
+        'value_required': True
+    }, {
+        'name': 'path',
+        'shortcut': 'p',
+        'description': 'The path of migrations files to be executed.',
+        'value_required': True
+    }, {
+        'name': 'pretend',
+        'shortcut': 'P',
+        'description': 'Dump the SQL queries that would be run.',
+        'flag': True
+    }]
+
+    def fire(self):
         """
         Executes the command.
-
-        :type i: cleo.inputs.input.Input
-        :type o: cleo.outputs.output.Output
         """
-        super(ResetCommand, self).execute(i, o)
-
         dialog = self.get_helper('dialog')
         confirm = dialog.ask_confirmation(
-            o,
+            self.output,
             '<question>Are you sure you want to reset all of the migrations?</question> ',
             False
         )
         if not confirm:
             return
 
-        database = i.get_option('database')
-        repository = DatabaseMigrationRepository(self._resolver, 'migrations')
+        database = self.option('database')
+        repository = DatabaseMigrationRepository(self.resolver, 'migrations')
 
-        migrator = Migrator(repository, self._resolver)
+        migrator = Migrator(repository, self.resolver)
 
-        self._prepare_database(migrator, database, i, o)
+        self._prepare_database(migrator, database)
 
-        pretend = bool(i.get_option('pretend'))
+        pretend = bool(self.option('pretend'))
 
-        path = i.get_option('path')
+        path = self.option('path')
 
         if path is None:
             path = self._get_migration_path()
@@ -56,10 +58,10 @@ class ResetCommand(BaseCommand):
             count = migrator.rollback(path, pretend)
 
             for note in migrator.get_notes():
-                o.writeln(note)
+                self.line(note)
 
             if count == 0:
                 break
 
-    def _prepare_database(self, migrator, database, i, o):
+    def _prepare_database(self, migrator, database):
         migrator.set_connection(database)
