@@ -46,7 +46,7 @@ class Command(BaseCommand):
         """
         if self.needs_config and not self.resolver:
             config = self._get_config()
-            self.resolver = DatabaseManager(config.get('databases', config['DATABASES']))
+            self.resolver = DatabaseManager(config.get('databases', config.get('DATABASES', {})))
 
         return self.fire()
 
