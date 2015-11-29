@@ -665,7 +665,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using has_one method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = Wrapper(rel)
 
         self._relations[name] = rel
@@ -717,7 +719,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using morph_one method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = Wrapper(rel)
 
         self._relations[relation] = rel
@@ -763,7 +767,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using belongs_to method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = Wrapper(rel)
 
         self._relations[relation] = rel
@@ -813,7 +819,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using morph_to method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = Wrapper(rel)
 
         self._relations[name] = rel
@@ -874,7 +882,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using has_many method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = Wrapper(rel)
 
         self._relations[name] = rel
@@ -925,7 +935,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using has_many_through method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = Wrapper(rel)
 
         self._relations[name] = rel
@@ -977,7 +989,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using morph_many method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = Wrapper(rel)
 
         self._relations[name] = rel
@@ -1029,7 +1043,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using belongs_to_many method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = BelongsToManyWrapper(rel)
 
         self._relations[relation] = rel
@@ -1089,7 +1105,9 @@ class Model(object):
 
         if _wrapped:
             warn('Using morph_to_many method directly is deprecated. '
-                 'Use the appropriate decorator instead.')
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
             rel = Wrapper(rel)
 
         self._relations[caller] = rel
