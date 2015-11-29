@@ -2,6 +2,7 @@
 
 from .base import BasePaginator
 from ..support.collection import Collection
+from ..utils import deprecated
 
 
 class Paginator(BasePaginator):
@@ -68,8 +69,22 @@ class Paginator(BasePaginator):
         """
         return self._has_more
 
+    @deprecated
     def to_dict(self):
-        return self._items.to_dict()
+        """
+        Alias for serialize.
+
+        :rtype: list
+        """
+        return self.serialize()
+
+    def serialize(self):
+        """
+        Convert the object into something JSON serializable.
+
+        :rtype: list
+        """
+        return self._items.serialize()
 
     def to_json(self, **options):
         return self._items.to_json(**options)

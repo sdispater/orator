@@ -6,7 +6,7 @@ import inflection
 import inspect
 from warnings import warn
 from six import add_metaclass
-from ..utils import basestring
+from ..utils import basestring, deprecated
 from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound
 from ..query import QueryBuilder
 from .builder import Builder
@@ -2113,15 +2113,7 @@ class Model(object):
         """
         return json.dumps(self.to_dict(), **options)
 
-    def json_serialize(self):
-        """
-        Convert the object into something JSON serializable.
-
-        :rtype: dict
-        """
-        return self.to_dict()
-
-    def to_dict(self):
+    def serialize(self):
         """
         Convert the model instance to a dictionary.
 
@@ -2133,6 +2125,16 @@ class Model(object):
         attributes.update(self.relations_to_dict())
 
         return attributes
+
+    @deprecated
+    def to_dict(self):
+        """
+        Convert the model instance to a dictionary.
+
+        :return: The dictionary version of the model instance
+        :rtype: dict
+        """
+        return self.serialize()
 
     def attributes_to_dict(self):
         """

@@ -3,6 +3,8 @@
 import sys
 import os
 import errno
+import warnings
+import functools
 
 PY2 = sys.version_info[0] == 2
 PY3K = sys.version_info[0] >= 3
@@ -59,6 +61,30 @@ class Null(object):
 
     def __eq__(self, other):
         return other is None
+
+
+def deprecated(func):
+    '''This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emitted
+    when the function is used.'''
+
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        if PY3K:
+            func_code = func.__code__
+        else:
+            func_code = func.func_code
+
+        warnings.warn_explicit(
+            "Call to deprecated function {}.".format(func.__name__),
+            category=DeprecationWarning,
+            filename=func_code.co_filename,
+            lineno=func_code.co_firstlineno + 1
+        )
+
+        return func(*args, **kwargs)
+
+    return new_func
 
 
 def decode(string, encodings=None):

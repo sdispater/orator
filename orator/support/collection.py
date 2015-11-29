@@ -6,7 +6,7 @@ from __future__ import division
 import simplejson as json
 from copy import copy
 
-from ..utils import reduce, basestring, value, data_get
+from ..utils import reduce, basestring, value, data_get, deprecated
 
 
 class CollectionError(Exception):
@@ -833,6 +833,7 @@ class Collection(object):
         """
         return not isinstance(value, basestring) and callable(value)
 
+    @deprecated
     def to_dict(self):
         return self.serialize()
 

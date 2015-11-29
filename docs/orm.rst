@@ -1249,7 +1249,7 @@ these columns, just add the ``__timestamps__`` property:
 Providing a custom timestamp format
 -----------------------------------
 
-If you whish to customize the format of your timestamps (the default is the ISO Format) that will be returned when using the ``to_dict``
+If you whish to customize the format of your timestamps (the default is the ISO Format) that will be returned when using the ``serialize``
 or the ``to_json`` methods, you can override the ``get_date_format`` method:
 
 .. code-block:: python
@@ -1609,19 +1609,19 @@ Converting a model to a dictionary
 
 When building JSON APIs, you may often need to convert your models and relationships to dictionaries or JSON.
 So, Orator includes methods for doing so. To convert a model and its loaded relationship to a dictionary,
-you may use the ``to_dict`` method:
+you may use the ``serialize`` method:
 
 .. code-block:: python
 
     user = User.with_('roles').first()
 
-    return user.to_dict()
+    return user.serialize()
 
 Note that entire collections of models can also be converted to dictionaries:
 
 .. code-block:: python
 
-    return User.all().to_dict()
+    return User.all().serialize()
 
 
 Converting a model to JSON
