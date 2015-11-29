@@ -1,3 +1,20 @@
+### 0.7.1
+
+
+
+##### Improvements
+
+- [#20](https://github.com/sdispater/orator/issues/20) Collections have been improved (New methods added)
+- Commands have been improved
+- The `to_dict` methods on the `Model`, `Collection` classes and paginators are now deprecated. Use `serialize` instead.
+
+##### Fixes
+
+* [#22](https://github.com/sdispater/orator/issues/22) Model.fill() and other methods now accept a dictionary in addition to keyword arguments.
+* MySQL charset config value was not used when connecting. This is now fixed. (Thanks to [@heavenshell](https://github.com/heavenshell))
+* [#24](https://github.com/sdispater/orator/issues/24) Dynamic properties called the wrong methods when accessing the related items.
+
+
 ### 0.7
 
 (November 10th, 2015)
