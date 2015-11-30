@@ -1,34 +1,30 @@
 # -*- coding: utf-8 -*-
 
-from cleo import InputOption
 from orator.migrations import DatabaseMigrationRepository
 from .base_command import BaseCommand
-from ...utils import decode
 
 
 class InstallCommand(BaseCommand):
 
-    def configure(self):
-        super(InstallCommand, self).configure()
+    name = 'migrations:install'
 
-        self.set_name('migrations:install')
-        self.set_description('Create the migration repository')
-        self.add_option('database', 'd', InputOption.VALUE_OPTIONAL,
-                        'The database connection to use')
+    description = 'Create the migration repository'
 
-    def execute(self, i, o):
+    options = [{
+        'name': 'database',
+        'shortcut': 'd',
+        'description': 'The database connection to use.',
+        'value_required': True
+    }]
+
+    def fire(self):
         """
-        Executes the command.
-
-        :type i: cleo.inputs.input.Input
-        :type o: cleo.outputs.output.Output
+        Executes the command
         """
-        super(InstallCommand, self).execute(i, o)
-
-        database = i.get_option('database')
-        repository = DatabaseMigrationRepository(self._resolver, 'migrations')
+        database = self.option('database')
+        repository = DatabaseMigrationRepository(self.resolver, 'migrations')
 
         repository.set_source(database)
         repository.create_repository()
 
-        o.writeln(decode('<info>✓ Migration table created successfully</info>'))
+        self.info('✓ Migration table created successfully')

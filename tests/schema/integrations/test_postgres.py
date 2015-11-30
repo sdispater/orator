@@ -3,6 +3,7 @@
 import os
 from ... import OratorTestCase
 from orator import Model
+from orator.orm import has_one, has_many, belongs_to, belongs_to_many, morph_to, morph_many
 from orator.connections import PostgresConnection
 from orator.connectors.postgres_connector import PostgresConnector
 from orator.query.expression import QueryExpression
@@ -159,43 +160,43 @@ class User(Model):
 
     __guarded__ = []
 
-    @property
+    @belongs_to_many('friends', 'user_id', 'friend_id')
     def friends(self):
-        return self.belongs_to_many(User, 'friends', 'user_id', 'friend_id')
+        return User
 
-    @property
+    @has_many('user_id')
     def posts(self):
-        return self.has_many(Post, 'user_id')
+        return Post
 
-    @property
+    @has_one('user_id')
     def post(self):
-        return self.has_one(Post, 'user_id')
+        return Post
 
-    @property
+    @morph_many('imageable')
     def photos(self):
-        return self.morph_many(Photo, 'imageable')
+        return Photo
 
 
 class Post(Model):
 
     __guarded__ = []
 
-    @property
+    @belongs_to('user_id')
     def user(self):
-        return self.belongs_to(User, 'user_id')
+        return User
 
-    @property
+    @morph_many('imageable')
     def photos(self):
-        return self.morph_many(Photo, 'imageable')
+        return Photo
 
 
 class Photo(Model):
 
     __guarded__ = []
 
-    @property
+    @morph_to
     def imageable(self):
-        return self.morph_to()
+        return
 
 
 class DatabaseIntegrationConnectionResolver(object):
@@ -206,9 +207,15 @@ class DatabaseIntegrationConnectionResolver(object):
         if self._connection:
             return self._connection
 
-        database = os.environ.get('ORATOR_POSTGRES_TEST_DATABASE', 'orator_test')
-        user = os.environ.get('ORATOR_POSTGRES_TEST_USER', 'orator')
-        password = os.environ.get('ORATOR_POSTGRES_TEST_PASSWORD', 'orator')
+        ci = os.environ.get('CI', False)
+        if ci:
+            database = 'orator_test'
+            user = 'postgres'
+            password = None
+        else:
+            database = 'orator_test'
+            user = 'orator'
+            password = 'orator'
 
         self._connection = PostgresConnection(
             PostgresConnector().connect({

@@ -40,7 +40,7 @@ class SoftDeletesTestCase(OratorTestCase):
         self.assertIsNone(model.deleted_at)
 
 
-class SoftDeleteModelStub(Model, SoftDeletes):
+class SoftDeleteModelStub(SoftDeletes, Model):
 
     def get_key(self):
         return 1

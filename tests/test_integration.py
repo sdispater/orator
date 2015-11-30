@@ -4,10 +4,10 @@ import arrow
 from . import OratorTestCase
 from orator import Model, Collection
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to
+from orator.orm.relations import BelongsToMany
 from orator.connections import SQLiteConnection
 from orator.connectors.sqlite_connector import SQLiteConnector
 from orator.exceptions.orm import ModelNotFound
-from orator.orm.relations.relation import RelationWrapper
 
 
 class OratorIntegrationTestCase(OratorTestCase):
@@ -234,7 +234,7 @@ class OratorIntegrationTestCase(OratorTestCase):
         self.assertEqual(3, related_friend.pivot.friend_id)
         self.assertTrue(hasattr(related_friend.pivot, 'id'))
 
-        self.assertIsInstance(user.friends().with_pivot('id'), RelationWrapper)
+        self.assertIsInstance(user.friends().with_pivot('id'), BelongsToMany)
 
     def test_belongs_to_morph_many_eagerload(self):
         user = OratorTestUser.create(id=1, email='john@doe.com')

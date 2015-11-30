@@ -2,6 +2,7 @@
 
 import types
 from functools import update_wrapper
+from .relations.wrapper import Wrapper
 
 
 class accessor(object):
@@ -128,6 +129,21 @@ class relation(object):
         if func is not None:
             update_wrapper(self, func)
 
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self.expr
+
+        if self._relation in instance._relations:
+            return instance._relations[self._relation]
+
+        relation = Wrapper(self._get(instance))
+        instance._relations[self._relation] = relation
+
+        return relation
+
+    def _get(self, instance):
+        raise NotImplementedError()
+
     def __call__(self, func):
         self.set_func(func)
 
@@ -151,13 +167,14 @@ class has_one(relation):
 
         super(has_one, self).__init__(func, relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.has_one(self.func(instance), self._foreign_key, self._local_key, self._relation)
-
-        return r
+    def _get(self, instance):
+        return instance.has_one(
+            self.func(instance),
+            self._foreign_key,
+            self._local_key,
+            self._relation,
+            _wrapped=False
+        )
 
 
 class morph_one(relation):
@@ -176,17 +193,13 @@ class morph_one(relation):
 
         super(morph_one, self).__init__(relation=relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.morph_one(
-                self.func(instance), self._name,
-                self._type_column, self._id_column,
-                self._local_key, self._relation
-            )
-
-        return r
+    def _get(self, instance):
+        return instance.morph_one(
+            self.func(instance), self._name,
+            self._type_column, self._id_column,
+            self._local_key, self._relation,
+            _wrapped=False
+        )
 
 
 class belongs_to(relation):
@@ -206,13 +219,14 @@ class belongs_to(relation):
 
         super(belongs_to, self).__init__(func, relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.belongs_to(self.func(instance), self._foreign_key, self._other_key, self._relation)
-
-        return r
+    def _get(self, instance):
+        return instance.belongs_to(
+            self.func(instance),
+            self._foreign_key,
+            self._other_key,
+            self._relation,
+            _wrapped=False
+        )
 
 
 class morph_to(relation):
@@ -233,16 +247,12 @@ class morph_to(relation):
 
         super(morph_to, self).__init__(func, name)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.morph_to(
-                self._relation,
-                self._type_column, self._id_column
-            )
-
-        return r
+    def _get(self, instance):
+        return instance.morph_to(
+            self._relation,
+            self._type_column, self._id_column,
+            _wrapped=False
+        )
 
 
 class has_many(relation):
@@ -262,18 +272,14 @@ class has_many(relation):
 
         super(has_many, self).__init__(func, relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.has_many(
-                self.func(instance),
-                self._foreign_key,
-                self._local_key,
-                self._relation
-            )
-
-        return r
+    def _get(self, instance):
+        return instance.has_many(
+            self.func(instance),
+            self._foreign_key,
+            self._local_key,
+            self._relation,
+            _wrapped=False
+        )
 
 
 class has_many_through(relation):
@@ -291,19 +297,15 @@ class has_many_through(relation):
 
         super(has_many_through, self).__init__(relation=relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.has_many_through(
-                self.func(instance),
-                self._through,
-                self._first_key,
-                self._second_key,
-                self._relation
-            )
-
-        return r
+    def _get(self, instance):
+        return instance.has_many_through(
+            self.func(instance),
+            self._through,
+            self._first_key,
+            self._second_key,
+            self._relation,
+            _wrapped=False
+        )
 
 
 class morph_many(relation):
@@ -322,17 +324,13 @@ class morph_many(relation):
 
         super(morph_many, self).__init__(relation=relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.morph_many(
-                self.func(instance), self._name,
-                self._type_column, self._id_column,
-                self._local_key, self._relation
-            )
-
-        return r
+    def _get(self, instance):
+        return instance.morph_many(
+            self.func(instance), self._name,
+            self._type_column, self._id_column,
+            self._local_key, self._relation,
+            _wrapped=False
+        )
 
 
 class belongs_to_many(relation):
@@ -357,23 +355,21 @@ class belongs_to_many(relation):
 
         super(belongs_to_many, self).__init__(func, relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.belongs_to_many(
-                self.func(instance),
-                self._table,
-                self._foreign_key,
-                self._other_key,
-                self._relation
-            )
+    def _get(self, instance):
+        r = instance.belongs_to_many(
+            self.func(instance),
+            self._table,
+            self._foreign_key,
+            self._other_key,
+            self._relation,
+            _wrapped=False
+        )
 
-            if self._timestamps:
-                r = r.with_timestamps()
+        if self._timestamps:
+            r = r.with_timestamps()
 
-            if self._pivot:
-                r = r.with_pivot(*self._pivot)
+        if self._pivot:
+            r = r.with_pivot(*self._pivot)
 
         return r
 
@@ -394,20 +390,16 @@ class morph_to_many(relation):
 
         super(morph_to_many, self).__init__(relation=relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.morph_to_many(
-                self.func(instance),
-                self._name,
-                self._table,
-                self._foreign_key,
-                self._other_key,
-                relation=self._relation
-            )
-
-        return r
+    def _get(self, instance):
+        return instance.morph_to_many(
+            self.func(instance),
+            self._name,
+            self._table,
+            self._foreign_key,
+            self._other_key,
+            relation=self._relation,
+            _wrapped=False
+        )
 
 
 class morphed_by_many(relation):
@@ -426,17 +418,13 @@ class morphed_by_many(relation):
 
         super(morphed_by_many, self).__init__(relation=relation)
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            r = self.expr
-        else:
-            r = instance.morphed_by_many(
-                self.func(instance),
-                self._name,
-                self._table,
-                self._foreign_key,
-                self._other_key,
-                self._relation
-            )
-
-        return r
+    def _get(self, instance):
+        return instance.morphed_by_many(
+            self.func(instance),
+            self._name,
+            self._table,
+            self._foreign_key,
+            self._other_key,
+            self._relation,
+            _wrapped=False
+        )

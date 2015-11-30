@@ -4,8 +4,9 @@ import simplejson as json
 import arrow
 import inflection
 import inspect
+from warnings import warn
 from six import add_metaclass
-from ..utils import basestring
+from ..utils import basestring, deprecated
 from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound
 from ..query import QueryBuilder
 from .builder import Builder
@@ -14,6 +15,7 @@ from .relations import (
     Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough,
     MorphOne, MorphMany, MorphTo, MorphToMany
 )
+from .relations.wrapper import Wrapper, BelongsToManyWrapper
 from .utils import mutator, accessor
 from ..events import Event
 
@@ -107,7 +109,7 @@ class Model(object):
     CREATED_AT = 'created_at'
     UPDATED_AT = 'updated_at'
 
-    def __init__(self, **attributes):
+    def __init__(self, _attributes=None, **attributes):
         """
         :param attributes: The instance attributes
         """
@@ -119,6 +121,9 @@ class Model(object):
         self._relations = {}
 
         self.sync_original()
+
+        if _attributes is not None:
+            attributes.update(_attributes)
 
         self.fill(**attributes)
 
@@ -227,7 +232,7 @@ class Model(object):
             if hasattr(observer, event):
                 cls._register_model_event(event, getattr(observer, event))
 
-    def fill(self, **attributes):
+    def fill(self, _attributes=None, **attributes):
         """
         Fill the model with attributes.
 
@@ -239,6 +244,9 @@ class Model(object):
 
         :raises: MassAssignmentError
         """
+        if _attributes is not None:
+            attributes.update(_attributes)
+
         totally_guarded = self.totally_guarded()
 
         for key, value in self._fillable_from_dict(attributes).items():
@@ -251,7 +259,7 @@ class Model(object):
 
         return self
 
-    def force_fill(self, **attributes):
+    def force_fill(self, _attributes=None, **attributes):
         """
         Fill the model with attributes. Force mass assignment.
 
@@ -261,6 +269,9 @@ class Model(object):
         :return: The model instance
         :rtype: Model
         """
+        if _attributes is not None:
+            attributes.update(_attributes)
+
         self.unguard()
 
         self.fill(**attributes)
@@ -366,7 +377,7 @@ class Model(object):
         return cls.hydrate(items, connection)
 
     @classmethod
-    def create(cls, **attributes):
+    def create(cls, _attributes=None, **attributes):
         """
         Save a new model an return the instance.
 
@@ -376,6 +387,9 @@ class Model(object):
         :return: The new instance
         :rtype: Model
         """
+        if _attributes is not None:
+            attributes.update(_attributes)
+
         model = cls(**attributes)
 
         model.save()
@@ -608,12 +622,14 @@ class Model(object):
 
         return instance.new_query().with_(*relations)
 
-    def has_one(self, related, foreign_key=None, local_key=None, relation=None):
+    def has_one(self, related,
+                foreign_key=None, local_key=None, relation=None,
+                _wrapped=True):
         """
         Define a one to one relationship.
 
         :param related: The related model:
-        :type related: Model class
+        :type related: Model or str
 
         :param foreign_key: The foreign key
         :type foreign_key: str
@@ -647,16 +663,26 @@ class Model(object):
                      '%s.%s' % (instance.get_table(), foreign_key),
                      local_key)
 
+        if _wrapped:
+            warn('Using has_one method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = Wrapper(rel)
+
         self._relations[name] = rel
 
         return rel
 
-    def morph_one(self, related, name, type_column=None, id_column=None, local_key=None, relation=None):
+    def morph_one(self, related, name,
+                  type_column=None, id_column=None,
+                  local_key=None, relation=None,
+                  _wrapped=True):
         """
         Define a polymorphic one to one relationship.
 
         :param related: The related model:
-        :type related: Model class
+        :type related: Model or str
 
         :param type_column: The name of the type column
         :type type_column: str
@@ -691,16 +717,25 @@ class Model(object):
                        '%s.%s' % (table, type_column),
                        '%s.%s' % (table, id_column), local_key)
 
+        if _wrapped:
+            warn('Using morph_one method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = Wrapper(rel)
+
         self._relations[relation] = rel
 
         return rel
 
-    def belongs_to(self, related, foreign_key=None, other_key=None, relation=None):
+    def belongs_to(self, related,
+                   foreign_key=None, other_key=None, relation=None,
+                   _wrapped=True):
         """
         Define an inverse one to one or many relationship.
 
         :param related: The related model:
-        :type related: Model class
+        :type related: Model or str
 
         :param foreign_key: The foreign key
         :type foreign_key: str
@@ -730,11 +765,19 @@ class Model(object):
 
         rel = BelongsTo(query, self, foreign_key, other_key, relation)
 
+        if _wrapped:
+            warn('Using belongs_to method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = Wrapper(rel)
+
         self._relations[relation] = rel
 
         return rel
 
-    def morph_to(self, name=None, type_column=None, id_column=None):
+    def morph_to(self, name=None, type_column=None, id_column=None,
+                 _wrapped=True):
         """
         Define a polymorphic, inverse one-to-one or many relationship.
 
@@ -774,6 +817,13 @@ class Model(object):
                       self, id_column,
                       instance.get_key_name(), type_column, name)
 
+        if _wrapped:
+            warn('Using morph_to method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = Wrapper(rel)
+
         self._relations[name] = rel
 
         return rel
@@ -790,12 +840,13 @@ class Model(object):
             if morph_name == slug:
                 return cls
 
-    def has_many(self, related, foreign_key=None, local_key=None, relation=None):
+    def has_many(self, related, foreign_key=None, local_key=None,
+                 relation=None, _wrapped=True):
         """
         Define a one to many relationship.
 
         :param related: The related model
-        :type related: Model class
+        :type related: Model or str
 
         :param foreign_key: The foreign key
         :type foreign_key: str
@@ -829,19 +880,28 @@ class Model(object):
                       '%s.%s' % (instance.get_table(), foreign_key),
                       local_key)
 
+        if _wrapped:
+            warn('Using has_many method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = Wrapper(rel)
+
         self._relations[name] = rel
 
         return rel
 
-    def has_many_through(self, related, through, first_key=None, second_key=None, relation=None):
+    def has_many_through(self, related, through,
+                         first_key=None, second_key=None, relation=None,
+                         _wrapped=True):
         """
         Define a has-many-through relationship.
 
         :param related: The related model
-        :type related: Model class
+        :type related: Model or str
 
         :param through: The through model
-        :type through: Model class
+        :type through: Model or str
 
         :param first_key: The first key
         :type first_key: str
@@ -873,16 +933,26 @@ class Model(object):
         rel = HasManyThrough(self._get_related(related)().new_query(),
                              self, through, first_key, second_key)
 
+        if _wrapped:
+            warn('Using has_many_through method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = Wrapper(rel)
+
         self._relations[name] = rel
 
         return rel
 
-    def morph_many(self, related, name, type_column=None, id_column=None, local_key=None, relation=None):
+    def morph_many(self, related, name,
+                   type_column=None, id_column=None,
+                   local_key=None, relation=None,
+                   _wrapped=True):
         """
         Define a polymorphic one to many relationship.
 
         :param related: The related model:
-        :type related: Model class
+        :type related: Model or str
 
         :param type_column: The name of the type column
         :type type_column: str
@@ -917,16 +987,25 @@ class Model(object):
                         '%s.%s' % (table, type_column),
                         '%s.%s' % (table, id_column), local_key)
 
+        if _wrapped:
+            warn('Using morph_many method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = Wrapper(rel)
+
         self._relations[name] = rel
 
         return rel
 
-    def belongs_to_many(self, related, table=None, foreign_key=None, other_key=None, relation=None):
+    def belongs_to_many(self, related, table=None,
+                        foreign_key=None, other_key=None,
+                        relation=None, _wrapped=True):
         """
         Define a many-to-many relationship.
 
-        :param related: The related model:
-        :type related: Model
+        :param related: The related model
+        :type related: Model or str
 
         :param table: The pivot table
         :type table: str
@@ -962,18 +1041,26 @@ class Model(object):
 
         rel = BelongsToMany(query, self, table, foreign_key, other_key, relation)
 
+        if _wrapped:
+            warn('Using belongs_to_many method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = BelongsToManyWrapper(rel)
+
         self._relations[relation] = rel
 
         return rel
 
     def morph_to_many(self, related, name, table=None,
                       foreign_key=None, other_key=None,
-                      inverse=False, relation=None):
+                      inverse=False, relation=None,
+                      _wrapped=True):
         """
         Define a polymorphic many-to-many relationship.
 
         :param related: The related model:
-        :type related: Model
+        :type related: Model or str
 
         :param name: The relation name
         :type name: str
@@ -1016,6 +1103,13 @@ class Model(object):
         rel = MorphToMany(query, self, name, table,
                           foreign_key, other_key, caller, inverse)
 
+        if _wrapped:
+            warn('Using morph_to_many method directly is deprecated. '
+                 'Use the appropriate decorator instead.',
+                 category=DeprecationWarning)
+
+            rel = Wrapper(rel)
+
         self._relations[caller] = rel
 
         return rel
@@ -1025,7 +1119,7 @@ class Model(object):
         Define a polymorphic many-to-many relationship.
 
         :param related: The related model:
-        :type related: Model
+        :type related: Model or str
 
         :param name: The relation name
         :type name: str
@@ -1344,7 +1438,7 @@ class Model(object):
 
         self.sync_original_attribute(column)
 
-    def update(self, **attributes):
+    def update(self, _attributes=None, **attributes):
         """
         Update the model in the database.
 
@@ -1354,6 +1448,9 @@ class Model(object):
         :return: The number of rows affected
         :rtype: int
         """
+        if _attributes is not None:
+            attributes.update(_attributes)
+
         if not self._exists:
             return self.new_query().update(**attributes)
 
@@ -2034,15 +2131,7 @@ class Model(object):
         """
         return json.dumps(self.to_dict(), **options)
 
-    def json_serialize(self):
-        """
-        Convert the object into something JSON serializable.
-
-        :rtype: dict
-        """
-        return self.to_dict()
-
-    def to_dict(self):
+    def serialize(self):
         """
         Convert the model instance to a dictionary.
 
@@ -2054,6 +2143,16 @@ class Model(object):
         attributes.update(self.relations_to_dict())
 
         return attributes
+
+    @deprecated
+    def to_dict(self):
+        """
+        Convert the model instance to a dictionary.
+
+        :return: The dictionary version of the model instance
+        :rtype: dict
+        """
+        return self.serialize()
 
     def attributes_to_dict(self):
         """

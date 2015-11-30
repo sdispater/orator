@@ -35,11 +35,12 @@ setup(
         'arrow',
         'inflection',
         'six',
-        'cleo',
+        'cleo>=0.3',
         'blinker',
         'lazy-object-proxy',
         'fake-factory',
-        'wrapt'
+        'wrapt',
+        'pyaml'
     ],
     tests_require=['pytest', 'mock', 'flexmock'],
     test_suite='nose.collector',

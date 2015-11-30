@@ -6,6 +6,7 @@
 dist
 build
 _build
+.cache
 
 # Installer logs
 pip-log.txt
@@ -25,5 +26,8 @@ config.py
 /migrations
 /seeders
 development.db
+*orator.yml
+/docs/orator/
+profile.html
 
 Makefile

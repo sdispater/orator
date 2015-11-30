@@ -16,6 +16,6 @@ You can install Orator in 2 different ways:
     The different dbapi packages are not part of the package dependencies,
     so you must install them in order to connect to corresponding databases:
 
-    * PostgreSQL: ``pyscopg2``
+    * PostgreSQL: ``psycopg2``
     * MySQL: ``PyMySQL`` or ``mysqlclient``
     * SQLite: The ``sqlite3`` module is bundled with Python by default

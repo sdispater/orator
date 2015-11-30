@@ -26,6 +26,4 @@ class Result(ObjectProxy):
         self._kwargs = kwargs
 
     def __call__(self, *args, **kwargs):
-        from .relation import RelationWrapper
-
-        return RelationWrapper(self._relation.new_instance(self._parent, **self._kwargs))
+        return self._relation.new_instance(self._parent, **self._kwargs)

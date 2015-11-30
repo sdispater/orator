@@ -1,49 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from lazy_object_proxy import Proxy
 from contextlib import contextmanager
 from ...query.expression import QueryExpression
 from ..collection import Collection
-from .result import Result
 
 
-class RelationWrapper(object):
-
-    def __init__(self, relationship):
-        self._relationship = relationship
-
-    def __dynamic(self, method):
-        try:
-            attribute = object.__getattribute__(self._relationship, method)
-        except AttributeError:
-            attribute = getattr(self._relationship.get_query(), method)
-
-        def call(*args, **kwargs):
-            result = attribute(*args, **kwargs)
-
-            if result is self._relationship.get_query():
-                return self
-
-            if result is self._relationship:
-                return self
-
-            return result
-
-        if not callable(attribute):
-            return attribute
-
-        return call
-
-    def __getattr__(self, item):
-        return self.__dynamic(item)
-
-
-class Relation(Proxy):
+class Relation(object):
 
     _constraints = True
-    _query = None
-    _parent = None
-    _related = None
 
     def __init__(self, query, parent):
         """
@@ -53,8 +17,6 @@ class Relation(Proxy):
         :param parent: The parent model
         :type parent: Model
         """
-        super(Relation, self).__init__(self._get_results)
-
         self._query = query
         self._parent = parent
         self._related = query.get_model()
@@ -101,19 +63,6 @@ class Relation(Proxy):
         Get the results of the relationship.
         """
         raise NotImplementedError
-
-    def _get_results(self):
-        return Result(self.get_results(), self, self._parent)
-
-    def refresh(self):
-        del self.__wrapped__
-
-        return self
-
-    def set_results(self, results):
-        self.__wrapped__ = Result(results, self, self._parent)
-
-        return self
 
     def get_eager(self):
         """
@@ -248,7 +197,21 @@ class Relation(Proxy):
     def set_parent(self, parent):
         self._parent = parent
 
-    def __call__(self, *args, **kwargs):
-        relation = self.new_instance(self._parent)
+    def __dynamic(self, method):
+        attribute = getattr(self._query, method)
 
-        return RelationWrapper(relation)
+        def call(*args, **kwargs):
+            result = attribute(*args, **kwargs)
+
+            if result is self._query:
+                return self
+
+            return result
+
+        if not callable(attribute):
+            return attribute
+
+        return call
+
+    def __getattr__(self, item):
+        return self.__dynamic(item)

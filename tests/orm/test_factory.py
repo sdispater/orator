@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from orator.orm import Factory, Model
+from orator.orm import Factory, Model, belongs_to, has_many
 from orator.connections import SQLiteConnection
 from orator.connectors import SQLiteConnector
 
@@ -123,18 +123,18 @@ class User(Model):
 
     __guarded__ = ['id']
 
-    @property
+    @has_many('user_id')
     def posts(self):
-        return self.has_many(Post, 'user_id')
+        return Post
 
 
 class Post(Model):
 
     __guarded__ = []
 
-    @property
+    @belongs_to('user_id')
     def user(self):
-        return self.belongs_to(User, 'user_id')
+        return User
 
 
 class DatabaseConnectionResolver(object):
