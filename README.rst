@@ -10,7 +10,7 @@ The Orator ORM provides a simple yet beautiful ActiveRecord implementation.
 It is inspired by the database part of the `Laravel framework <http://laravel.com>`_,
 but largely modified to be more pythonic.
 
-The full documentation is available here: http://orator.readthedocs.org
+The full documentation is available here: http://orator-orm.com/docs
 
 
 Installation
