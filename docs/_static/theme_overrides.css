@@ -85,7 +85,13 @@ article ul li {
 }
 
 .wy-side-nav-search a.icon.icon-home {
-    visibility: collapse;
+    font-family: "Open Sans", "Roboto", sans-serif;
+    font-weight: 300;
+    font-size: 24px;
+}
+
+.wy-side-nav-search a.icon.icon-home:before {
+    content: "";
 }
 
 .wy-side-nav-search a.icon.icon-home img.logo {
@@ -143,7 +149,7 @@ article ul li {
 
 .wy-menu-vertical > ul > li > a:hover
 {
-    color: #FAC322;
+    color: #579ED1;
     opacity: 1;
 }
 
@@ -170,14 +176,14 @@ article ul li {
 .wy-menu-vertical li.toctree-l2.current > a {
     background: none;
     font-size: 13px;
-    color: #EF6155 !important;
+    color: #8986BF !important;
     padding-left: 3.027em;
 }
 
 .wy-menu-vertical li.toctree-l1.current > ul > li > a::before {
     font-family: "FontAwesome";
     content: "";
-    color: #EC7600;
+    color: #579ED1;
     font-size: 8px;
     position: absolute;
     top: 4px;
@@ -188,7 +194,7 @@ article ul li {
 
 .wy-menu-vertical li.toctree-l1.current > ul > li.toctree-l2.current > a::before {
     content: "##";
-    color: #EF6155;
+    color: #8986BF;
     font-size: 13px;
     position: absolute;
     top: 6px;
@@ -237,12 +243,12 @@ article ul li {
 
 .wy-menu-vertical > ul > li > ul > li > a:hover,
 .wy-menu-vertical li.current a:hover {
-    color: #EF6155;
+    color: #8986BF;
     background: transparent;
 }
 
 .wy-menu-vertical li.current > a {
-    color: #FAC322 !important;
+    color: #579ED1 !important;
     padding-left: 2.427em;
 }
 
@@ -292,7 +298,7 @@ article ul li {
 
 .wy-menu-vertical li.toctree-l1.current:before {
     content: "#";
-    color: #FAC322;
+    color: #579ED1;
     font-size: 13px;
     position: absolute;
     top: 3px;
@@ -394,7 +400,7 @@ h2:before {
     margin-left: -30px;
     font-size: 32px;
     top: 11px;
-    color: #FAC322;
+    color: #579ED1;
     opacity: 0.6;
     position: absolute;
 }
@@ -436,6 +442,7 @@ p {
 
 b, strong {
    font-weight: 600;
+   color: inherit;
 }
 
 pre, pre code, .rst-content tt, code.docutils {
@@ -466,7 +473,7 @@ div[class^="highlight"] {
     font-size: 13px;
     padding: 2% 4%;
     margin-left: 1%;
-    color: #777F84;
+    color: #788EA5;
     /*background-color: #FAFAFA;*/
 }
 
@@ -907,11 +914,11 @@ tt.code .integer, code.code .integer { color: #F4BC87 }
 .highlight .s { color: #59B6CF } /* Literal.String */
 .highlight .s1 { color: #59B6CF } /* Literal.String */
 .highlight .si { color: #8986BF } /* Literal.String */
-.highlight .m { color: #E9767F } /* Literal.Number */
-.highlight .mf { color: #E9767F } /* Literal.Number */
-.highlight .mh { color: #E9767F } /* Literal.Number */
-.highlight .mi { color: #E9767F } /* Literal.Number */
-.highlight .mo { color: #E9767F } /* Literal.Number */
+.highlight .m { color: #F9768F } /* Literal.Number */
+.highlight .mf { color: #F9768F } /* Literal.Number */
+.highlight .mh { color: #F9768F } /* Literal.Number */
+.highlight .mi { color: #F9768F } /* Literal.Number */
+.highlight .mo { color: #F9768F } /* Literal.Number */
 .highlight .k { color: #579ED1; font-weight: normal; } /* Keyword */
 .highlight .kn { color: #579ED1; font-weight: normal; } /* Keyword */
 .highlight .ow { color: #579ED1; font-weight: normal } /* Operator.Word */
@@ -923,16 +930,16 @@ tt.code .integer, code.code .integer { color: #F4BC87 }
 .highlight .vi { color: #69B69F } /* Name.Variable.Instance */
 .highlight .nd { color: #879ED1 } /* Name.Decorator */
 .highlight .ne { color: #CB6077; font-weight: 400 } /* Name.Exception */
-.highlight .o { color: #878787 } /* Operator */
-.highlight .n { color: #878787 }
-.highlight .c { color: #A8AFAD; font-style: normal; }
-.highlight .sd { color: #A8AFAD; font-style: normal; }
-.highlight .nl { color: #E9767F } /* Name.Label */
+.highlight .o { color: #98AEC5 } /* Operator */
+.highlight .n { color: #788EA5 }
+.highlight .c { color: #A8AFC2; font-style: normal; }
+.highlight .sd { color: #A8AFC2; font-style: normal; }
+.highlight .nl { color: #F9768F } /* Name.Label */
 .highlight .nn { color: #8986BF } /* Name.Namespace */
-.highlight .nx { color: #E9767F } /* Name.Other */
-.highlight .py { color: #E9767F } /* Name.Property */
+.highlight .nx { color: #F9768F } /* Name.Other */
+.highlight .py { color: #F9768F } /* Name.Property */
 .highlight .nb { color: #63ABA3 } /* Name.Builtin */
-.highlight .p { color: #878787 } /* Punctuation */
+.highlight .p { color: #98AEC5 } /* Punctuation */
 
 /* Inline code */
 
@@ -943,9 +950,9 @@ tt.code, code.code {
     padding: 0.3em 0.5em;
     background-color: #FAFAFA;
 }
-tt.code .name, code.code .name { color: #878787 }
-tt.code .operator, code.code .operator { color: #878787 }
-tt.code .punctuation, code.code .punctuation { color: #878787 }
+tt.code .name, code.code .name { color: #788EA5 }
+tt.code .operator, code.code .operator { color: #98AEC5 }
+tt.code .punctuation, code.code .punctuation { color: #98AEC5 }
 tt.code .string, code.code .string { color: #59B6CF }
-tt.code .number, code.code .number { color: #E9767F }
-tt.code .integer, code.code .integer { color: #E9767F }
+tt.code .number, code.code .number { color: #F9768F }
+tt.code .integer, code.code .integer { color: #F9768F }
