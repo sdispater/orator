@@ -10,8 +10,25 @@ Migrations are typically paired with the :ref:`SchemaBuilder` to easily manage y
 
 .. note::
 
-    For the migrations to actually work, you need a configuration file describing your databases
-    in a ``DATABASES`` dict, like so:
+    For the migrations to actually work, you need a configuration file describing your databases.
+    It can be a ``orator.yml`` file or a ``orator.py`` located where the ``orator`` command is executed,
+    or any other yaml or python file (these must then be explicitely specified when executing commands with the ``--config\-c``)
+    which follow the following requirements:
+
+    * yaml files must follow this structure:
+
+    .. code-block:: yaml
+
+        databases:
+            mysql:
+                driver: mysql
+                host: localhost
+                database: database
+                username: root
+                password: ''
+                prefix: ''
+
+    * python files must follow this structure
 
     .. code-block:: python
 
@@ -26,8 +43,6 @@ Migrations are typically paired with the :ref:`SchemaBuilder` to easily manage y
             }
         }
 
-    This file needs to be specified when using migrations commands.
-
 
 Creating Migrations
 ===================
@@ -36,7 +51,7 @@ To create a migration, you can use the ``migrations:make`` command on the Orator
 
 .. code-block:: bash
 
-    orator migrations:make create_users_table -c databases.py
+    orator migrations:make create_users_table
 
 This will create a migration file that looks like this:
 
@@ -67,16 +82,16 @@ If you want the migrations to be stored in another folder, use the ``--path/-p``
 
 .. code-block:: bash
 
-    orator migrations:make create_users_table -c databases.py -p my/path/to/migrations
+    orator migrations:make create_users_table -p my/path/to/migrations
 
 The ``--table`` and ``--create`` options can also be used to indicate the name of the table,
 and whether the migration will be creating a new table:
 
 .. code-block:: bash
 
-    orator migrations:make add_votes_to_users_table -c databases.py --table=users
+    orator migrations:make add_votes_to_users_table --table=users
 
-    orator migrations:make create_users_table -c databases.py --table=users --create
+    orator migrations:make create_users_table --table=users --create
 
 These commands would respectively create the following migrations:
 
@@ -175,14 +190,14 @@ Rollback the last migration operation
 
 .. code-block:: bash
 
-    orator migrations:rollback -c databases.py
+    orator migrations:rollback
 
 Rollback all migrations
 -----------------------
 
 .. code-block:: bash
 
-    orator migrations:reset -c databases.py
+    orator migrations:reset
 
 
 Getting migrations status
@@ -192,7 +207,7 @@ To see the status of the migrations, just use the ``migrations:status`` command:
 
 .. code-block:: bash
 
-    orator migrations:status -c databases.py
+    orator migrations:status
 
 This would output something like this:
 
