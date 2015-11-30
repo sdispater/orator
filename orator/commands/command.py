@@ -45,8 +45,7 @@ class Command(BaseCommand):
         :type o: cleo.outputs.output.Output
         """
         if self.needs_config and not self.resolver:
-            config = self._get_config()
-            self.resolver = DatabaseManager(config.get('databases', config.get('DATABASES', {})))
+            self._handle_config(self.option('config'))
 
         return self.fire()
 
@@ -106,14 +105,7 @@ class Command(BaseCommand):
 
         :rtype: bool
         """
-        filename, ext = os.path.splitext(config_file)
-        if ext in ['.yml', '.yaml']:
-            with open(config_file) as fd:
-                config = yaml.load(fd)
-        elif ext in ['.py']:
-            config = self._get_config(config_file)
-        else:
-            raise RuntimeError('Config file [%s] is not supported.' % config_file)
+        config = self._get_config(config_file)
 
         self.resolver = DatabaseManager(config.get('databases', config.get('DATABASES', {})))
 
@@ -125,17 +117,25 @@ class Command(BaseCommand):
 
         :rtype: dict
         """
-        variables = {}
         if not path and not self.option('config'):
             raise Exception('The --config|-c option is missing.')
 
         if not path:
             path = self.option('config')
 
-        with open(path) as fh:
-            exec(fh.read(), {}, variables)
+        filename, ext = os.path.splitext(path)
+        if ext in ['.yml', '.yaml']:
+            with open(path) as fd:
+                config = yaml.load(fd)
+        elif ext in ['.py']:
+            config = {}
 
-        return variables
+            with open(path) as fh:
+                exec(fh.read(), {}, config)
+        else:
+            raise RuntimeError('Config file [%s] is not supported.' % path)
+
+        return config
 
     def line(self, text):
         """
