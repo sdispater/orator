@@ -1558,6 +1558,15 @@ class QueryBuilderTestCase(OratorTestCase):
         for users in builder.from_('users').chunk(2):
             self.assertEqual(2, len(users))
 
+    def test_not_specifying_columns_sects_all(self):
+        builder = self.get_builder()
+        builder.from_('users')
+
+        self.assertEqual(
+            'SELECT * FROM "users"',
+            builder.to_sql()
+        )
+
     def get_mysql_builder(self):
         grammar = MySqlQueryGrammar()
         processor = MockProcessor().prepare_mock()
