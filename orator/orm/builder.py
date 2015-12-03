@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import copy
 from ..exceptions.orm import ModelNotFound
 from ..utils import Null, basestring
 from ..query.expression import QueryExpression
 from ..pagination import Paginator, LengthAwarePaginator
+from .scopes import Scope
 
 
 class Builder(object):
@@ -25,8 +27,59 @@ class Builder(object):
         self._model = None
         self._eager_load = {}
         self._macros = {}
+        self._scopes = {}
 
         self._on_delete = None
+
+    def apply_global_scope(self, identifier, scope):
+        """
+        Register a new global scope.
+
+        :param identifier: The scope's identifier
+        :type identifier: str
+
+        :param scope: The scope to register
+        :type scope: Scope or callable
+
+        :rtype: Builder
+        """
+        self._scopes[identifier] = scope
+
+        return self
+
+    def remove_global_scope(self, scope):
+        """
+        Remove a registered global scope.
+
+        :param scope: The scope to remove
+        :type scope: Scope or str
+
+        :rtype: Builder
+        """
+        if isinstance(scope, basestring):
+            del self._scopes[scope]
+
+            return self
+
+        keys = []
+        for key, value in self._scopes.items():
+            if scope == value.__class__ or isinstance(scope, value.__class__):
+                keys.append(key)
+
+        for key in keys:
+            del self._scopes[key]
+
+        return self
+
+    def remove_global_scopes(self):
+        """
+        Remove all registered global scopes.
+
+        :rtype: Builder
+        """
+        self._scopes = {}
+
+        return self
 
     def find(self, id, columns=None):
         """
@@ -375,7 +428,7 @@ class Builder(object):
         :return: A list of models
         :rtype: orator.orm.collection.Collection
         """
-        results = self._query.get(columns)
+        results = self.get_query_with_scopes().get(columns)
 
         connection = self._model.get_connection_name()
 
@@ -703,7 +756,10 @@ class Builder(object):
         """
         relation_query = relation.get_base_query()
 
-        has_query.merge_wheres(relation_query.wheres, relation_query.get_bindings())
+        has_query.remove_global_scopes().merge_wheres(
+            relation_query.wheres,
+            relation_query.get_bindings()
+        )
 
         self._query.merge_bindings(has_query.get_query())
 
@@ -793,6 +849,26 @@ class Builder(object):
         result = getattr(self._model, scope)(self, *args, **kwargs)
 
         return result or self
+
+    def get_query_with_scopes(self):
+        """
+        Get the underlying query builder instance with applied global scopes.
+
+        :type: Builder
+        """
+        if not self._scopes:
+            return self.get_query()
+
+        builder = copy.copy(self)
+
+        for scope in self._scopes.values():
+            if callable(scope):
+                scope(builder)
+
+            if isinstance(scope, Scope):
+                scope.apply(builder, self.get_model())
+
+        return builder.get_query()
 
     def get_query(self):
         """
@@ -888,7 +964,10 @@ class Builder(object):
             is_macro = True
             attribute = self._macros[method]
         else:
-            attribute = getattr(self._query, method)
+            if method in self._passthru:
+                attribute = getattr(self.get_query_with_scopes(), method)
+            else:
+                attribute = getattr(self._query, method)
 
         def call(*args, **kwargs):
             if is_scope:
@@ -914,3 +993,9 @@ class Builder(object):
         except AttributeError:
             # TODO: macros
             return self.__dynamic(item)
+
+    def __copy__(self):
+        new = self.__class__(copy.copy(self._query))
+
+        return new
+

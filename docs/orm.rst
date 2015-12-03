@@ -1309,9 +1309,12 @@ Then pass the parameter into the scope call:
 Global Scopes
 =============
 
+Using mixins
+------------
+
 Sometimes you may wish to define a scope that applies to all queries performed on a model.
 In essence, this is how Orator's own "soft delete" feature works.
-Global scopes are defined using a combination of mixins and an implementation of the ``Scope`` class.
+Global scopes can be defined using a combination of mixins and an implementation of the ``Scope`` class.
 
 First, let's define a mixin. For this example, we'll use the ``SoftDeletes`` that ships with Orator:
 
@@ -1333,13 +1336,10 @@ First, let's define a mixin. For this example, we'll use the ``SoftDeletes`` tha
 If an Orator model inherits from a mixin that has a method matching the ``boot_name_of_trait``
 naming convention, that mixin method will be called when the Orator model is booted,
 giving you an opportunity to register a global scope, or do anything else you want.
-A scope must be an instance of the ``Scope`` class, which specifies two methods: ``apply`` and ``remove``.
+A scope must be an instance of the ``Scope`` class, which specify an ``apply`` method.
 
 The apply method receives an ``Builder`` query builder object and the ``Model`` it's applied to,
 and is responsible for adding any additional ``where`` clauses that the scope wishes to add.
-The ``remove`` method also receives a ``Builder`` object and ``Model`` and is responsible
-for reversing the action taken by ``apply``.
-In other words, ``remove`` should remove the ``where`` clause (or any other clause) that was added.
 So, for our ``SoftDeletingScope``, it would look something like this:
 
 .. code-block:: python
@@ -1361,30 +1361,53 @@ So, for our ``SoftDeletingScope``, it would look something like this:
             """
             builder.where_null(model.get_qualified_deleted_at_column())
 
-        def remove(self, builder, model):
-            """
-            Remove the scope from a given query builder.
+Using a scope directly
+----------------------
 
-            :param builder: The query builder
-            :type builder: orator.orm.builder.Builder
+Let's take the example of an ``ActiveScope`` class:
 
-            :param model: The model
-            :type model: orator.orm.Model
-            """
-            column = model.get_qualified_deleted_at_column()
+.. code-block:: python
 
-            query = builder.get_query()
+    from orator import Scope
 
-            wheres = []
-            for where in query.wheres:
-                # If the where clause is a soft delete date constraint,
-                # we will remove it from the query and reset the keys
-                # on the wheres. This allows the developer to include
-                # deleted model in a relationship result set that is lazy loaded.
-                if not self._is_soft_delete_constraint(where, column):
-                    wheres.append(where)
 
-            query.wheres = wheres
+    class ActiveScope(Scope):
+
+        def apply(self, builder, model):
+            return builder.where('active', 1)
+
+
+You can now override the ``_boot()`` method of the model to apply the scope:
+
+.. code-block:: python
+
+    class User(Model):
+
+        @classmethod
+        def _boot(cls):
+            cls.add_global_scope(ActiveScope())
+
+            super(User, cls)._boot()
+
+Using a callable
+----------------
+
+Global scopes can also be set using callables:
+
+.. code-block:: python
+
+    class User(Model):
+
+        @classmethod
+        def _boot(cls):
+            cls.add_global_scope('active_scope', lambda query: query.where('active', 1))
+
+            cls.add_global_scope(lambda query: query.order_by('name'))
+
+            super(User, cls)._boot()
+
+As you can see, you can directly pass a function or specify an alias for the global scope to remove it
+more easily later on.
 
 
 Accessors & mutators

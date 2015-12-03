@@ -70,10 +70,7 @@ class Relation(object):
 
         :rtype: Collection
         """
-        try:
-            return object.__getattribute__(self, 'get')()
-        except AttributeError:
-            return self._query.get()
+        return self.get()
 
     def touch(self):
         """

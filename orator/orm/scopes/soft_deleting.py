@@ -21,31 +21,6 @@ class SoftDeletingScope(Scope):
 
         self.extend(builder)
 
-    def remove(self, builder, model):
-        """
-        Remove the scope from a given query builder.
-
-        :param builder: The query builder
-        :type builder: orator.orm.builder.Builder
-
-        :param model: The model
-        :type model: orator.orm.Model
-        """
-        column = model.get_qualified_deleted_at_column()
-
-        query = builder.get_query()
-
-        wheres = []
-        for where in query.wheres:
-            # If the where clause is a soft delete date constraint,
-            # we will remove it from the query and reset the keys
-            # on the wheres. This allows the developer to include
-            # deleted model in a relationship result set that is lazy loaded.
-            if not self._is_soft_delete_constraint(where, column):
-                wheres.append(where)
-
-        query.wheres = wheres
-
     def extend(self, builder):
         """
         Extend the query builder with the needed functions.
@@ -141,7 +116,7 @@ class SoftDeletingScope(Scope):
         :param builder: The query builder
         :type builder: orator.orm.builder.Builder
         """
-        self.remove(builder, builder.get_model())
+        builder.remove_global_scope(self)
 
         return builder
 
@@ -163,20 +138,8 @@ class SoftDeletingScope(Scope):
         """
         model = builder.get_model()
 
-        self.remove(builder, model)
+        builder.remove_global_scope(self)
 
         builder.get_query().where_not_null(model.get_qualified_deleted_at_column())
 
-    def _is_soft_delete_constraint(self, where, column):
-        """
-        Determine if the given where clause is a soft delete constraint.
-
-        :param where: The where clause
-        :type where: dict
-
-        :param column: The column
-        :type column: str
-
-        :rtype: bool
-        """
-        return where['type'] == 'null' and where['column'] == column
+        return builder

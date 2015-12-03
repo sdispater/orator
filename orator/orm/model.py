@@ -4,6 +4,7 @@ import simplejson as json
 import arrow
 import inflection
 import inspect
+import uuid
 from warnings import warn
 from six import add_metaclass
 from ..utils import basestring, deprecated
@@ -17,6 +18,7 @@ from .relations import (
 )
 from .relations.wrapper import Wrapper, BelongsToManyWrapper
 from .utils import mutator, accessor
+from .scopes import Scope
 from ..events import Event
 
 
@@ -179,17 +181,27 @@ class Model(object):
                 getattr(mixin, method)(cls)
 
     @classmethod
-    def add_global_scope(cls, scope):
+    def add_global_scope(cls, scope, implementation = None):
         """
         Register a new global scope on the model.
 
         :param scope: The scope to register
-        :type scope: orator.orm.scopes.scope.Scope
+        :type scope: orator.orm.scopes.scope.Scope or callable or str
+
+        :param implementation: The scope implementation
+        :type implementation: callbale or None
         """
         if cls not in cls._global_scopes:
             cls._global_scopes[cls] = {}
 
-        cls._global_scopes[cls][scope.__class__] = scope
+        if isinstance(scope, basestring) and implementation is not None:
+            cls._global_scopes[cls][scope] = implementation
+        elif callable(scope):
+            cls._global_scopes[cls][uuid.uuid4().hex] = scope
+        elif isinstance(scope, Scope):
+            cls._global_scopes[cls][scope.__class__] = scope
+        else:
+            raise Exception('Global scope must be an instance of Scope or a callable')
 
     @classmethod
     def has_global_scope(cls, scope):
@@ -197,7 +209,7 @@ class Model(object):
         Determine if a model has a global scope.
 
         :param scope: The scope to register
-        :type scope: orator.orm.scopes.scope.Scope
+        :type scope: orator.orm.scopes.scope.Scope or str
         """
         return cls.get_global_scope(scope) is not None
 
@@ -207,7 +219,7 @@ class Model(object):
         Get a global scope registered with the model.
 
         :param scope: The scope to register
-        :type scope: orator.orm.scopes.scope.Scope
+        :type scope: orator.orm.scopes.scope.Scope or str
         """
         for key, value in cls._global_scopes[cls].items():
             if isinstance(scope, key):
@@ -1738,9 +1750,8 @@ class Model(object):
         :rtype: Builder
         """
         builder = self.new_query()
-        self.get_global_scope(scope).remove(builder, self)
 
-        return builder
+        return builder.remove_global_scope(scope)
 
     def new_query_without_scopes(self):
         """
@@ -1764,22 +1775,8 @@ class Model(object):
 
         :rtype: Builder
         """
-        for scope in self.get_global_scopes().values():
-            scope.apply(builder, self)
-
-        return builder
-
-    def remove_global_scopes(self, builder):
-        """
-        Remove all of the global scopes from a builder.
-
-        :param builder: A Builder instance
-        :type builder: Builder
-
-        :rtype: Builder
-        """
-        for scope in self.get_global_scopes().values():
-            scope.remove(builder, self)
+        for identifier, scope in self.get_global_scopes().items():
+            builder.apply_global_scope(identifier, scope)
 
         return builder
 

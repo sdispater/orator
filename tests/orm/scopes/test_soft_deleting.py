@@ -4,7 +4,7 @@ from flexmock import flexmock, flexmock_teardown
 from orator.orm.scopes import SoftDeletingScope
 from orator.orm import Builder, Model
 from orator.query import QueryBuilder
-from ... import OratorTestCase
+from ... import OratorTestCase, mock
 
 
 class SoftDeletingScopeTestCase(OratorTestCase):
@@ -21,30 +21,6 @@ class SoftDeletingScopeTestCase(OratorTestCase):
         builder.get_query().should_receive('where_null').once().with_args('table.deleted_at')
 
         scope.apply(builder, model)
-
-    def test_scope_can_remove_deleted_at_constraint(self):
-        scope = SoftDeletingScope()
-        query = flexmock(QueryBuilder(None, None, None))
-        model = flexmock(ModelStub())
-        builder = Builder(query)
-        builder.set_model(model)
-        model.should_receive('get_qualified_deleted_at_column').once().and_return('table.deleted_at')
-        query.wheres = [{
-            'type': 'null',
-            'column': 'foo'
-        }, {
-            'type': 'null',
-            'column': 'table.deleted_at'
-        }]
-        scope.remove(builder, model)
-
-        self.assertEqual(
-            query.wheres,
-            [{
-                'type': 'null',
-                'column': 'foo'
-            }]
-        )
 
     def test_force_delete_extension(self):
         scope = SoftDeletingScope()
@@ -80,10 +56,12 @@ class SoftDeletingScopeTestCase(OratorTestCase):
         given_builder = Builder(query)
         model = flexmock(ModelStub())
         given_builder.set_model(model)
-        scope.should_receive('remove').once().with_args(given_builder, model)
+
+        given_builder.remove_global_scope = mock.MagicMock(return_value=given_builder)
         result = callback(given_builder)
 
         self.assertEqual(given_builder, result)
+        given_builder.remove_global_scope.assert_called_with(scope)
 
 
 class ModelStub(Model):
