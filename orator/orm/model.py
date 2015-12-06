@@ -1696,7 +1696,7 @@ class Model(object):
         :param value: The value
         :type value: datetime
         """
-        setattr(self, self.CREATED_AT, value)
+        self.set_attribute(self.CREATED_AT, value)
 
     def set_updated_at(self, value):
         """
@@ -1705,7 +1705,7 @@ class Model(object):
         :param value: The value
         :type value: datetime
         """
-        setattr(self, self.UPDATED_AT, value)
+        self.set_attribute(self.UPDATED_AT, value)
 
     def get_created_at_column(self):
         """
