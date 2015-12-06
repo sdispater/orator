@@ -904,6 +904,12 @@ class OrmModelTestCase(OratorTestCase):
         self.assertIsNone(d['seventh'])
         self.assertIsNone(d['eighth'])
 
+    def test_get_foreign_key(self):
+        model = OrmModelStub()
+        model.set_table('stub')
+
+        self.assertEqual('stub_id', model.get_foreign_key())
+
 
 class OrmModelStub(Model):
 

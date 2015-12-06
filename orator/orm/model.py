@@ -1944,7 +1944,7 @@ class Model(object):
 
         :rtype: str
         """
-        return '%s_id' % inflection.singularize(inflection.tableize(self.__class__.__name__))
+        return '%s_id' % inflection.singularize(self.get_table())
 
     def get_hidden(self):
         """
