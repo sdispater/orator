@@ -5,7 +5,7 @@ from ..scopes import SoftDeletingScope
 
 class SoftDeletes(object):
 
-    _force_deleting = False
+    __force_deleting__ = False
 
     @classmethod
     def boot_soft_deletes(cls, klass):
@@ -18,11 +18,11 @@ class SoftDeletes(object):
         """
         Force a hard delete on a soft deleted model.
         """
-        self._force_deleting = True
+        self.__force_deleting__ = True
 
         self.delete()
 
-        self._force_deleting = False
+        self.__force_deleting__ = False
 
     def _perform_delete_on_model(self):
         """
@@ -34,7 +34,7 @@ class SoftDeletes(object):
         """
         Perform the actual delete query on this model instance.
         """
-        if self._force_deleting:
+        if self.__force_deleting__:
             return self.with_trashed().where(self.get_key_name(), self.get_key()).force_delete()
 
         return self._run_soft_delete()

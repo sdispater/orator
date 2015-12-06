@@ -438,7 +438,7 @@ class Model(object):
         :return: The new instance
         :rtype: Model
         """
-        instance = cls.where(attributes).first()
+        instance = cls().new_query_without_scopes().where(attributes).first()
 
         if instance is not None:
             return instance
@@ -456,7 +456,7 @@ class Model(object):
         :return: The new instance
         :rtype: Model
         """
-        instance = cls.where(attributes).first()
+        instance = cls().new_query_without_scopes().where(attributes).first()
 
         if instance is not None:
             return instance

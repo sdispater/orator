@@ -737,16 +737,16 @@ class Builder(object):
 
         :rtype: Builder
         """
-        self._merge_wheres_to_has(has_query, relation)
+        self._merge_model_defined_relation_wheres_to_has_query(has_query, relation)
 
         if isinstance(count, basestring) and count.isdigit():
             count = QueryExpression(count)
 
         return self.where(QueryExpression('(%s)' % has_query.to_sql()), operator, count, boolean)
 
-    def _merge_wheres_to_has(self, has_query, relation):
+    def _merge_model_defined_relation_wheres_to_has_query(self, has_query, relation):
         """
-        Merge the "wheres" from the relation query to a has query.
+        Merge the "wheres" from a relation query to a has query.
 
         :param has_query: The has query
         :type has_query: Builder
@@ -756,12 +756,11 @@ class Builder(object):
         """
         relation_query = relation.get_base_query()
 
-        has_query.remove_global_scopes().merge_wheres(
-            relation_query.wheres,
-            relation_query.get_bindings()
+        has_query.merge_wheres(
+            relation_query.wheres, relation_query.get_bindings()
         )
 
-        self._query.merge_bindings(has_query.get_query())
+        self._query.add_binding(has_query.get_query().get_bindings(), 'where')
 
     def _get_has_relation_query(self, relation):
         """
