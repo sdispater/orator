@@ -3,6 +3,8 @@
 from ... import OratorTestCase
 from orator import DatabaseManager, SoftDeletes, Model
 from orator.orm import has_many
+from orator.query import QueryBuilder
+from orator.pagination import Paginator
 
 
 class SoftDeletesIntegrationTestCase(OratorTestCase):
@@ -57,6 +59,39 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
         self.assertEqual(1, len(users))
         self.assertEqual(2, users.first().id)
         self.assertIsNone(SoftDeletesTestUser.find(1))
+
+    def test_soft_deletes_are_not_retrieved_from_base_query(self):
+        self.create_users()
+
+        query = SoftDeletesTestUser.query().to_base()
+
+        self.assertIsInstance(query, QueryBuilder)
+        self.assertEqual(1, len(query.get()))
+
+    def test_soft_deletes_are_not_retrieved_from_builder_helpers(self):
+        self.create_users()
+
+        count = 0
+        query = SoftDeletesTestUser.query()
+        for users in query.chunk(2):
+            count += len(users)
+
+        self.assertEqual(1, count)
+
+        query = SoftDeletesTestUser.query()
+        self.assertEqual(1, len(query.lists('email')))
+
+        Paginator.current_page_resolver(lambda: 1)
+        query = SoftDeletesTestUser.query()
+        self.assertEqual(1, len(query.paginate(2).items))
+
+        Paginator.current_page_resolver(lambda: 1)
+        query = SoftDeletesTestUser.query()
+        self.assertEqual(1, len(query.simple_paginate(2).items))
+
+        self.assertEqual(0, SoftDeletesTestUser.where('email', 'john@doe.com').increment('id'))
+        self.assertEqual(0, SoftDeletesTestUser.where('email', 'john@doe.com').decrement('id'))
+
 
     def test_with_trashed_returns_all_records(self):
         self.create_users()
@@ -153,6 +188,13 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
 
         users = SoftDeletesTestUser.doesnt_have('posts.comments').get()
         self.assertEqual(1, len(users))
+
+    def test_or_where_with_soft_deletes_constraint(self):
+        self.create_users()
+
+        users = SoftDeletesTestUser.where('email', 'john@doe.com').or_where('email', 'jane@doe.com')
+        self.assertEqual(1, len(users.get()))
+        self.assertEqual(['jane@doe.com'], users.order_by('id').lists('email'))
 
     def create_users(self):
         john = SoftDeletesTestUser.create(email='john@doe.com')

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import copy
+from collections import OrderedDict
 from ..exceptions.orm import ModelNotFound
 from ..utils import Null, basestring
 from ..query.expression import QueryExpression
 from ..pagination import Paginator, LengthAwarePaginator
+from ..support import Collection
 from .scopes import Scope
 
 
@@ -27,7 +29,7 @@ class Builder(object):
         self._model = None
         self._eager_load = {}
         self._macros = {}
-        self._scopes = {}
+        self._scopes = OrderedDict()
 
         self._on_delete = None
 
@@ -77,7 +79,7 @@ class Builder(object):
 
         :rtype: Builder
         """
-        self._scopes = {}
+        self._scopes = OrderedDict()
 
         return self
 
@@ -253,7 +255,7 @@ class Builder(object):
         :return: The list of values
         :rtype: list or dict
         """
-        results = self._query.lists(column, key)
+        results = self.to_base().lists(column, key)
 
         if self._model.has_get_mutator(column):
             if isinstance(results, dict):
@@ -287,7 +289,7 @@ class Builder(object):
         if columns is None:
             columns = ['*']
 
-        total = self._query.get_count_for_pagination()
+        total = self.to_base().get_count_for_pagination()
 
         page = current_page or Paginator.resolve_current_page()
         per_page = per_page or self._model.get_per_page()
@@ -351,9 +353,12 @@ class Builder(object):
         :return: The number of rows affected
         :rtype: int
         """
+        if extras is None:
+            extras = {}
+
         extras = self._add_updated_at_column(extras)
 
-        return self._query.increment(column, amount, extras)
+        return self.to_base().increment(column, amount, extras)
 
     def decrement(self, column, amount=1, extras=None):
         """
@@ -371,9 +376,12 @@ class Builder(object):
         :return: The number of rows affected
         :rtype: int
         """
+        if extras is None:
+            extras = {}
+
         extras = self._add_updated_at_column(extras)
 
-        return self._query.decrement(column, amount, extras)
+        return self.to_base().decrement(column, amount, extras)
 
     def _add_updated_at_column(self, values):
         """
@@ -845,7 +853,17 @@ class Builder(object):
         :param scope: The scope to call
         :type scope: str
         """
+        query = self.get_query()
+
+        # We will keep track of how many wheres are on the query before running the
+        # scope so that we can properly group the added scope constraints in the
+        # query as their own isolated nested where statement and avoid issues.
+        original_where_count = len(query.wheres)
+
         result = getattr(self._model, scope)(self, *args, **kwargs)
+
+        if self._should_nest_wheres_for_scope(query, original_where_count):
+            self._nest_wheres_for_scope(query, [0, original_where_count, len(query.wheres)])
 
         return result or self
 
@@ -860,14 +878,100 @@ class Builder(object):
 
         builder = copy.copy(self)
 
-        for scope in self._scopes.values():
-            if callable(scope):
-                scope(builder)
+        query = builder.get_query()
 
-            if isinstance(scope, Scope):
-                scope.apply(builder, self.get_model())
+        # We will keep track of how many wheres are on the query before running the
+        # scope so that we can properly group the added scope constraints in the
+        # query as their own isolated nested where statement and avoid issues.
+        original_where_count = len(query.wheres)
+
+        where_counts = [0, original_where_count]
+
+        for scope in self._scopes.values():
+            self._apply_scope(scope, builder)
+
+            # Again, we will keep track of the count each time we add where clauses so that
+            # we will properly isolate each set of scope constraints inside of their own
+            # nested where clause to avoid any conflicts or issues with logical order.
+            where_counts.append(len(query.wheres))
+
+        if self._should_nest_wheres_for_scope(query, original_where_count):
+            self._nest_wheres_for_scope(query, Collection(where_counts).unique().all())
 
         return builder
+
+    def _apply_scope(self, scope, builder):
+        """
+        Apply a single scope on the given builder instance.
+
+        :param scope: The scope to apply
+        :type scope: callable or Scope
+
+        :param builder: The builder to apply the scope to
+        :type builder: Builder
+        """
+        if callable(scope):
+            scope(builder)
+        elif isinstance(scope, Scope):
+            scope.apply(builder, self.get_model())
+
+    def _should_nest_wheres_for_scope(self, query, original_where_count):
+        """
+        Determine if the scope added after the given offset should be nested.
+
+        :type query: QueryBuilder
+        :type original_where_count: int
+
+        :rtype: bool
+        """
+        return original_where_count and len(query.wheres) > original_where_count
+
+    def _nest_wheres_for_scope(self, query, where_counts):
+        """
+        Nest where conditions of the builder and each global scope.
+
+        :type query: QueryBuilder
+        :type where_counts: list
+        """
+        # Here, we totally remove all of the where clauses since we are going to
+        # rebuild them as nested queries by slicing the groups of wheres into
+        # their own sections. This is to prevent any confusing logic order.
+        wheres = query.wheres
+
+        query.wheres = []
+
+        # We will take the first offset (typically 0) of where clauses and start
+        # slicing out every scope's where clauses into their own nested where
+        # groups for improved isolation of every scope's added constraints.
+        previous_count = where_counts.pop(0)
+
+        for where_count in where_counts:
+            query.wheres.append(
+                self._slice_where_conditions(
+                    wheres, previous_count, where_count - previous_count
+                )
+            )
+
+            previous_count = where_count
+
+    def _slice_where_conditions(self, wheres, offset, length):
+        """
+        Create a where list with sliced where conditions.
+
+        :type wheres: list
+        :type offset: int
+        :type length: int
+
+        :rtype: list
+        """
+        where_group = self.get_query().for_nested_where()
+        where_group.wheres = wheres[offset:(offset + length)]
+
+        return {
+            'type': 'nested',
+            'query': where_group,
+            'boolean': 'and'
+        }
 
     def get_query(self):
         """
@@ -876,6 +980,14 @@ class Builder(object):
         :rtype: QueryBuilder
         """
         return self._query
+
+    def to_base(self):
+        """
+        Get a base query builder instance.
+
+        :rtype: QueryBuilder
+        """
+        return self.apply_scopes().get_query()
 
     def set_query(self, query):
         """

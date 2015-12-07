@@ -436,6 +436,16 @@ class QueryBuilder(object):
 
         return self.add_nested_where_query(query, boolean)
 
+    def for_nested_where(self):
+        """
+        Create a new query instance for nested where condition.
+
+        :rtype: QueryBuilder
+        """
+        query = self.new_query()
+
+        return query.from_(self.from__)
+
     def add_nested_where_query(self, query, boolean='and'):
         if len(query.wheres):
             type = 'nested'

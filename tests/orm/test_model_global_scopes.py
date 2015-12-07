@@ -96,6 +96,21 @@ class ModelGlobalScopesTestCase(OratorTestCase):
         )
         self.assertEqual([], query.get_bindings())
 
+    def test_global_scopes_with_or_where_conditions_are_nested(self):
+        model = CallableGlobalScopesModelWithOr()
+
+        query = model.new_query().where('col1', 'val1').or_where('col2', 'val2')
+        self.assertEqual(
+            'SELECT "email", "password" FROM "table" '
+            'WHERE ("col1" = ? OR "col2" = ?) AND ("email" = ? OR "email" = ?) '
+            'AND ("active" = ?) ORDER BY "name" ASC',
+            query.to_sql()
+        )
+        self.assertEqual(
+            ['val1', 'val2', 'john@doe.com', 'someone@else.com', True],
+            query.get_bindings()
+        )
+
 
 class CallableGlobalScopesModel(Model):
 
@@ -108,6 +123,19 @@ class CallableGlobalScopesModel(Model):
         cls.add_global_scope(lambda query: query.order_by('name'))
 
         super(CallableGlobalScopesModel, cls)._boot()
+
+
+class CallableGlobalScopesModelWithOr(CallableGlobalScopesModel):
+
+    __table__ = 'table'
+
+    @classmethod
+    def _boot(cls):
+        cls.add_global_scope('or_scope', lambda q: q.where('email', 'john@doe.com').or_where('email', 'someone@else.com'))
+
+        cls.add_global_scope(lambda query: query.select('email', 'password'))
+
+        super(CallableGlobalScopesModelWithOr, cls)._boot()
 
 
 class GlobalScopesModel(Model):

@@ -7,6 +7,7 @@ import inspect
 import uuid
 from warnings import warn
 from six import add_metaclass
+from collections import OrderedDict
 from ..utils import basestring, deprecated
 from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound
 from ..query import QueryBuilder
@@ -192,7 +193,7 @@ class Model(object):
         :type implementation: callbale or None
         """
         if cls not in cls._global_scopes:
-            cls._global_scopes[cls] = {}
+            cls._global_scopes[cls] = OrderedDict()
 
         if isinstance(scope, basestring) and implementation is not None:
             cls._global_scopes[cls][scope] = implementation
