@@ -297,3 +297,11 @@ class CollectionTestCase(OratorTestCase):
         c = Collection({'foo': 'bar', 'baz': 'boom'})
         self.assertEqual({'baz': 'boom'}, c.without('foo').all())
         self.assertEqual({'foo': 'bar', 'baz': 'boom'}, c.all())
+
+    def test_flatten(self):
+        c = Collection({'foo': [5, 6], 'bar': 7, 'baz': {'boom': [1, 2, 3, 4]}})
+
+        self.assertEqual(
+            [1, 2, 3, 4, 5, 6, 7],
+            c.flatten().sort().all()
+        )
