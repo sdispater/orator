@@ -30,7 +30,7 @@ class ModelGlobalScopesTestCase(OratorTestCase):
 
     def test_global_scope_can_be_removed(self):
         model = GlobalScopesModel()
-        query = model.new_query().remove_global_scope(ActiveScope)
+        query = model.new_query().without_global_scope(ActiveScope)
 
         self.assertEqual(
             'SELECT * FROM "table"',
@@ -52,7 +52,7 @@ class ModelGlobalScopesTestCase(OratorTestCase):
 
     def test_callable_global_scope_can_be_removed(self):
         model = CallableGlobalScopesModel()
-        query = model.new_query().remove_global_scope('active_scope')
+        query = model.new_query().without_global_scope('active_scope')
 
         self.assertEqual(
             'SELECT * FROM "table" ORDER BY "name" ASC',
@@ -71,7 +71,7 @@ class ModelGlobalScopesTestCase(OratorTestCase):
         )
         self.assertEqual([1], query.get_bindings())
 
-        query.remove_global_scope('active_scope')
+        query.without_global_scope('active_scope')
 
         self.assertEqual(
             'SELECT * FROM "table" ORDER BY "name" ASC',
@@ -81,7 +81,7 @@ class ModelGlobalScopesTestCase(OratorTestCase):
 
     def test_all_global_scopes_can_be_removed(self):
         model = CallableGlobalScopesModel()
-        query = model.new_query().remove_global_scopes()
+        query = model.new_query().without_global_scopes()
 
         self.assertEqual(
             'SELECT * FROM "table"',
@@ -89,7 +89,7 @@ class ModelGlobalScopesTestCase(OratorTestCase):
         )
         self.assertEqual([], query.get_bindings())
 
-        query = CallableGlobalScopesModel.remove_global_scopes()
+        query = CallableGlobalScopesModel.without_global_scopes()
         self.assertEqual(
             'SELECT * FROM "table"',
             query.to_sql()

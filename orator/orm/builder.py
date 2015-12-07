@@ -31,7 +31,7 @@ class Builder(object):
 
         self._on_delete = None
 
-    def apply_global_scope(self, identifier, scope):
+    def with_global_scope(self, identifier, scope):
         """
         Register a new global scope.
 
@@ -47,7 +47,7 @@ class Builder(object):
 
         return self
 
-    def remove_global_scope(self, scope):
+    def without_global_scope(self, scope):
         """
         Remove a registered global scope.
 
@@ -71,7 +71,7 @@ class Builder(object):
 
         return self
 
-    def remove_global_scopes(self):
+    def without_global_scopes(self):
         """
         Remove all registered global scopes.
 
@@ -428,7 +428,7 @@ class Builder(object):
         :return: A list of models
         :rtype: orator.orm.collection.Collection
         """
-        results = self.get_query_with_scopes().get(columns)
+        results = self.apply_scopes().get_query().get(columns)
 
         connection = self._model.get_connection_name()
 
@@ -595,7 +595,7 @@ class Builder(object):
             if callable(extra):
                 extra(query)
 
-        return self._add_has_where(query, relation, operator, count, boolean)
+        return self._add_has_where(query.apply_scopes(), relation, operator, count, boolean)
 
     def _has_nested(self, relations, operator='>=', count=1, boolean='and', extra=None):
         """
@@ -785,13 +785,13 @@ class Builder(object):
         if not relations:
             return self
 
-        eagers = self._parse_relations(list(relations))
+        eagers = self._parse_with_relations(list(relations))
 
         self._eager_load.update(eagers)
 
         return self
 
-    def _parse_relations(self, relations):
+    def _parse_with_relations(self, relations):
         """
         Parse a list of relations into individuals.
 
@@ -810,13 +810,13 @@ class Builder(object):
                 name = relation
                 constraints = self.__class__(self.get_query().new_query())
 
-            results = self._parse_nested(name, results)
+            results = self._parse_nested_with(name, results)
 
             results[name] = constraints
 
         return results
 
-    def _parse_nested(self, name, results):
+    def _parse_nested_with(self, name, results):
         """
         Parse the nested relationship in a relation.
 
@@ -849,14 +849,14 @@ class Builder(object):
 
         return result or self
 
-    def get_query_with_scopes(self):
+    def apply_scopes(self):
         """
         Get the underlying query builder instance with applied global scopes.
 
         :type: Builder
         """
         if not self._scopes:
-            return self.get_query()
+            return self
 
         builder = copy.copy(self)
 
@@ -867,7 +867,7 @@ class Builder(object):
             if isinstance(scope, Scope):
                 scope.apply(builder, self.get_model())
 
-        return builder.get_query()
+        return builder
 
     def get_query(self):
         """
@@ -964,7 +964,7 @@ class Builder(object):
             attribute = self._macros[method]
         else:
             if method in self._passthru:
-                attribute = getattr(self.get_query_with_scopes(), method)
+                attribute = getattr(self.apply_scopes().get_query(), method)
             else:
                 attribute = getattr(self._query, method)
 

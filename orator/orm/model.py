@@ -1740,7 +1740,10 @@ class Model(object):
         """
         builder = self.new_query_without_scopes()
 
-        return self.apply_global_scopes(builder)
+        for identifier, scope in self.get_global_scopes().items():
+            builder.with_global_scope(identifier, scope)
+
+        return builder
 
     def new_query_without_scope(self, scope):
         """
@@ -1751,7 +1754,7 @@ class Model(object):
         """
         builder = self.new_query()
 
-        return builder.remove_global_scope(scope)
+        return builder.without_global_scope(scope)
 
     def new_query_without_scopes(self):
         """
@@ -1765,20 +1768,6 @@ class Model(object):
         )
 
         return builder.set_model(self).with_(*self._with)
-
-    def apply_global_scopes(self, builder):
-        """
-        Apply all of the global scopes to a builder.
-
-        :param builder: A Builder instance
-        :type builder: Builder
-
-        :rtype: Builder
-        """
-        for identifier, scope in self.get_global_scopes().items():
-            builder.apply_global_scope(identifier, scope)
-
-        return builder
 
     @classmethod
     def query(cls):
