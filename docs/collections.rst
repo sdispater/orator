@@ -41,6 +41,7 @@ You may select any method from this table to see an example of its usage:
 * every_
 * filter_
 * first_
+* flatten_
 * flip_
 * forget_
 * for_page_
@@ -340,6 +341,24 @@ If the collection is empty, ``None`` is returned:
     collection.first()
 
     # 1
+
+
+.. _flatten:
+
+``flatten()``
+-------------
+
+The ``flatten`` method flattens a multi-dimensional collection into a single dimension:
+
+.. code-block:: python
+
+    collection = Collection({'name': 'john', 'products': ['Desk', 'Chair']})
+
+    flattened = collection.flatten()
+
+    flattened.all()
+
+    # ['john', 'Desk', 'Chair']
 
 
 .. _flip:
