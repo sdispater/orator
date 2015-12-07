@@ -305,3 +305,6 @@ class CollectionTestCase(OratorTestCase):
             [1, 2, 3, 4, 5, 6, 7],
             c.flatten().sort().all()
         )
+
+        c = Collection([1, [2, 3], 4])
+        self.assertEqual([1, 2, 3, 4], c.flatten().all())

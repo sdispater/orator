@@ -339,7 +339,8 @@ class Collection(object):
                         yield nested_v
             elif isinstance(d, list):
                 for list_v in d:
-                    yield list_v
+                    for nested_v in _flatten(list_v):
+                        yield nested_v
             else:
                 yield d
 
