@@ -29,5 +29,8 @@ development.db
 *orator.yml
 /docs/orator/
 profile.html
+/benchmark
+benchmark.py
+results.json
 
 Makefile
