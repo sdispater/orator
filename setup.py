@@ -42,7 +42,7 @@ setup(
         'wrapt',
         'pyaml'
     ],
-    tests_require=['pytest', 'mock', 'flexmock'],
+    tests_require=['pytest', 'mock', 'flexmock==0.9.7'],
     test_suite='nose.collector',
     scripts=['bin/orator'],
     classifiers=[

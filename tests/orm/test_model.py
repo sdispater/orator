@@ -398,11 +398,10 @@ class OrmModelTestCase(OratorTestCase):
         self.assertFalse(model.exists)
 
     def test_delete_properly_deletes_model(self):
-        query = flexmock(Builder)
         model = OrmModelStub()
-        builder = Builder(QueryBuilder(None, None, None))
-        query.should_receive('where').once().with_args('id', 1).and_return(builder)
-        query.should_receive('delete').once()
+        builder = flexmock(Builder(QueryBuilder(None, None, None)))
+        builder.should_receive('where').once().with_args('id', 1).and_return(builder)
+        builder.should_receive('delete').once()
         model.new_query = mock.MagicMock(return_value=builder)
         model.touch_owners = mock.MagicMock()
 
@@ -413,7 +412,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.touch_owners.called)
 
     def test_push_no_relations(self):
-        flexmock(Builder)
         model = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -429,7 +427,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.exists)
 
     def test_push_empty_one_relation(self):
-        flexmock(Builder)
         model = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -447,7 +444,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertIsNone(model.relation_one)
 
     def test_push_one_relation(self):
-        flexmock(Builder)
         related1 = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -479,7 +475,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(related1.exists)
 
     def test_push_empty_many_relation(self):
-        flexmock(Builder)
         model = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -497,7 +492,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual(0, len(model.relation_many))
 
     def test_push_many_relation(self):
-        flexmock(Builder)
         related1 = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -508,7 +502,6 @@ class OrmModelTestCase(OratorTestCase):
         related1.name = 'related1'
         related1.set_exists(False)
 
-        flexmock(Builder)
         related2 = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -746,8 +739,9 @@ class OrmModelTestCase(OratorTestCase):
         model = flexmock(OrmModelStub())
         model.id = 1
         model.set_exists(True)
-        builder = flexmock(Builder)
-        query = Builder(flexmock(QueryBuilder(None, None, None)))
+        flexmock(Builder)
+        q = flexmock(QueryBuilder(None, None, None))
+        query = flexmock(Builder(q))
         query.should_receive('where').and_return(query)
         query.get_query().should_receive('take').and_return(query)
         query.should_receive('get').and_return(Collection([]))
@@ -856,9 +850,9 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual({'foo': 'bar'}, model.sixth)
         self.assertEqual({'foo': 'bar'}, model.eighth)
         self.assertEqual(['foo', 'bar'], model.seventh)
-        
+
         d = model.to_dict()
-        
+
         self.assertIsInstance(d['first'], int)
         self.assertIsInstance(d['second'], float)
         self.assertIsInstance(d['third'], basestring)
@@ -892,9 +886,9 @@ class OrmModelTestCase(OratorTestCase):
         self.assertIsNone(model.sixth)
         self.assertIsNone(model.seventh)
         self.assertIsNone(model.eighth)
-        
+
         d = model.to_dict()
-        
+
         self.assertIsNone(d['first'])
         self.assertIsNone(d['second'])
         self.assertIsNone(d['third'])
