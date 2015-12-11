@@ -6,7 +6,7 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install -r tests-requirements.txt
-script: py.test
+script: py.test tests/
 
 before_script:
   - psql -c 'create database orator_test;' -U postgres
