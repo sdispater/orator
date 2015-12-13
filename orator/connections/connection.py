@@ -32,6 +32,8 @@ def run(wrapped):
             result = self._try_again_if_caused_by_lost_connection(
                 e, query, bindings, wrapped
             )
+        except Exception as e:
+            raise QueryException(query, bindings, e)
 
         t = self._get_elapsed_time(start)
         self.log_query(query, bindings, t)
