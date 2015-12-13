@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 from ...query.expression import QueryExpression
 from ..collection import Collection
+from ..builder import Builder
 
 
 class Relation(object):
@@ -20,6 +21,7 @@ class Relation(object):
         self._query = query
         self._parent = parent
         self._related = query.get_model()
+        self._extra_query = None
 
         self.add_constraints()
 
@@ -148,7 +150,10 @@ class Relation(object):
         return self._query.get_query()
 
     def merge_query(self, query):
-        self._query.merge_wheres(query.wheres, query.get_query().get_raw_bindings()['where'])
+        if isinstance(query, Builder):
+            query = query.get_query()
+
+        self._query.merge(query)
 
     def get_parent(self):
         return self._parent
@@ -193,6 +198,28 @@ class Relation(object):
 
     def set_parent(self, parent):
         self._parent = parent
+
+    def set_extra_query(self, query):
+        self._extra_query = query
+
+    def new_query(self, related=None):
+        if related is None:
+            related = self._related
+
+        query = related.new_query()
+
+        if self._extra_query:
+            query.merge(self._extra_query.get_query())
+
+        return query
+
+    def new_instance(self, model, **kwargs):
+        new = self._new_instance(model, **kwargs)
+
+        if self._extra_query:
+            new.set_extra_query(self._extra_query)
+
+        return new
 
     def __dynamic(self, method):
         attribute = getattr(self._query, method)

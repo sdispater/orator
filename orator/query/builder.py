@@ -1554,6 +1554,37 @@ class QueryBuilder(object):
 
         return self
 
+    def merge(self, query):
+        """
+        Merge current query with another.
+
+        :param query: The query to merge with
+        :type query: QueryBuilder
+        """
+        self.joins += query.joins
+        self.wheres += query.wheres
+        self.groups += query.groups
+        self.havings += query.havings
+        self.orders += query.orders
+
+        if query.limit_:
+            self.limit_ = query.limit_
+
+        if query.offset_:
+            self.offset_ = None
+
+        self.unions += query.unions
+
+        if query.union_limit:
+            self.union_limit = query.union_limit
+
+        if query.union_offset:
+            self.union_offset = query.union_offset
+
+        self.union_orders += query.union_orders
+
+        self.merge_bindings(query)
+
     def get_connection(self):
         """
         Get the query connection

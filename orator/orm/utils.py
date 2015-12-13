@@ -3,6 +3,13 @@
 import types
 from functools import update_wrapper
 from .relations.wrapper import Wrapper
+from .builder import Builder
+from ..query import QueryBuilder
+from .relations import (
+    HasOne, HasMany, HasManyThrough,
+    BelongsTo, BelongsToMany,
+    MorphOne, MorphMany, MorphTo, MorphToMany
+)
 
 
 class accessor(object):
@@ -111,8 +118,12 @@ class relation(object):
     Base relation decorator
     """
 
+    relation_class = None
+
     def __init__(self, func=None, relation=None):
         self._relation = relation
+        self._related = None
+        self._conditions = None
 
         self.set_func(func)
 
@@ -136,13 +147,30 @@ class relation(object):
         if self._relation in instance._relations:
             return instance._relations[self._relation]
 
-        relation = Wrapper(self._get(instance))
+        self._related = self.func(instance)
+        if isinstance(self._related, (Builder, QueryBuilder)):
+            # Extra conditions on relation
+            self._conditions = self._related
+            self._related = self._related.get_model().__class__
+
+        relation = self._get(instance)
+
+        if self._conditions:
+            # Setting extra conditions
+            self._set_conditions(relation)
+
+        relation = Wrapper(relation)
+
         instance._relations[self._relation] = relation
 
         return relation
 
     def _get(self, instance):
         raise NotImplementedError()
+
+    def _set_conditions(self, relation):
+        relation.merge_query(self._conditions)
+        relation.set_extra_query(self._conditions)
 
     def __call__(self, func):
         self.set_func(func)
@@ -154,6 +182,8 @@ class has_one(relation):
     """
     Has One relationship decorator
     """
+
+    relation_class = HasOne
 
     def __init__(self, foreign_key=None, local_key=None, relation=None):
         if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
@@ -169,7 +199,7 @@ class has_one(relation):
 
     def _get(self, instance):
         return instance.has_one(
-            self.func(instance),
+            self._related,
             self._foreign_key,
             self._local_key,
             self._relation,
@@ -181,6 +211,8 @@ class morph_one(relation):
     """
     Morph One relationship decorator
     """
+
+    relation_class = MorphOne
 
     def __init__(self, name, type_column=None, id_column=None, local_key=None, relation=None):
         if isinstance(name, (types.FunctionType, types.MethodType)):
@@ -195,7 +227,7 @@ class morph_one(relation):
 
     def _get(self, instance):
         return instance.morph_one(
-            self.func(instance), self._name,
+            self._related, self._name,
             self._type_column, self._id_column,
             self._local_key, self._relation,
             _wrapped=False
@@ -206,6 +238,8 @@ class belongs_to(relation):
     """
     Belongs to relationship decorator
     """
+
+    relation_class = BelongsTo
 
     def __init__(self, foreign_key=None, other_key=None, relation=None):
         if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
@@ -221,18 +255,25 @@ class belongs_to(relation):
 
     def _get(self, instance):
         return instance.belongs_to(
-            self.func(instance),
+            self._related,
             self._foreign_key,
             self._other_key,
             self._relation,
             _wrapped=False
         )
 
+    def _set(self, relation):
+        relation._foreign_key = self._foreign_key
+        relation._other_key = self._other_key
+        relation._relation = self._relation
+
 
 class morph_to(relation):
     """
     Morph To relationship decorator
     """
+
+    relation_class = MorphTo
 
     def __init__(self, name=None, type_column=None, id_column=None):
         if isinstance(name, (types.FunctionType, types.MethodType)):
@@ -260,6 +301,8 @@ class has_many(relation):
     Has Many relationship decorator
     """
 
+    relation_class = HasMany
+
     def __init__(self, foreign_key=None, local_key=None, relation=None):
         if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
             func = foreign_key
@@ -274,7 +317,7 @@ class has_many(relation):
 
     def _get(self, instance):
         return instance.has_many(
-            self.func(instance),
+            self._related,
             self._foreign_key,
             self._local_key,
             self._relation,
@@ -286,6 +329,8 @@ class has_many_through(relation):
     """
     Has Many Through relationship decorator
     """
+
+    relation_class = HasManyThrough
 
     def __init__(self, through, first_key=None, second_key=None, relation=None):
         if isinstance(through, (types.FunctionType, types.MethodType)):
@@ -299,7 +344,7 @@ class has_many_through(relation):
 
     def _get(self, instance):
         return instance.has_many_through(
-            self.func(instance),
+            self._related,
             self._through,
             self._first_key,
             self._second_key,
@@ -312,6 +357,8 @@ class morph_many(relation):
     """
     Morph Many relationship decorator
     """
+
+    relation_class = MorphMany
 
     def __init__(self, name, type_column=None, id_column=None, local_key=None, relation=None):
         if isinstance(name, (types.FunctionType, types.MethodType)):
@@ -326,7 +373,7 @@ class morph_many(relation):
 
     def _get(self, instance):
         return instance.morph_many(
-            self.func(instance), self._name,
+            self._related, self._name,
             self._type_column, self._id_column,
             self._local_key, self._relation,
             _wrapped=False
@@ -337,6 +384,8 @@ class belongs_to_many(relation):
     """
     Belongs To Many relationship decorator
     """
+
+    relation_class = BelongsToMany
 
     def __init__(self, table=None, foreign_key=None, other_key=None,
                  relation=None, with_timestamps=False, with_pivot=None):
@@ -357,7 +406,7 @@ class belongs_to_many(relation):
 
     def _get(self, instance):
         r = instance.belongs_to_many(
-            self.func(instance),
+            self._related,
             self._table,
             self._foreign_key,
             self._other_key,
@@ -379,6 +428,8 @@ class morph_to_many(relation):
     Morph To Many relationship decorator
     """
 
+    relation_class = MorphToMany
+
     def __init__(self, name, table=None, foreign_key=None, other_key=None, relation=None):
         if isinstance(name, (types.FunctionType, types.MethodType)):
             raise RuntimeError('morph_to_many relation required a name')
@@ -392,7 +443,7 @@ class morph_to_many(relation):
 
     def _get(self, instance):
         return instance.morph_to_many(
-            self.func(instance),
+            self._related,
             self._name,
             self._table,
             self._foreign_key,
@@ -407,6 +458,8 @@ class morphed_by_many(relation):
     Morphed By Many relationship decorator
     """
 
+    relation_class = MorphToMany
+
     def __init__(self, name, table=None, foreign_key=None, other_key=None, relation=None):
         if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
             raise RuntimeError('morphed_by_many relation requires a name')
@@ -420,7 +473,7 @@ class morphed_by_many(relation):
 
     def _get(self, instance):
         return instance.morphed_by_many(
-            self.func(instance),
+            self._related,
             self._name,
             self._table,
             self._foreign_key,

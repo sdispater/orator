@@ -490,14 +490,14 @@ class Builder(object):
         from .relations import Relation
 
         with Relation.no_constraints(True):
-            query = getattr(self.get_model(), relation)()
+            rel = getattr(self.get_model(), relation)()
 
         nested = self._nested_relations(relation)
 
         if len(nested) > 0:
-            query.get_query().with_(nested)
+            rel.get_query().with_(nested)
 
-        return query
+        return rel
 
     def _nested_relations(self, relation):
         """
@@ -1102,11 +1102,11 @@ class Builder(object):
         try:
             object.__getattribute__(self, item)
         except AttributeError:
-            # TODO: macros
             return self.__dynamic(item)
 
     def __copy__(self):
         new = self.__class__(copy.copy(self._query))
+        new.set_model(self._model)
 
         return new
 

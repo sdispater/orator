@@ -5,9 +5,6 @@ from .has_one_or_many import HasOneOrMany
 
 class MorphOneOrMany(HasOneOrMany):
 
-    _morph_type = None
-    _morph_name = None
-
     def __init__(self, query, parent, morph_type, foreign_key, local_key):
         """
         :type query: orator.orm.Builder
@@ -192,3 +189,12 @@ class MorphOneOrMany(HasOneOrMany):
 
     def get_morph_name(self):
         return self._morph_name
+
+    def _new_instance(self, parent):
+        return self.__class__(
+            self.new_query(),
+            parent,
+            self._morph_type,
+            self._foreign_key,
+            self._local_key
+        )

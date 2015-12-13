@@ -8,11 +8,6 @@ from .result import Result
 
 class MorphTo(BelongsTo):
 
-    _morph_type = None
-    _models = Collection()
-    _dictionary = None
-    _with_trashed = None
-
     def __init__(self, query, parent, foreign_key, other_key, type, relation):
         """
         :type query: orator.orm.Builder
@@ -191,9 +186,9 @@ class MorphTo(BelongsTo):
 
         return query
 
-    def new_instance(self, model, related=None):
+    def _new_instance(self, model, related=None):
         return MorphTo(
-            self._related.new_query() if not related else related.new_query(),
+            self.new_query(related),
             model,
             self._foreign_key,
             self._other_key if not related else related.get_key_name(),

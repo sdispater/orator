@@ -7,9 +7,6 @@ from .result import Result
 
 class HasOneOrMany(Relation):
 
-    _local_key = None
-    _foreign_key = None
-
     def __init__(self, query, parent, foreign_key, local_key):
         """
         :type query: orator.orm.Builder

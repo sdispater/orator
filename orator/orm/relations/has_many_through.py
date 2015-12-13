@@ -7,10 +7,6 @@ from .result import Result
 
 class HasManyThrough(Relation):
 
-    _first_key = None
-    _second_key = None
-    _far_parent = None
-
     def __init__(self, query, far_parent, parent, first_key, second_key):
         """
         :param query: A Builder instance
@@ -183,9 +179,9 @@ class HasManyThrough(Relation):
     def get_has_compare_key(self):
         return self._far_parent.get_qualified_key_name()
 
-    def new_instance(self, model):
+    def _new_instance(self, model):
         return HasManyThrough(
-            self._related.new_query(),
+            self.new_query(),
             model,
             self._parent,
             self._first_key,

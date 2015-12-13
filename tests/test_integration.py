@@ -259,6 +259,23 @@ class OratorIntegrationTestCase(OratorTestCase):
         self.assertIsInstance(user.posts, Collection)
         self.assertEqual(user.posts().where('name', 'Second Post').first().id, post2.id)
 
+    def test_relationships_properties_accept_builder(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        post1 = user.posts().create(name='First Post')
+        post2 = user.posts().create(name='Second Post')
+
+        user = OratorTestUser.with_('posts').first()
+        self.assertEqual(
+            'SELECT * FROM "test_posts" WHERE "test_posts"."user_id" = ? ORDER BY "name" DESC',
+            user.post().to_sql()
+        )
+
+        user = OratorTestUser.first()
+        self.assertEqual(
+            'SELECT * FROM "test_posts" WHERE "test_posts"."user_id" = ? ORDER BY "name" DESC',
+            user.post().to_sql()
+        )
+
     def test_morph_to_eagerload(self):
         user = OratorTestUser.create(id=1, email='john@doe.com')
         user.photos().create(name='Avatar 1')
@@ -294,7 +311,7 @@ class OratorTestUser(Model):
 
     @has_one('user_id')
     def post(self):
-        return OratorTestPost
+        return OratorTestPost.order_by('name', 'desc')
 
     @morph_many('imageable')
     def photos(self):
