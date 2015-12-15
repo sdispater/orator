@@ -37,5 +37,11 @@ class MySqlConnector(Connector):
 
         return self.get_api().connect(**self.get_config(config))
 
+    def get_default_config(self):
+        return {
+            'charset': 'utf8',
+            'use_unicode': True
+        }
+
     def get_api(self):
         return mysql
