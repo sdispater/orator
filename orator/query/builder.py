@@ -9,6 +9,7 @@ from .join_clause import JoinClause
 from ..pagination import Paginator, LengthAwarePaginator
 from ..utils import basestring, Null
 from ..exceptions import ArgumentError
+from ..support import Collection
 
 
 class QueryBuilder(object):
@@ -548,6 +549,9 @@ class QueryBuilder(object):
 
         if isinstance(values, QueryBuilder):
             return self._where_in_sub(column, values, boolean, negate)
+
+        if isinstance(values, Collection):
+            values = values.all()
 
         self.wheres.append({
             'type': type,

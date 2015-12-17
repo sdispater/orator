@@ -16,6 +16,7 @@ from orator.query.grammars import (
 from orator.query.builder import QueryBuilder
 from orator.query.expression import QueryExpression
 from orator.query.join_clause import JoinClause
+from orator.support import Collection
 
 
 class QueryBuilderTestCase(OratorTestCase):
@@ -307,6 +308,16 @@ class QueryBuilderTestCase(OratorTestCase):
             builder.to_sql()
         )
         self.assertEqual([1], builder.get_bindings())
+
+    def test_where_in_accepts_collections(self):
+        builder = self.get_builder()
+        builder.select('*').from_('users').where_in('id', Collection([1, 2, 3]))
+
+        self.assertEqual(
+            'SELECT * FROM "users" WHERE "id" IN (?, ?, ?)',
+            builder.to_sql()
+        )
+        self.assertEqual([1, 2, 3], builder.get_bindings())
 
     def test_unions(self):
         builder = self.get_builder()
