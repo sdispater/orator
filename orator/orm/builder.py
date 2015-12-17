@@ -570,6 +570,63 @@ class Builder(object):
         """
         return self.where(column, operator, value, 'or')
 
+    def where_exists(self, query, boolean='and', negate=False):
+        """
+        Add an exists clause to the query.
+
+        :param query: The exists query
+        :type query: Builder or QueryBuilder
+
+        :type boolean: str
+
+        :type negate: bool
+
+        :rtype: Builder
+        """
+        if isinstance(query, Builder):
+            query = query.get_query()
+
+        self.get_query().where_exists(query, boolean, negate)
+
+        return self
+
+    def or_where_exists(self, query, negate=False):
+        """
+        Add an or exists clause to the query.
+
+        :param query: The exists query
+        :type query: Builder or QueryBuilder
+
+        :type negate: bool
+
+        :rtype: Builder
+        """
+        return self.where_exists(query, 'or', negate)
+
+    def where_not_exists(self, query, boolean='and'):
+        """
+        Add a where not exists clause to the query.
+
+        :param query: The exists query
+        :type query: Builder or QueryBuilder
+
+        :type boolean: str
+
+        :rtype: Builder
+        """
+        return self.where_exists(query, boolean, True)
+
+    def or_where_not_exists(self, query):
+        """
+        Add a or where not exists clause to the query.
+
+        :param query: The exists query
+        :type query: Builder or QueryBuilder
+
+        :rtype: Builder
+        """
+        return self.or_where_exists(query, True)
+
     def has(self, relation, operator='>=', count=1, boolean='and', extra=None):
         """
         Add a relationship count condition to the query.

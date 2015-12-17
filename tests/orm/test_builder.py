@@ -427,6 +427,17 @@ class BuilderTestCase(OratorTestCase):
 
         self.assertEqual(builder, result)
 
+    def test_where_exists_accepts_builder_instance(self):
+        model = OrmBuilderTestModelCloseRelated
+
+        builder = model.where_exists(OrmBuilderTestModelFarRelatedStub.where('foo', 'bar')).to_sql()
+
+        self.assertEqual(
+            'SELECT * FROM "orm_builder_test_model_close_relateds" '
+            'WHERE EXISTS (SELECT * FROM "orm_builder_test_model_far_related_stubs" WHERE "foo" = ?)',
+            builder
+        )
+
     def get_builder(self):
         return Builder(self.get_mock_query_builder())
 

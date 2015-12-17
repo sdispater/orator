@@ -476,6 +476,18 @@ class QueryBuilder(object):
         return self
 
     def where_exists(self, query, boolean='and', negate=False):
+        """
+        Add an exists clause to the query.
+
+        :param query: The exists query
+        :type query: QueryBuilder
+
+        :type boolean: str
+
+        :type negate: bool
+
+        :rtype: QueryBuilder
+        """
         if negate:
             type = 'not_exists'
         else:
@@ -491,14 +503,42 @@ class QueryBuilder(object):
 
         return self
 
-    def or_where_exists(self, callback, negate=False):
-        return self.where_exists(callback, 'or', negate)
+    def or_where_exists(self, query, negate=False):
+        """
+        Add an or exists clause to the query.
 
-    def where_not_exists(self, callback, boolean='and'):
-        return self.where_exists(callback, boolean, True)
+        :param query: The exists query
+        :type query: QueryBuilder
 
-    def or_where_not_exists(self, callback):
-        self.or_where_exists(callback, True)
+        :type negate: bool
+
+        :rtype: QueryBuilder
+        """
+        return self.where_exists(query, 'or', negate)
+
+    def where_not_exists(self, query, boolean='and'):
+        """
+        Add a where not exists clause to the query.
+
+        :param query: The exists query
+        :type query: QueryBuilder
+
+        :type boolean: str
+
+        :rtype: QueryBuilder
+        """
+        return self.where_exists(query, boolean, True)
+
+    def or_where_not_exists(self, query):
+        """
+        Add a or where not exists clause to the query.
+
+        :param query: The exists query
+        :type query: QueryBuilder
+
+        :rtype: QueryBuilder
+        """
+        return self.or_where_exists(query, True)
 
     def where_in(self, column, values, boolean='and', negate=False):
         if negate:
