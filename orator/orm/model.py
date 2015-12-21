@@ -1684,11 +1684,25 @@ class Model(object):
         """
         time = self.fresh_timestamp()
 
-        if not self.is_dirty(self.UPDATED_AT):
+        if not self.is_dirty(self.UPDATED_AT) and self._should_set_timestamp(self.UPDATED_AT):
             self.set_updated_at(time)
 
-        if not self._exists and not self.is_dirty(self.CREATED_AT):
+        if not self._exists and not self.is_dirty(self.CREATED_AT) and self._should_set_timestamp(self.CREATED_AT):
             self.set_created_at(time)
+
+    def _should_set_timestamp(self, timestamp):
+        """
+        Determine if a timestamp should be set.
+
+        :param timestamp: The timestamp to check
+        :type timestamp: str
+
+        :rtype: bool
+        """
+        if isinstance(self.__timestamps__, bool):
+            return self.__timestamps__
+
+        return timestamp in self.__timestamps__
 
     def set_created_at(self, value):
         """

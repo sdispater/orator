@@ -196,6 +196,58 @@ class OrmModelTestCase(OratorTestCase):
         model.new_query.assert_called_once_with()
         self.assertTrue(model._update_timestamps.called)
 
+    def test_creating_with_only_created_at_column(self):
+        query_builder = flexmock(QueryBuilder)
+        query_builder.should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+
+        model = flexmock(OrmModelCreatedAt())
+        model.should_receive('new_query').and_return(Builder(QueryBuilder(None, None, None)))
+        model.should_receive('set_created_at').once()
+        model.should_receive('set_updated_at').never()
+        model.name = 'john'
+        model.save()
+
+    def test_creating_with_only_updated_at_column(self):
+        query_builder = flexmock(QueryBuilder)
+        query_builder.should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+
+        model = flexmock(OrmModelUpdatedAt())
+        model.should_receive('new_query').and_return(Builder(QueryBuilder(None, None, None)))
+        model.should_receive('set_created_at').never()
+        model.should_receive('set_updated_at').once()
+        model.name = 'john'
+        model.save()
+
+    def test_updating_with_only_created_at_column(self):
+        query = flexmock(Builder)
+        query.should_receive('where').once().with_args('id', 1)
+        query.should_receive('update').once().with_args({'name': 'john'})
+
+        model = flexmock(OrmModelCreatedAt())
+        model.id = 1
+        model.sync_original()
+        model.set_exists(True)
+        model.should_receive('new_query').and_return(Builder(QueryBuilder(None, None, None)))
+        model.should_receive('set_created_at').never()
+        model.should_receive('set_updated_at').never()
+        model.name = 'john'
+        model.save()
+
+    def test_updating_with_only_updated_at_column(self):
+        query = flexmock(Builder)
+        query.should_receive('where').once().with_args('id', 1)
+        query.should_receive('update').once().with_args({'name': 'john'})
+
+        model = flexmock(OrmModelUpdatedAt())
+        model.id = 1
+        model.sync_original()
+        model.set_exists(True)
+        model.should_receive('new_query').and_return(Builder(QueryBuilder(None, None, None)))
+        model.should_receive('set_created_at').never()
+        model.should_receive('set_updated_at').once()
+        model.name = 'john'
+        model.save()
+
     def test_update_is_cancelled_if_updating_event_returns_false(self):
         model = flexmock(OrmModelStub())
         query = flexmock(Builder(flexmock(QueryBuilder(None, None, None))))
@@ -1028,3 +1080,12 @@ class OrmModelCastingStub(Model):
         'seventh': 'list',
         'eighth': 'json'
     }
+
+class OrmModelCreatedAt(Model):
+
+    __timestamps__ = ['created_at']
+
+
+class OrmModelUpdatedAt(Model):
+
+    __timestamps__ = ['updated_at']
