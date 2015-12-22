@@ -956,6 +956,11 @@ class OrmModelTestCase(OratorTestCase):
 
         self.assertEqual('stub_id', model.get_foreign_key())
 
+    def test_default_values(self):
+        model = OrmModelDefaultAttributes()
+
+        self.assertEqual('bar', model.foo)
+
 
 class OrmModelStub(Model):
 
@@ -1089,3 +1094,10 @@ class OrmModelCreatedAt(Model):
 class OrmModelUpdatedAt(Model):
 
     __timestamps__ = ['updated_at']
+
+
+class OrmModelDefaultAttributes(Model):
+
+    __attributes__ = {
+        'foo': 'bar'
+    }

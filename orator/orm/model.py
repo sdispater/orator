@@ -107,6 +107,8 @@ class Model(object):
 
     _register = ModelRegister()
 
+    __attributes__ = {}
+
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
     CREATED_AT = 'created_at'
@@ -120,7 +122,9 @@ class Model(object):
 
         self._exists = False
         self._original = {}
-        self._attributes = {}
+
+        # Setting default attributes' values
+        self._attributes = dict((k, v) for k, v in self.__attributes__.items())
         self._relations = {}
 
         self.sync_original()
