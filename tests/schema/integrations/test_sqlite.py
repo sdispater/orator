@@ -206,6 +206,18 @@ class SchemaBuilderSQLiteIntegrationTestCase(OratorTestCase):
 
         self.assertEqual(0, user.get_connection_resolver().connection().table('friends').count())
 
+        # Altering users table
+        with self.schema().table('users') as table:
+            table.text('email').change()
+
+        user = User.create(email='john@doe.com')
+        user.friends().attach(friend)
+        user.friends().attach(another_friend)
+
+        user.delete()
+
+        self.assertEqual(0, user.get_connection_resolver().connection().table('friends').count())
+
     def connection(self):
         return Model.get_connection_resolver().connection()
 

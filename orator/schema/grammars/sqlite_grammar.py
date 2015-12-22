@@ -165,6 +165,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         # Finally we drop the temporary table
         sql += Blueprint(temp_table).drop().to_sql(None, self)
 
+        sql.append('PRAGMA foreign_keys = ON')
+
         return sql
 
     def compile_change(self, blueprint, command, connection):
@@ -268,6 +270,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
                       self.wrap_table(temp_table)
                       ))
         sql += Blueprint(temp_table).drop().to_sql(None, self)
+
+        sql.append('PRAGMA foreign_keys = ON')
 
         return sql
 
