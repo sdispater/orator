@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collections import OrderedDict
 from .table import Table
 from .identifier import Identifier
 
@@ -11,17 +12,17 @@ class TableDiff(object):
                  changed_indexes=None, removed_indexes=None, from_table=None):
         self.name = table_name
         self.new_name = False
-        self.added_columns = added_columns or {}
-        self.changed_columns = changed_columns or {}
-        self.removed_columns = removed_columns or {}
+        self.added_columns = added_columns or OrderedDict()
+        self.changed_columns = changed_columns or OrderedDict()
+        self.removed_columns = removed_columns or OrderedDict()
         self.added_indexes = added_indexes or []
         self.changed_indexes = changed_indexes or []
         self.removed_indexes = removed_indexes or []
         self.added_foreign_keys = []
         self.changed_foreign_keys = []
         self.removed_foreign_keys = []
-        self.renamed_columns = {}
-        self.renamed_indexes = {}
+        self.renamed_columns = OrderedDict()
+        self.renamed_indexes = OrderedDict()
         self.from_table = from_table
 
     def get_name(self, platform):

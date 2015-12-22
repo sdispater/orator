@@ -200,17 +200,6 @@ class SQLiteSchemaGrammar(SchemaGrammar):
                    % (temp_table, self.columnize(list(map(lambda x: x.get_name(), columns))), table))
         sql += Blueprint(table).drop().to_sql(None, self)
 
-        new_columns = []
-        for column in columns:
-            for column_name, changed_column in changed_columns.items():
-                if column_name == column.get_name():
-                    for blueprint_column in blueprint_changed_columns:
-                        if blueprint_column.name == column_name:
-                            new_columns.append(blueprint_column)
-                            break
-
-                    break
-
         new_blueprint = Blueprint(table)
         new_blueprint.create()
         primary = []
@@ -228,6 +217,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
                 primary.append(column.get_name())
 
             if column.get_name() not in changed_columns:
+                # Not modified column
                 col = getattr(new_blueprint, type)(column.get_name())
                 if not column.get_notnull():
                     col.nullable()
@@ -237,11 +227,22 @@ class SQLiteSchemaGrammar(SchemaGrammar):
                     col.default(QueryExpression(column.get_default()))
 
                 new_column_names.append(column.get_name())
+            else:
+                # Modified column
+                for blueprint_column in blueprint_changed_columns:
+                    if blueprint_column.name == column.get_name():
+                        blueprint_column.change = False
 
-        for column in new_columns:
-            column.change = False
-            new_blueprint._add_column(**column.get_attributes())
-            new_column_names.append(column.name)
+                        if not column.get_notnull() and blueprint_column.get('nullable', None) is None:
+                            blueprint_column.nullable()
+
+                        # If the column has a default value, we add it
+                        if column.get_default() is not None and blueprint_column.get('default', None) is None:
+                            blueprint_column.default = QueryExpression(column.get_default())
+
+                        new_blueprint._add_column(**blueprint_column.get_attributes())
+                        new_column_names.append(column.get_name())
+                        break
 
         if primary:
             new_blueprint.primary(primary)

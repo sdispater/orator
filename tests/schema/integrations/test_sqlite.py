@@ -38,6 +38,7 @@ class SchemaBuilderSQLiteIntegrationTestCase(OratorTestCase):
             table.string('name').unique()
             table.string('status').default('draft').nullable()
             table.string('default').default(0)
+            table.string('tag').nullable().default('tag')
             table.timestamps()
 
             table.foreign('user_id').references('id').on('users')
@@ -162,16 +163,21 @@ class SchemaBuilderSQLiteIntegrationTestCase(OratorTestCase):
         with self.schema().table('posts') as table:
             table.string('name').nullable().change()
             table.string('votes').default('0').change()
+            table.text('tag').default('new').change()
 
         name_column = self.connection().get_column('posts', 'name')
         votes_column = self.connection().get_column('posts', 'votes')
         status_column = self.connection().get_column('posts', 'status')
+        tag_column = self.connection().get_column('posts', 'tag')
         self.assertFalse(name_column.get_notnull())
         self.assertTrue(votes_column.get_notnull())
         self.assertEqual("0", votes_column.get_default())
 
         self.assertFalse(status_column.get_notnull())
         self.assertEqual("draft", status_column.get_default())
+
+        self.assertFalse(tag_column.get_notnull())
+        self.assertEqual("new", tag_column.get_default())
 
         foreign_keys = self.connection().get_schema_manager().list_table_foreign_keys('posts')
 
