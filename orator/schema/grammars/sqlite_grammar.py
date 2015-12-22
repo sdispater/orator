@@ -232,6 +232,10 @@ class SQLiteSchemaGrammar(SchemaGrammar):
                 if not column.get_notnull():
                     col.nullable()
 
+                # If the column has a default value, we add it
+                if column.get_default() is not None:
+                    col.default(QueryExpression(column.get_default()))
+
                 new_column_names.append(column.get_name())
 
         for column in new_columns:

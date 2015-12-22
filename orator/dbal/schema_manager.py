@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collections import OrderedDict
 from .table import Table
 from .column import Column
 
@@ -58,7 +59,7 @@ class SchemaManager(object):
         return Table(table_name, columns, [], foreign_keys)
 
     def _get_portable_table_columns_list(self, table, table_columns):
-        columns_list = {}
+        columns_list = OrderedDict()
 
         for table_column in table_columns:
             column = self._get_portable_table_column_definition(table_column)
