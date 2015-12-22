@@ -157,7 +157,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         # We reinsert the data into the new table
         sql.append('INSERT INTO %s (%s) SELECT %s FROM %s'
                    % (self.wrap_table(table),
-                      ', '.join(new_column_names),
+                      self.columnize(new_column_names),
                       self.columnize(old_column_names),
                       self.wrap_table(temp_table)
                       ))
@@ -262,8 +262,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         sql += new_blueprint.to_sql(None, self)
         sql.append('INSERT INTO %s (%s) SELECT %s FROM %s'
                    % (self.wrap_table(table),
-                      ', '.join(sorted(new_column_names)),
-                      self.columnize(sorted(list(map(lambda x: x.get_name(), columns)))),
+                      self.columnize(new_column_names),
+                      self.columnize(list(map(lambda x: x.get_name(), columns))),
                       self.wrap_table(temp_table)
                       ))
         sql += Blueprint(temp_table).drop().to_sql(None, self)

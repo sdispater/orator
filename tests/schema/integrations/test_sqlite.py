@@ -37,6 +37,7 @@ class SchemaBuilderSQLiteIntegrationTestCase(OratorTestCase):
             table.integer('user_id')
             table.string('name').unique()
             table.string('status').default('draft').nullable()
+            table.string('default').default(0)
             table.timestamps()
 
             table.foreign('user_id').references('id').on('users')
