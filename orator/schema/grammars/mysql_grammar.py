@@ -188,7 +188,7 @@ class MySqlSchemaGrammar(SchemaGrammar):
         return 'TIME'
 
     def _type_timestamp(self, column):
-        if getattr(column, 'nullable', False):
+        if not column.nullable:
             return 'TIMESTAMP DEFAULT 0'
 
         return 'TIMESTAMP'
