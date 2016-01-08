@@ -501,7 +501,18 @@ class MySqlSchemaGrammarTestCase(OratorTestCase):
 
         self.assertEqual(1, len(statements))
         self.assertEqual(
-            'ALTER TABLE `users` ADD `foo` TIMESTAMP DEFAULT 0 NOT NULL',
+            'ALTER TABLE `users` ADD `foo` TIMESTAMP NOT NULL',
+            statements[0]
+        )
+
+    def test_adding_timestamp_with_current(self):
+        blueprint = Blueprint('users')
+        blueprint.timestamp('foo').use_current()
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE `users` ADD `foo` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL',
             statements[0]
         )
 
@@ -512,8 +523,8 @@ class MySqlSchemaGrammarTestCase(OratorTestCase):
 
         self.assertEqual(1, len(statements))
         expected = [
-            'ALTER TABLE `users` ADD `created_at` TIMESTAMP DEFAULT 0 NOT NULL, '
-            'ADD `updated_at` TIMESTAMP DEFAULT 0 NOT NULL'
+            'ALTER TABLE `users` ADD `created_at` TIMESTAMP NOT NULL, '
+            'ADD `updated_at` TIMESTAMP NOT NULL'
         ]
         self.assertEqual(
             expected[0],

@@ -570,6 +570,9 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         return 'TIME'
 
     def _type_timestamp(self, column):
+        if column.use_current:
+            return 'DATETIME DEFAULT CURRENT_TIMESTAMP'
+
         return 'DATETIME'
 
     def _type_binary(self, column):

@@ -182,6 +182,9 @@ class PostgresSchemaGrammar(SchemaGrammar):
         return 'TIME(0) WITHOUT TIME ZONE'
 
     def _type_timestamp(self, column):
+        if column.use_current:
+            return 'TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)'
+
         return 'TIMESTAMP(0) WITHOUT TIME ZONE'
 
     def _type_binary(self, column):

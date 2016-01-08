@@ -188,8 +188,8 @@ class MySqlSchemaGrammar(SchemaGrammar):
         return 'TIME'
 
     def _type_timestamp(self, column):
-        if not column.nullable:
-            return 'TIMESTAMP DEFAULT 0'
+        if column.use_current:
+            return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
 
         return 'TIMESTAMP'
 
