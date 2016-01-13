@@ -9,7 +9,7 @@ class MigrateMakeCommand(BaseCommand):
     """
     Create a new migration file.
 
-    migrations:make
+    make:migration
         {name : The name of the migration.}
         {--t|table= : The table to create the migration for.}
         {--C|create : Whether the migration will create the table or not.}

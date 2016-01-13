@@ -7,7 +7,7 @@ class RefreshCommand(BaseCommand):
     """
     Reset and re-run all migrations.
 
-    migrations:refresh
+    migrate:refresh
         {--d|database= : The database connection to use.}
         {--p|path= : The path of migrations files to be executed.}
         {--s|seed : Indicates if the seed task should be re-run.}
@@ -37,9 +37,9 @@ class RefreshCommand(BaseCommand):
         if self.get_definition().has_option('config'):
             options.append(('--config', self.option('config')))
 
-        self.call('migrations:reset', options)
+        self.call('migrate:reset', options)
 
-        self.call('migrations:run', options)
+        self.call('migrate', options)
 
         if self._needs_seeding():
             self._run_seeder(database)

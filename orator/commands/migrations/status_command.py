@@ -8,7 +8,7 @@ class StatusCommand(BaseCommand):
     """
     Show a list of migrations up/down.
 
-    migrations:status
+    migrate:status
         {--d|database= : The database connection to use.}
         {--p|path= : The path of migrations files to be executed.}
     """

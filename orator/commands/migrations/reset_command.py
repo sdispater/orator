@@ -8,7 +8,7 @@ class ResetCommand(BaseCommand):
     """
     Rollback all database migrations.
 
-    migrations:reset
+    migrate:reset
         {--d|database= : The database connection to use.}
         {--p|path= : The path of migrations files to be executed.}
         {--P|pretend : Dump the SQL queries that would be run.}

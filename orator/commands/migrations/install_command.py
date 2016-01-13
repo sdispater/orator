@@ -8,7 +8,7 @@ class InstallCommand(BaseCommand):
     """
     Create the migration repository.
 
-    migrations:install
+    migrate:install
         {--d|database= : The database connection to use.}
     """
 

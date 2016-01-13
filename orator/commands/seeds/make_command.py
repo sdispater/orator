@@ -11,7 +11,7 @@ class SeedersMakeCommand(BaseCommand):
     """
     Create a new seeder file.
 
-    seeders:make
+    make:seed
         {name : The name of the seed.}
         {--p|path= : The path to seeders files.
                      Defaults to <comment>./seeders</comment>.}

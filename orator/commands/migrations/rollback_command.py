@@ -8,7 +8,7 @@ class RollbackCommand(BaseCommand):
     """
     Rollback the last database migration.
 
-    migrations:rollback
+    migrate:rollback
         {--d|database= : The database connection to use.}
         {--p|path= : The path of migrations files to be executed.}
         {--P|pretend : Dump the SQL queries that would be run.}

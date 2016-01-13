@@ -17,8 +17,6 @@ class MigrateCommand(BaseCommand):
         {--P|pretend : Dump the SQL queries that would be run.}
     """
 
-    aliases = ['migrations:run']
-
     def handle(self):
         confirm = self.confirm(
             '<question>Are you sure you want to proceed with the migration?</question> ',
@@ -73,4 +71,4 @@ class MigrateCommand(BaseCommand):
             if self.get_definition().has_option('config'):
                 options.append(('--config', self.input.get_option('config')))
 
-            self.call('migrations:install', options)
+            self.call('migrate:install', options)
