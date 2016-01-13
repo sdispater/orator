@@ -1,24 +1,29 @@
 # -*- coding: utf-8 -*-
 
 import arrow
-from . import OratorTestCase
 from orator import Model, Collection
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to
 from orator.orm.relations import BelongsToMany
-from orator.connections import SQLiteConnection
-from orator.connectors.sqlite_connector import SQLiteConnector
 from orator.exceptions.orm import ModelNotFound
 
 
-class OratorIntegrationTestCase(OratorTestCase):
+class IntegrationTestCase(object):
 
     @classmethod
     def setUpClass(cls):
-        Model.set_connection_resolver(DatabaseIntegrationConnectionResolver())
+        Model.set_connection_resolver(cls.get_connection_resolver())
+
+    @classmethod
+    def get_connection_resolver(cls):
+        raise NotImplementedError()
 
     @classmethod
     def tearDownClass(cls):
         Model.unset_connection_resolver()
+
+    @property
+    def marker(self):
+        return self.grammar().get_marker()
 
     def setUp(self):
         with self.schema().create('test_users') as table:
@@ -135,7 +140,7 @@ class OratorIntegrationTestCase(OratorTestCase):
         OratorTestUser.create(id=2, email='jane@doe.com')
 
         models = OratorTestUser.hydrate_raw(
-            'SELECT * FROM test_users WHERE email = ?',
+            'SELECT * FROM test_users WHERE email = %s' % self.marker,
             ['jane@doe.com'],
             'foo_connection'
         )
@@ -146,7 +151,7 @@ class OratorIntegrationTestCase(OratorTestCase):
         self.assertEqual(1, len(models))
 
     def test_has_on_self_referencing_belongs_to_many_relationship(self):
-        user = OratorTestUser.create(id=1, email='john@doe.com')
+        user = OratorTestUser.create(email='john@doe.com')
         friend = user.friends().create(email='jane@doe.com')
 
         results = OratorTestUser.has('friends').get()
@@ -165,7 +170,7 @@ class OratorIntegrationTestCase(OratorTestCase):
         self.assertEqual('john@doe.com', post.first().user.email)
 
     def test_basic_morph_many_relationship(self):
-        user = OratorTestUser.create(id=1, email='john@doe.com')
+        user = OratorTestUser.create(email='john@doe.com')
         user.photos().create(name='Avatar 1')
         user.photos().create(name='Avatar 2')
         post = user.posts().create(name='First Post')
@@ -266,13 +271,25 @@ class OratorIntegrationTestCase(OratorTestCase):
 
         user = OratorTestUser.with_('posts').first()
         self.assertEqual(
-            'SELECT * FROM "test_posts" WHERE "test_posts"."user_id" = ? ORDER BY "name" DESC',
+            'SELECT * FROM %(table)s WHERE %(table)s.%(user_id)s = %(marker)s ORDER BY %(name)s DESC'
+            % {
+                'marker': self.marker,
+                'table': self.grammar().wrap('test_posts'),
+                'user_id': self.grammar().wrap('user_id'),
+                'name': self.grammar().wrap('name')
+            },
             user.post().to_sql()
         )
 
         user = OratorTestUser.first()
         self.assertEqual(
-            'SELECT * FROM "test_posts" WHERE "test_posts"."user_id" = ? ORDER BY "name" DESC',
+            'SELECT * FROM %(table)s WHERE %(table)s.%(user_id)s = %(marker)s ORDER BY %(name)s DESC'
+            % {
+                'marker': self.marker,
+                'table': self.grammar().wrap('test_posts'),
+                'user_id': self.grammar().wrap('user_id'),
+                'name': self.grammar().wrap('name')
+            },
             user.post().to_sql()
         )
 
@@ -288,6 +305,9 @@ class OratorIntegrationTestCase(OratorTestCase):
         self.assertIsInstance(photo.imageable, OratorTestPost)
         self.assertEqual(post.id, photo.imageable.id)
         self.assertEqual(post.id, photo.imageable().where('name', 'First Post').first().id)
+
+    def grammar(self):
+        return self.connection().get_default_query_grammar()
 
     def connection(self):
         return Model.get_connection_resolver().connection()
@@ -315,7 +335,7 @@ class OratorTestUser(Model):
 
     @morph_many('imageable')
     def photos(self):
-        return 'test_photos'
+        return OratorTestPhoto.order_by('name')
 
 
 class OratorTestPost(Model):
@@ -329,7 +349,7 @@ class OratorTestPost(Model):
 
     @morph_many('imageable')
     def photos(self):
-        return 'test_photos'
+        return OratorTestPhoto.order_by('name')
 
 
 class OratorTestPhoto(Model):
@@ -340,22 +360,3 @@ class OratorTestPhoto(Model):
     @morph_to
     def imageable(self):
         return
-
-
-class DatabaseIntegrationConnectionResolver(object):
-
-    _connection = None
-
-    def connection(self, name=None):
-        if self._connection:
-            return self._connection
-
-        self._connection = SQLiteConnection(SQLiteConnector().connect({'database': ':memory:'}))
-
-        return self._connection
-
-    def get_default_connection(self):
-        return 'default'
-
-    def set_default_connection(self, name):
-        pass

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ..utils import PY2
-from .connection import Connection
+from .connection import Connection, run
 from ..query.grammars.postgres_grammar import PostgresQueryGrammar
 from ..query.processors.postgres_processor import PostgresQueryProcessor
 from ..schema.grammars import PostgresSchemaGrammar
@@ -25,6 +25,17 @@ class PostgresConnection(Connection):
 
     def get_schema_manager(self):
         return PostgresSchemaManager(self)
+
+    @run
+    def statement(self, query, bindings=None):
+        if self.pretending():
+            return True
+
+        bindings = self.prepare_bindings(bindings)
+
+        self._new_cursor().execute(query, bindings)
+
+        return True
 
     def begin_transaction(self):
         self._connection.autocommit = False
