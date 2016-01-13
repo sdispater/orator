@@ -25,3 +25,8 @@ from .seeds import SeedersMakeCommand, SeedCommand
 
 application.add(SeedersMakeCommand())
 application.add(SeedCommand())
+
+# Models
+from .models import ModelMakeCommand
+
+application.add(ModelMakeCommand())
