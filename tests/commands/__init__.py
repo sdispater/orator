@@ -26,8 +26,8 @@ class OratorCommandTestCase(OratorTestCase):
         application.add(command)
 
         if input_stream:
-            dialog = command.get_helper('dialog')
-            dialog.set_input_stream(input_stream)
+            dialog = command.get_helper('question')
+            dialog.__class__.input_stream = input_stream
 
         command_tester = CommandTester(command)
         command_tester.execute(options)

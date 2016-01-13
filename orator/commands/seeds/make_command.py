@@ -8,27 +8,18 @@ from .base_command import BaseCommand
 
 
 class SeedersMakeCommand(BaseCommand):
+    """
+    Create a new seeder file.
 
-    name = 'seeders:make'
-
-    description = 'Create a new seeder file.'
-
-    arguments = [{
-        'name': 'name',
-        'description': 'The name of the seed.',
-        'required': True
-    }]
-
-    options = [{
-        'name': 'path',
-        'shortcut': 'p',
-        'description': 'The path to seeders files.',
-        'value_required': True
-    }]
+    seeders:make
+        {name : The name of the seed.}
+        {--p|path= : The path to seeders files.
+                     Defaults to <comment>./seeders</comment>.}
+    """
 
     needs_config = False
 
-    def fire(self):
+    def handle(self):
         """
         Executes the command.
         """

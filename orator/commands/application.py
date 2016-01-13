@@ -3,7 +3,7 @@
 from cleo import Application
 from ..version import VERSION
 
-application = Application('Orator', VERSION)
+application = Application('Orator', VERSION, complete=True)
 
 # Migrations
 from .migrations import (

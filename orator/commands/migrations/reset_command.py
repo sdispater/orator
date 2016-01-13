@@ -5,35 +5,20 @@ from .base_command import BaseCommand
 
 
 class ResetCommand(BaseCommand):
+    """
+    Rollback all database migrations.
 
-    name = 'migrations:reset'
+    migrations:reset
+        {--d|database= : The database connection to use.}
+        {--p|path= : The path of migrations files to be executed.}
+        {--P|pretend : Dump the SQL queries that would be run.}
+    """
 
-    description = 'Rollback all database migrations.'
-
-    options = [{
-        'name': 'database',
-        'shortcut': 'd',
-        'description': 'The database connection to use.',
-        'value_required': True
-    }, {
-        'name': 'path',
-        'shortcut': 'p',
-        'description': 'The path of migrations files to be executed.',
-        'value_required': True
-    }, {
-        'name': 'pretend',
-        'shortcut': 'P',
-        'description': 'Dump the SQL queries that would be run.',
-        'flag': True
-    }]
-
-    def fire(self):
+    def handle(self):
         """
         Executes the command.
         """
-        dialog = self.get_helper('dialog')
-        confirm = dialog.ask_confirmation(
-            self.output,
+        confirm = self.confirm(
             '<question>Are you sure you want to reset all of the migrations?</question> ',
             False
         )

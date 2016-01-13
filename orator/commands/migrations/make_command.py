@@ -6,37 +6,19 @@ from .base_command import BaseCommand
 
 
 class MigrateMakeCommand(BaseCommand):
+    """
+    Create a new migration file.
 
-    name = 'migrations:make'
-
-    description = 'Create a new migration file.'
-
-    arguments = [{
-        'name': 'name',
-        'description': 'The name of the migration.',
-        'required': True
-    }]
-
-    options = [{
-        'name': 'table',
-        'shortcut': 't',
-        'description': 'the table to create the migration for.',
-        'value_required': True
-    }, {
-        'name': 'create',
-        'shortcut': 'C',
-        'description': 'Whether the migration will create the table or not.',
-        'flag': True
-    }, {
-        'name': 'path',
-        'shortcut': 'p',
-        'description': 'The path to migrations files.',
-        'value_required': True
-    }]
+    migrations:make
+        {name : The name of the migration.}
+        {--t|table= : The table to create the migration for.}
+        {--C|create : Whether the migration will create the table or not.}
+        {--p|path= : The path to migrations files.}
+    """
 
     needs_config = False
 
-    def fire(self):
+    def handle(self):
         """
         Executes the command.
         """

@@ -4,45 +4,23 @@ from .base_command import BaseCommand
 
 
 class RefreshCommand(BaseCommand):
+    """
+    Reset and re-run all migrations.
 
-    name = 'migrations:refresh'
+    migrations:refresh
+        {--d|database= : The database connection to use.}
+        {--p|path= : The path of migrations files to be executed.}
+        {--s|seed : Indicates if the seed task should be re-run.}
+        {--seed-path= : The path of seeds files to be executed.
+                        Defaults to <comment>./seeders</comment>.}
+        {--seeder=database_seeder : The name of the root seeder.}
+    """
 
-    description = 'Reset and re-run all migrations.'
-
-    options = [{
-        'name': 'database',
-        'shortcut': 'd',
-        'description': 'The database connection to use.',
-        'value_required': True
-    }, {
-        'name': 'path',
-        'shortcut': 'p',
-        'description': 'The path of migrations files to be executed.',
-        'value_required': True
-    }, {
-        'name': 'seed',
-        'shortcut': 's',
-        'description': 'Indicates if the seed task should be re-run.',
-        'flag': True
-    }, {
-        'name': 'seed-path',
-        'description': 'The path of seeds files to be executed. '
-                       'Defaults to <comment>./seeders</comment>',
-        'value_required': True
-    }, {
-        'name': 'seeder',
-        'description': 'The name of the root seeder.',
-        'value_required': True,
-        'default': 'database_seeder'
-    }]
-
-    def fire(self):
+    def handle(self):
         """
         Executes the command.
         """
-        dialog = self.get_helper('dialog')
-        confirm = dialog.ask_confirmation(
-            self.output,
+        confirm = self.confirm(
             '<question>Are you sure you want to refresh the database?</question> ',
             False
         )

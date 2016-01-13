@@ -10,31 +10,20 @@ from ...utils import load_module
 
 
 class SeedCommand(BaseCommand):
+    """
+    Seed the database with records.
 
-    name = 'db:seed'
+    db:seed
+        {--d|database= : The database connection to use.}
+        {--p|path= : The path to seeders files.
+                     Defaults to <comment>./seeders</comment>.}
+    """
 
-    description = 'Seed the database with records.'
-
-    options = [{
-        'name': 'database',
-        'shortcut': 'd',
-        'description': 'The database connection to use.',
-        'value_required': True
-    }, {
-        'name': 'path',
-        'shortcut': 'p',
-        'description': 'The path of seeds files to be executed. '
-                       'Defaults to <comment>./seeders</comment>',
-        'value_required': True
-    }]
-
-    def fire(self):
+    def handle(self):
         """
         Executes the command.
         """
-        dialog = self.get_helper('dialog')
-        confirm = dialog.ask_confirmation(
-            self.output,
+        confirm = self.confirm(
             '<question>Are you sure you want to seed the database?</question> ',
             False
         )
