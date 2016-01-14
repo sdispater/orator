@@ -35,7 +35,7 @@ setup(
         'arrow',
         'inflection',
         'six',
-        'cleo>=0.3',
+        'cleo>=0.4',
         'blinker',
         'lazy-object-proxy',
         'fake-factory',
