@@ -29,7 +29,7 @@ class IntegrationTestCase(object):
         with self.schema().create('test_users') as table:
             table.increments('id')
             table.string('email').unique()
-            table.timestamps()
+            table.timestamps(use_current=True)
 
         with self.schema().create('test_friends') as table:
             table.increments('id')
@@ -40,13 +40,13 @@ class IntegrationTestCase(object):
             table.increments('id')
             table.integer('user_id')
             table.string('name')
-            table.timestamps()
+            table.timestamps(use_current=True)
 
         with self.schema().create('test_photos') as table:
             table.increments('id')
             table.morphs('imageable')
             table.string('name')
-            table.timestamps()
+            table.timestamps(use_current=True)
 
     def tearDown(self):
         self.schema().drop('test_users')

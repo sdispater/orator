@@ -29,7 +29,7 @@ class SchemaBuilderMySqlIntegrationTestCase(OratorTestCase):
             table.increments('id')
             table.string('email').unique()
             table.integer('votes').default(0)
-            table.timestamps()
+            table.timestamps(use_current=True)
 
         with self.schema().create('friends') as table:
             table.unsigned_integer('user_id')
@@ -42,7 +42,7 @@ class SchemaBuilderMySqlIntegrationTestCase(OratorTestCase):
             table.increments('id')
             table.unsigned_integer('user_id')
             table.string('name').unique()
-            table.timestamps()
+            table.timestamps(use_current=True)
 
             table.foreign('user_id').references('id').on('users')
 
@@ -50,7 +50,7 @@ class SchemaBuilderMySqlIntegrationTestCase(OratorTestCase):
             table.increments('id')
             table.morphs('imageable')
             table.string('name')
-            table.timestamps()
+            table.timestamps(use_current=True)
 
         self.connection().commit()
 
