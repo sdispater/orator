@@ -2431,7 +2431,7 @@ class Model(object):
             return str(value)
         elif type in ['bool', 'boolean']:
             return bool(value)
-        elif type in ['dict', 'list', 'json']:
+        elif type in ['dict', 'list', 'json'] and isinstance(value, basestring):
             return json.loads(value)
         else:
             return value

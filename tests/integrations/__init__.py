@@ -46,6 +46,7 @@ class IntegrationTestCase(object):
             table.increments('id')
             table.morphs('imageable')
             table.string('name')
+            table.json('metadata').nullable()
             table.timestamps(use_current=True)
 
     def tearDown(self):
@@ -306,6 +307,13 @@ class IntegrationTestCase(object):
         self.assertEqual(post.id, photo.imageable.id)
         self.assertEqual(post.id, photo.imageable().where('name', 'First Post').first().id)
 
+    def test_json_type(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        photo = user.photos().create(name='Avatar 1', metadata={'foo': 'bar'})
+
+        photo = OratorTestPhoto.find(photo.id)
+        self.assertEqual('bar', photo.metadata['foo'])
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
@@ -356,6 +364,10 @@ class OratorTestPhoto(Model):
 
     __table__ = 'test_photos'
     __guarded__ = []
+
+    __casts__ = {
+        'metadata': 'json'
+    }
 
     @morph_to
     def imageable(self):

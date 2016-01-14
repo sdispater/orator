@@ -48,7 +48,8 @@ class PostgresPlatform(Platform):
         'numeric': 'decimal',
         'year': 'date',
         'uuid': 'guid',
-        'bytea': 'blob'
+        'bytea': 'blob',
+        'json': 'json'
     }
 
     def get_list_table_columns_sql(self, table):
@@ -266,6 +267,9 @@ class PostgresPlatform(Platform):
 
     def get_text_type_sql_declaration(self, column):
         return 'TEXT'
+
+    def get_json_type_sql_declaration(self, column):
+        return 'JSON'
 
     def get_decimal_type_sql_declaration(self, column):
         if 'precision' not in column or not column['precision']:
