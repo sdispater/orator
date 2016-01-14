@@ -1,13 +1,25 @@
 language: python
+
+# Once mysql 5.6 is available on the container infra, this can be removed.
+sudo: required
+dist: trusty
+
 python:
   - "2.7"
   - "3.4"
   - "3.5"
+
+before_install:
+  # Manually install mysql 5.6 since the default is v5.5.
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq mysql-server-5.6 mysql-client-5.6 mysql-client-core-5.6
+
 install:
   - pip install -r requirements.txt
   - pip install -r tests-requirements.txt
+
 script: py.test tests/
 
 before_script:
   - psql -c 'create database orator_test;' -U postgres
-  - mysql -e 'create database orator_test;'
+  - mysql -u root -e 'create database orator_test;'
