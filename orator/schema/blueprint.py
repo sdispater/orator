@@ -600,14 +600,18 @@ class Blueprint(object):
         self.timestamp('created_at').nullable()
         self.timestamp('updated_at').nullable()
 
-    def timestamps(self):
+    def timestamps(self, use_current=False):
         """
         Create creation and update timestamps to the table.
 
         :rtype: Fluent
         """
-        self.timestamp('created_at')
-        self.timestamp('updated_at')
+        if use_current:
+            self.timestamp('created_at').use_current()
+            self.timestamp('updated_at').use_current()
+        else:
+            self.timestamp('created_at')
+            self.timestamp('updated_at')
 
     def soft_deletes(self):
         """
