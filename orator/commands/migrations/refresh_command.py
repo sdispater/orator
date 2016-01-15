@@ -30,10 +30,13 @@ class RefreshCommand(BaseCommand):
         database = self.option('database')
 
         options = [
-            ('--database', database),
             ('--path', self.option('path')),
             ('-n', True)
         ]
+
+        if database:
+            options.append(('--database', database))
+
         if self.get_definition().has_option('config'):
             options.append(('--config', self.option('config')))
 
@@ -49,10 +52,12 @@ class RefreshCommand(BaseCommand):
 
     def _run_seeder(self, database):
         options = [
-            ('--database', database),
             ('--seeder', self.option('seeder')),
             ('-n', True)
         ]
+
+        if database:
+            options.append(('--database', database))
 
         if self.get_definition().has_option('config'):
             options.append(('--config', self.option('config')))

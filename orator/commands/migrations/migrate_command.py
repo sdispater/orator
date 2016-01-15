@@ -48,9 +48,11 @@ class MigrateCommand(BaseCommand):
         # to repopulate the database.
         if self.option('seed'):
             options = [
-                ('--database', database),
                 ('-n', True)
             ]
+
+            if database:
+                options.append(('--database', database))
 
             if self.get_definition().has_option('config'):
                 options.append(('--config', self.option('config')))
@@ -64,9 +66,10 @@ class MigrateCommand(BaseCommand):
         migrator.set_connection(database)
 
         if not migrator.repository_exists():
-            options = [
-                ('--database', database)
-            ]
+            options = []
+
+            if database:
+                options.append(('--database', database))
 
             if self.get_definition().has_option('config'):
                 options.append(('--config', self.input.get_option('config')))
