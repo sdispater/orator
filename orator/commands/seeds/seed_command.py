@@ -35,6 +35,8 @@ class SeedCommand(BaseCommand):
 
         self._get_seeder().run()
 
+        self.info('Database seeded!')
+
     def _get_seeder(self):
         name = self._parse_name(self.option('seeder'))
         seeder_file = self._get_path(name)

@@ -22,15 +22,13 @@ class SeederTestCase(OratorTestCase):
         connection = flexmock(Connection(None))
         resolver.should_receive('connection').with_args(None).and_return(connection)
         seeder = Seeder(resolver)
-        ouput = flexmock(Output())
-        ouput.should_receive('writeln').once().and_return('foo')
         command = flexmock(Command('foo'))
-        command.should_receive('get_output').once().and_return(ouput)
+        command.should_receive('line').once()
         seeder.set_command(command)
         child = flexmock()
         child.__name__ = 'foo'
         child.should_receive('set_command').once().with_args(command)
-        child.should_receive('set_connection_resolver').once().with_args('bar')
+        child.should_receive('set_connection_resolver').once().with_args(resolver)
         child.should_receive('run').once()
 
         seeder.call(child)
@@ -38,8 +36,7 @@ class SeederTestCase(OratorTestCase):
 
 class Command(BaseCommand):
 
-    def get_connection_resolver(self):
-        return 'bar'
+    resolver = 'bar'
 
     def get_output(self):
         return 'foo'
