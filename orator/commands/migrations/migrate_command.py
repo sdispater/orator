@@ -72,6 +72,6 @@ class MigrateCommand(BaseCommand):
                 options.append(('--database', database))
 
             if self.get_definition().has_option('config'):
-                options.append(('--config', self.input.get_option('config')))
+                options.append(('--config', self.option('config')))
 
             self.call('migrate:install', options)

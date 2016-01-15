@@ -165,7 +165,8 @@ class BaseDatabaseManager(ConnectionResolverInterface):
         return self._config['default']
 
     def set_default_connection(self, name):
-        self._config['default'] = name
+        if name is not None:
+            self._config['default'] = name
 
     def extend(self, name, resolver):
         self._extensions[name] = resolver
