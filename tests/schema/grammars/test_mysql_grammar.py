@@ -542,8 +542,38 @@ class MySqlSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
-    def get_connection(self):
-        return flexmock(Connection(None))
+    def test_adding_json(self):
+        blueprint = Blueprint('users')
+        blueprint.json('foo')
 
-    def get_grammar(self):
-        return MySqlSchemaGrammar()
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE `users` ADD `foo` JSON NOT NULL',
+            statements[0]
+        )
+
+    def test_adding_json_mysql_56(self):
+        blueprint = Blueprint('users')
+        blueprint.json('foo')
+
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6)))
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE `users` ADD `foo` TEXT NOT NULL',
+            statements[0]
+        )
+
+    def get_connection(self, version=None):
+        if version is None:
+            version = (5, 7)
+
+        conn = flexmock(Connection(None))
+        conn.should_receive('get_server_version').and_return(version)
+
+        return conn
+
+    def get_grammar(self, version=None):
+        return MySqlSchemaGrammar(self.get_connection(version))

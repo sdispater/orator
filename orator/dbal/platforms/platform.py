@@ -7,6 +7,9 @@ class Platform(object):
 
     INTERNAL_TYPE_MAPPING = {}
 
+    def __init__(self, version=None):
+        self._version = None
+
     def get_default_value_declaration_sql(self, field):
         default = ''
 
@@ -146,6 +149,15 @@ class Platform(object):
             column['precision'] = 0
 
         return 'NUMERIC(%s, %s)' % (column['precision'], column['scale'])
+
+    def get_json_type_sql_declaration(self, column):
+        return self._get_clob_type_sql_declaration(column)
+
+    def get_clob_type_sql_declaration(self):
+        raise NotImplementedError()
+
+    def get_blob_type_sql_declaration(self):
+        raise NotImplementedError()
 
     def get_varchar_default_length(self):
         return 255

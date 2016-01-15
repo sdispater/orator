@@ -11,6 +11,7 @@ from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
 from ..schema.builder import SchemaBuilder
 from ..dbal.schema_manager import SchemaManager
+from ..dbal.platforms import PLATFORMS
 from ..exceptions.query import QueryException
 
 
@@ -44,6 +45,8 @@ def run(wrapped):
 
 
 class Connection(ConnectionInterface):
+
+    name = None
 
     def __init__(self, connection, database='', table_prefix='', config=None,
                  builder_class=QueryBuilder, builder_default_kwargs=None):
@@ -95,6 +98,8 @@ class Connection(ConnectionInterface):
 
         self._post_processor = self.get_default_post_processor()
 
+        self._server_version = None
+
         self.use_default_query_grammar()
 
     def use_default_query_grammar(self):
@@ -114,6 +119,19 @@ class Connection(ConnectionInterface):
 
     def get_default_post_processor(self):
         return QueryProcessor()
+
+    def get_database_platform(self):
+        platforms = PLATFORMS[self.name]
+
+        server_version = self.server_version
+        version = '%s.%s' % (server_version[0], server_version[1])
+
+        if version not in platforms:
+            platform = platforms['default']
+        else:
+            platform = platforms[version]
+
+        return platform()
 
     def get_schema_builder(self):
         """
@@ -485,3 +503,13 @@ class Connection(ConnectionInterface):
         else:
             self.rollback()
             raise (exc_type, exc_val, exc_tb)
+
+    @property
+    def server_version(self):
+        if self._server_version is None:
+            self._server_version = self.get_server_version()
+
+        return self._server_version
+
+    def get_server_version(self):
+        raise NotImplementedError()

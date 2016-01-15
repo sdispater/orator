@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import re
-from .table import Table
 from .column import Column
 from .schema_manager import SchemaManager
-from .platforms.postgres_platform import PostgresPlatform
 
 
 class PostgresSchemaManager(SchemaManager):
@@ -102,6 +100,3 @@ class PostgresSchemaManager(SchemaManager):
         column = Column(table_column['field'], type, options)
 
         return column
-
-    def get_database_platform(self):
-        return PostgresPlatform()

@@ -2,7 +2,6 @@
 
 import re
 from .schema_manager import SchemaManager
-from .platforms.sqlite_platform import SQLitePlatform
 from .column import Column
 
 
@@ -88,6 +87,3 @@ class SQLiteSchemaManager(SchemaManager):
             indexes.append(table_index)
 
         return indexes
-
-    def get_database_platform(self):
-        return SQLitePlatform()

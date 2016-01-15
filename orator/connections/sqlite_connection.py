@@ -5,11 +5,12 @@ from .connection import Connection
 from ..query.processors.sqlite_processor import SQLiteQueryProcessor
 from ..query.grammars.sqlite_grammar import SQLiteQueryGrammar
 from ..schema.grammars.sqlite_grammar import SQLiteSchemaGrammar
-from ..dbal.platforms.sqlite_platform import SQLitePlatform
 from ..dbal.sqlite_schema_manager import SQLiteSchemaManager
 
 
 class SQLiteConnection(Connection):
+
+    name = 'sqlite'
 
     def get_default_query_grammar(self):
         return self.with_table_prefix(SQLiteQueryGrammar())
@@ -18,10 +19,7 @@ class SQLiteConnection(Connection):
         return SQLiteQueryProcessor()
 
     def get_default_schema_grammar(self):
-        return self.with_table_prefix(SQLiteSchemaGrammar())
-
-    def get_database_platform(self):
-        return SQLitePlatform()
+        return self.with_table_prefix(SQLiteSchemaGrammar(self))
 
     def get_schema_manager(self):
         return SQLiteSchemaManager(self)
@@ -54,3 +52,11 @@ class SQLiteConnection(Connection):
             return map(lambda x: decode(x) if isinstance(x, str) else x, bindings)
 
         return bindings
+
+    def get_server_version(self):
+        sql = 'select sqlite_version() AS sqlite_version'
+
+        rows = self.select(sql)
+        version = rows[0]['sqlite_version']
+
+        return tuple(version.split('.'))[:2]

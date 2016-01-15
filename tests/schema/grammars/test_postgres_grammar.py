@@ -468,8 +468,20 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
+    def test_adding_json(self):
+        blueprint = Blueprint('users')
+        blueprint.json('foo')
+
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE "users" ADD COLUMN "foo" JSON NOT NULL',
+            statements[0]
+        )
+
     def get_connection(self):
         return flexmock(Connection(None))
 
     def get_grammar(self):
-        return PostgresSchemaGrammar()
+        return PostgresSchemaGrammar(self.get_connection())

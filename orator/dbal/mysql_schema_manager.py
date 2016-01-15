@@ -3,10 +3,10 @@
 import re
 from .column import Column
 from .schema_manager import SchemaManager
-from .platforms.mysql_platform import MySqlPlatform
+from .platforms.mysql_platform import MySQLPlatform
 
 
-class MySqlSchemaManager(SchemaManager):
+class MySQLSchemaManager(SchemaManager):
 
     def _get_portable_table_column_definition(self, table_column):
         db_type = table_column['type'].lower()
@@ -41,17 +41,17 @@ class MySqlSchemaManager(SchemaManager):
                 scale = match.group(2)
                 length = None
         elif db_type == 'tinytext':
-            length = MySqlPlatform.LENGTH_LIMIT_TINYTEXT
+            length = MySQLPlatform.LENGTH_LIMIT_TINYTEXT
         elif db_type == 'text':
-            length = MySqlPlatform.LENGTH_LIMIT_TEXT
+            length = MySQLPlatform.LENGTH_LIMIT_TEXT
         elif db_type == 'mediumtext':
-            length = MySqlPlatform.LENGTH_LIMIT_MEDIUMTEXT
+            length = MySQLPlatform.LENGTH_LIMIT_MEDIUMTEXT
         elif db_type == 'tinyblob':
-            length = MySqlPlatform.LENGTH_LIMIT_TINYBLOB
+            length = MySQLPlatform.LENGTH_LIMIT_TINYBLOB
         elif db_type == 'blob':
-            length = MySqlPlatform.LENGTH_LIMIT_BLOB
+            length = MySQLPlatform.LENGTH_LIMIT_BLOB
         elif db_type == 'mediumblob':
-            length = MySqlPlatform.LENGTH_LIMIT_MEDIUMBLOB
+            length = MySQLPlatform.LENGTH_LIMIT_MEDIUMBLOB
         elif db_type in ['tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'year']:
             length = None
 
@@ -79,6 +79,3 @@ class MySqlSchemaManager(SchemaManager):
             column.set_platform_option('collation', table_column['collation'])
 
         return column
-
-    def get_database_platform(self):
-        return MySqlPlatform()

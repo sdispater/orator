@@ -265,6 +265,9 @@ class PostgresPlatform(Platform):
     def get_blob_type_sql_declaration(self, column):
         return 'BYTEA'
 
+    def get_clob_type_sql_declaration(self):
+        return 'TEXT'
+
     def get_text_type_sql_declaration(self, column):
         return 'TEXT'
 

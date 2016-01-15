@@ -11,6 +11,11 @@ from ..blueprint import Blueprint
 
 class SchemaGrammar(Grammar):
 
+    def __init__(self, connection):
+        super(SchemaGrammar, self).__init__()
+
+        self._connection = connection
+
     def compile_rename_column(self, blueprint, command, connection):
         """
         Compile a rename column command.
@@ -335,3 +340,6 @@ class SchemaGrammar(Grammar):
             return not value
 
         return value
+
+    def platform_version(self):
+        return self._connection.server_version

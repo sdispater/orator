@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division
 from ..utils import PY2
 from .connection import Connection, run
 from ..query.grammars.postgres_grammar import PostgresQueryGrammar
 from ..query.processors.postgres_processor import PostgresQueryProcessor
 from ..schema.grammars import PostgresSchemaGrammar
-from ..dbal.platforms.postgres_platform import PostgresPlatform
 from ..dbal.postgres_schema_manager import PostgresSchemaManager
 
 
 class PostgresConnection(Connection):
+
+    name = 'pgsql'
 
     def get_default_query_grammar(self):
         return PostgresQueryGrammar()
@@ -18,10 +20,7 @@ class PostgresConnection(Connection):
         return PostgresQueryProcessor()
 
     def get_default_schema_grammar(self):
-        return self.with_table_prefix(PostgresSchemaGrammar())
-
-    def get_database_platform(self):
-        return PostgresPlatform()
+        return self.with_table_prefix(PostgresSchemaGrammar(self))
 
     def get_schema_manager(self):
         return PostgresSchemaManager(self)
@@ -72,3 +71,11 @@ class PostgresConnection(Connection):
             return self._cursor.query
 
         return self._cursor.query.decode()
+
+    def get_server_version(self):
+        int_version = self._connection.server_version
+        major = int_version // 10000
+        minor = int_version // 100 % 100
+        fix = int_version % 10
+
+        return major, minor

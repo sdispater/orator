@@ -298,6 +298,9 @@ class SQLitePlatform(Platform):
     def get_blob_type_sql_declaration(self, column):
         return 'BLOB'
 
+    def get_clob_type_sql_declaration(self):
+        return 'CLOB'
+
     def get_column_options(self):
         return ['pk']
 

@@ -16,7 +16,7 @@ class SchemaBuilderTestCase(OratorTestCase):
         conn = flexmock(Connection(None))
         conn.should_receive('statement').once().with_args('foo')
         conn.should_receive('statement').once().with_args('bar')
-        grammar = flexmock(SchemaGrammar())
+        grammar = flexmock(SchemaGrammar(conn))
         blueprint = flexmock(Blueprint('table'))
         blueprint.should_receive('to_sql').once().with_args(conn, grammar).and_return(['foo', 'bar'])
 

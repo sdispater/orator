@@ -5,7 +5,7 @@ from .keywords.mysql_keywords import MySQLKeywords
 from ..identifier import Identifier
 
 
-class MySqlPlatform(Platform):
+class MySQLPlatform(Platform):
 
     LENGTH_LIMIT_TINYTEXT = 255
     LENGTH_LIMIT_TEXT = 65535
@@ -48,7 +48,7 @@ class MySqlPlatform(Platform):
         'tinyblob': 'blob',
         'binary': 'binary',
         'varbinary': 'binary',
-        'set': 'simple_array'
+        'set': 'simple_array',
     }
 
     def get_list_table_columns_sql(self, table, database=None):
@@ -209,6 +209,20 @@ class MySqlPlatform(Platform):
                 return 'MEDIUMBLOB'
 
         return 'LONGBLOB'
+
+    def get_clob_type_sql_declaration(self, column):
+        length = column.get('length')
+        if length:
+            if length <= self.LENGTH_LIMIT_TINYTEXT:
+                return 'TINYTEXT'
+
+            if length <= self.LENGTH_LIMIT_TEXT:
+                return 'TEXT'
+
+            if length <= self.LENGTH_LIMIT_MEDIUMTEXT:
+                return 'MEDIUMTEXT'
+
+        return 'LONGTEXT'
 
     def get_decimal_type_sql_declaration(self, column):
         decl = super(MySqlPlatform, self).get_decimal_type_sql_declaration(column)

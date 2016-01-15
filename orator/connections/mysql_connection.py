@@ -6,11 +6,12 @@ from ..query.grammars.mysql_grammar import MySqlQueryGrammar
 from ..query.processors.mysql_processor import MySqlQueryProcessor
 from ..schema.grammars import MySqlSchemaGrammar
 from ..schema import MySqlSchemaBuilder
-from ..dbal.platforms.mysql_platform import MySqlPlatform
-from ..dbal.mysql_schema_manager import MySqlSchemaManager
+from ..dbal.mysql_schema_manager import MySQLSchemaManager
 
 
 class MySqlConnection(Connection):
+
+    name = 'mysql'
 
     def get_default_query_grammar(self):
         return MySqlQueryGrammar()
@@ -30,13 +31,10 @@ class MySqlConnection(Connection):
         return MySqlSchemaBuilder(self)
 
     def get_default_schema_grammar(self):
-        return self.with_table_prefix(MySqlSchemaGrammar())
-
-    def get_database_platform(self):
-        return MySqlPlatform()
+        return self.with_table_prefix(MySqlSchemaGrammar(self))
 
     def get_schema_manager(self):
-        return MySqlSchemaManager(self)
+        return MySQLSchemaManager(self)
 
     def begin_transaction(self):
         self._connection.autocommit(False)
@@ -67,3 +65,8 @@ class MySqlConnection(Connection):
             return self._cursor._last_executed
 
         return self._cursor._last_executed.decode()
+
+    def get_server_version(self):
+        tuple_version = self._connection._server_version
+
+        return tuple_version[:2]

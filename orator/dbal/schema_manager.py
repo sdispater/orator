@@ -16,6 +16,7 @@ class SchemaManager(object):
         :type platform: orator.dbal.platforms.Platform
         """
         self._connection = connection
+
         if not platform:
             self._platform = self._connection.get_database_platform()
         else:
@@ -74,4 +75,4 @@ class SchemaManager(object):
         raise NotImplementedError
 
     def get_database_platform(self):
-        raise NotImplementedError
+        return self._connection.get_database_platform()
