@@ -17,6 +17,7 @@ class SeedCommand(BaseCommand):
         {--d|database= : The database connection to use.}
         {--p|path= : The path to seeders files.
                      Defaults to <comment>./seeds</comment>.}
+        {--seeder=database_seeder : The name of the root seeder.}
     """
 
     def handle(self):
