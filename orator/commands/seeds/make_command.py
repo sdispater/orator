@@ -14,7 +14,7 @@ class SeedersMakeCommand(BaseCommand):
     make:seed
         {name : The name of the seed.}
         {--p|path= : The path to seeders files.
-                     Defaults to <comment>./seeders</comment>.}
+                     Defaults to <comment>./seeds</comment>.}
     """
 
     needs_config = False

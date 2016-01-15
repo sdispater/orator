@@ -16,7 +16,7 @@ class SeedCommand(BaseCommand):
     db:seed
         {--d|database= : The database connection to use.}
         {--p|path= : The path to seeders files.
-                     Defaults to <comment>./seeders</comment>.}
+                     Defaults to <comment>./seeds</comment>.}
     """
 
     def handle(self):
@@ -39,10 +39,10 @@ class SeedCommand(BaseCommand):
         seeder_file = self._get_path(name)
 
         # Loading parent module
-        load_module('seeders', self._get_path('__init__'))
+        load_module('seeds', self._get_path('__init__'))
 
         # Loading module
-        mod = load_module('seeders.%s' % name, seeder_file)
+        mod = load_module('seeds.%s' % name, seeder_file)
 
         klass = getattr(mod, inflection.camelize(name))
 
