@@ -30,9 +30,11 @@ class RefreshCommand(BaseCommand):
         database = self.option('database')
 
         options = [
-            ('--path', self.option('path')),
             ('-n', True)
         ]
+
+        if self.option('path'):
+            options.append(('--path', self.option('path')))
 
         if database:
             options.append(('--database', database))
