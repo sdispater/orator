@@ -68,6 +68,13 @@ class ConnectionTestCase(OratorTestCase):
         self.assertIsNot(manager.connection().get_connection(), api_connection)
         self.assertIsNotNone(manager.connection().get_connection())
 
+    def test_set_default_connection_with_none_should_not_overwrite(self):
+        manager = self._get_real_manager()
+
+        manager.set_default_connection(None)
+
+        self.assertEqual('sqlite', manager.get_default_connection())
+
     def _get_manager(self):
         manager = MockManager({
             'default': 'sqlite',
