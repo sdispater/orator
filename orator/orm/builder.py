@@ -1156,10 +1156,7 @@ class Builder(object):
         return call
 
     def __getattr__(self, item, *args):
-        try:
-            object.__getattribute__(self, item)
-        except AttributeError:
-            return self.__dynamic(item)
+        return self.__dynamic(item)
 
     def __copy__(self):
         new = self.__class__(copy.copy(self._query))
