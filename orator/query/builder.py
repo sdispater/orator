@@ -1665,7 +1665,7 @@ class QueryBuilder(object):
         if item.startswith('where_'):
             return self.dynamic_where(item)
 
-        object.__getattribute__(self, item)
+        raise AttributeError(item)
 
     def __copy__(self):
         new = self.__class__(self._connection, self._grammar, self._processor)
