@@ -315,7 +315,7 @@ class Connection(ConnectionInterface):
 
             return callback(self, query, bindings, *args, **kwargs)
 
-        raise e
+        raise QueryException(query, bindings, e)
 
     def _caused_by_lost_connection(self, e):
         message = e.message
