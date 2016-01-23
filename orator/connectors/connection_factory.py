@@ -3,11 +3,11 @@
 import random
 from ..exceptions import ArgumentError
 from ..exceptions.connectors import UnsupportedDriver
-from .mysql_connector import MySqlConnector
+from .mysql_connector import MySQLConnector
 from .postgres_connector import PostgresConnector
 from .sqlite_connector import SQLiteConnector
 from ..connections import (
-    MySqlConnection,
+    MySQLConnection,
     PostgresConnection,
     SQLiteConnection
 )
@@ -17,14 +17,14 @@ class ConnectionFactory(object):
 
     CONNECTORS = {
         'sqlite': SQLiteConnector,
-        'mysql': MySqlConnector,
+        'mysql': MySQLConnector,
         'postgres': PostgresConnector,
         'pgsql': PostgresConnector
     }
 
     CONNECTIONS = {
         'sqlite': SQLiteConnection,
-        'mysql': MySqlConnection,
+        'mysql': MySQLConnection,
         'postgres': PostgresConnection,
         'pgsql': PostgresConnection
     }

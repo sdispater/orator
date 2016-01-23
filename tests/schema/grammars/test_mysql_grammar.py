@@ -2,12 +2,12 @@
 
 from flexmock import flexmock, flexmock_teardown
 from orator.connections import Connection
-from orator.schema.grammars import MySqlSchemaGrammar
+from orator.schema.grammars import MySQLSchemaGrammar
 from orator.schema.blueprint import Blueprint
 from ... import OratorTestCase
 
 
-class MySqlSchemaGrammarTestCase(OratorTestCase):
+class MySQLSchemaGrammarTestCase(OratorTestCase):
 
     def tearDown(self):
         flexmock_teardown()
@@ -576,4 +576,4 @@ class MySqlSchemaGrammarTestCase(OratorTestCase):
         return conn
 
     def get_grammar(self, version=None):
-        return MySqlSchemaGrammar(self.get_connection(version))
+        return MySQLSchemaGrammar(self.get_connection(version))

@@ -6,7 +6,7 @@ from ...query.expression import QueryExpression
 from ...support.fluent import Fluent
 
 
-class MySqlSchemaGrammar(SchemaGrammar):
+class MySQLSchemaGrammar(SchemaGrammar):
 
     _modifiers = [
         'unsigned', 'charset', 'collate', 'nullable',

@@ -4,8 +4,8 @@ import os
 
 from .. import OratorTestCase
 from . import IntegrationTestCase
-from orator.connections import MySqlConnection
-from orator.connectors.mysql_connector import MySqlConnector
+from orator.connections import MySQLConnection
+from orator.connectors.mysql_connector import MySQLConnector
 
 
 class MySQLIntegrationTestCase(IntegrationTestCase, OratorTestCase):
@@ -33,8 +33,8 @@ class DatabaseIntegrationConnectionResolver(object):
             user = 'orator'
             password = 'orator'
 
-        self._connection = MySqlConnection(
-            MySqlConnector().connect({
+        self._connection = MySQLConnection(
+            MySQLConnector().connect({
                 'database': database,
                 'user': user,
                 'password': password

@@ -3,7 +3,7 @@
 from .builder import SchemaBuilder
 
 
-class MySqlSchemaBuilder(SchemaBuilder):
+class MySQLSchemaBuilder(SchemaBuilder):
 
     def has_table(self, table):
         """

@@ -4,12 +4,12 @@ import os
 from ... import OratorTestCase
 from orator import Model
 from orator.orm import has_one, has_many, belongs_to, belongs_to_many, morph_to, morph_many
-from orator.connections import MySqlConnection
-from orator.connectors.mysql_connector import MySqlConnector
+from orator.connections import MySQLConnection
+from orator.connectors.mysql_connector import MySQLConnector
 from orator.query.expression import QueryExpression
 
 
-class SchemaBuilderMySqlIntegrationTestCase(OratorTestCase):
+class SchemaBuilderMySQLIntegrationTestCase(OratorTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -224,8 +224,8 @@ class DatabaseIntegrationConnectionResolver(object):
             user = 'orator'
             password = 'orator'
 
-        self._connection = MySqlConnection(
-            MySqlConnector().connect({
+        self._connection = MySQLConnection(
+            MySQLConnector().connect({
                 'database': database,
                 'user': user,
                 'password': password

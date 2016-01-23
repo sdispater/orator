@@ -18,7 +18,7 @@ except ImportError:
 from .connector import Connector
 
 
-class MySqlConnector(Connector):
+class MySQLConnector(Connector):
 
     RESERVED_KEYWORDS = [
         'log_queries', 'driver', 'prefix',

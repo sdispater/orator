@@ -225,7 +225,7 @@ class MySQLPlatform(Platform):
         return 'LONGTEXT'
 
     def get_decimal_type_sql_declaration(self, column):
-        decl = super(MySqlPlatform, self).get_decimal_type_sql_declaration(column)
+        decl = super(MySQLPlatform, self).get_decimal_type_sql_declaration(column)
 
         return decl + self.get_unsigned_declaration(column)
 

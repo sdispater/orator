@@ -11,7 +11,7 @@ from orator.query.grammars import (
     QueryGrammar,
     PostgresQueryGrammar,
     SQLiteQueryGrammar,
-    MySqlQueryGrammar
+    MySQLQueryGrammar
 )
 from orator.query.builder import QueryBuilder
 from orator.query.expression import QueryExpression
@@ -1579,7 +1579,7 @@ class QueryBuilderTestCase(OratorTestCase):
         )
 
     def get_mysql_builder(self):
-        grammar = MySqlQueryGrammar()
+        grammar = MySQLQueryGrammar()
         processor = MockProcessor().prepare_mock()
         connection = MockConnection().prepare_mock()
 
