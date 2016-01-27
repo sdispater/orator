@@ -42,5 +42,5 @@ class MySQL57Platform(MySQLPlatform):
         'json': 'json',
     }
 
-    def get_json_type_sql_declaration(self, column):
+    def get_json_type_declaration_sql(self, column):
         return 'JSON'

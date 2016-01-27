@@ -87,12 +87,24 @@ class PostgresPlatform(Platform):
         return sql
 
     def get_list_table_indexes_sql(self, table):
-        table = table.replace('.', '__')
+        sql = """
+              SELECT quote_ident(relname) as relname, pg_index.indisunique, pg_index.indisprimary,
+                     pg_index.indkey, pg_index.indrelid,
+                     pg_get_expr(indpred, indrelid) AS where
+              FROM pg_class, pg_index
+              WHERE oid IN (
+                  SELECT indexrelid
+                  FROM pg_index si, pg_class sc, pg_namespace sn
+                  WHERE %s
+                  AND sc.oid=si.indrelid AND sc.relnamespace = sn.oid
+              ) AND pg_index.indexrelid = oid"""
 
-        return 'PRAGMA index_list(\'%s\')' % table
+        sql = sql % self.get_table_where_clause(table, 'sc', 'sn')
+
+        return sql
 
     def get_list_table_foreign_keys_sql(self, table):
-        return 'SELECT quote_ident(r.conname) AS name, ' \
+        return 'SELECT quote_ident(r.conname) as conname, ' \
                'pg_catalog.pg_get_constraintdef(r.oid, true) AS condef ' \
                'FROM pg_catalog.pg_constraint r ' \
                'WHERE r.conrelid = ' \
@@ -116,6 +128,30 @@ class PostgresPlatform(Platform):
         where_clause += '%s.relname = \'%s\' AND %s.nspname = %s' % (class_alias, table, namespace_alias, schema)
 
         return where_clause
+
+    def get_advanced_foreign_key_options_sql(self, foreign_key):
+        query = ''
+
+        if foreign_key.has_option('match'):
+            query += ' MATCH %s' % foreign_key.get_option('match')
+
+        query += super(PostgresPlatform, self).get_advanced_foreign_key_options_sql(foreign_key)
+
+        deferrable = foreign_key.has_option('deferrable') and foreign_key.get_option('deferrable') is not False
+        if deferrable:
+            query += ' DEFERRABLE'
+        else:
+            query += ' NOT DEFERRABLE'
+
+        query += ' INITIALLY'
+
+        deferred = foreign_key.has_option('deferred') and foreign_key.get_option('deferred') is not False
+        if deferred:
+            query += ' DEFERRED'
+        else:
+            query += ' IMMEDIATE'
+
+        return query
 
     def get_alter_table_sql(self, diff):
         """
@@ -217,40 +253,40 @@ class PostgresPlatform(Platform):
 
         return item
 
-    def get_boolean_type_sql_declaration(self, column):
+    def get_boolean_type_declaration_sql(self, column):
         return 'BOOLEAN'
 
-    def get_integer_type_sql_declaration(self, column):
+    def get_integer_type_declaration_sql(self, column):
         if column.get('autoincrement'):
             return 'SERIAL'
 
         return 'INT'
 
-    def get_bigint_type_sql_declaration(self, column):
+    def get_bigint_type_declaration_sql(self, column):
         if column.get('autoincrement'):
             return 'BIGSERIAL'
 
         return 'BIGINT'
 
-    def get_smallint_type_sql_declaration(self, column):
+    def get_smallint_type_declaration_sql(self, column):
         return 'SMALLINT'
 
-    def get_guid_type_sql_declaration(self, column):
+    def get_guid_type_declaration_sql(self, column):
         return 'UUID'
 
-    def get_datetime_type_sql_declaration(self, column):
+    def get_datetime_type_declaration_sql(self, column):
         return 'TIMESTAMP(0) WITHOUT TIME ZONE'
 
-    def get_datetimetz_type_sql_declaration(self, column):
+    def get_datetimetz_type_declaration_sql(self, column):
         return 'TIMESTAMP(0) WITH TIME ZONE'
 
-    def get_date_type_sql_declaration(self, column):
+    def get_date_type_declaration_sql(self, column):
         return 'DATE'
 
-    def get_time_type_sql_declaration(self, column):
+    def get_time_type_declaration_sql(self, column):
         return 'TIME(0) WITHOUT TIME ZONE'
 
-    def get_string_type_sql_declaration(self, column):
+    def get_string_type_declaration_sql(self, column):
         length = column.get('length', '255')
         fixed = column.get('fixed')
 
@@ -259,22 +295,22 @@ class PostgresPlatform(Platform):
         else:
             return 'VARCHAR(%s)' % length
 
-    def get_binary_type_sql_declaration(self, column):
+    def get_binary_type_declaration_sql(self, column):
         return 'BYTEA'
 
-    def get_blob_type_sql_declaration(self, column):
+    def get_blob_type_declaration_sql(self, column):
         return 'BYTEA'
 
-    def get_clob_type_sql_declaration(self):
+    def get_clob_type_declaration_sql(self, column):
         return 'TEXT'
 
-    def get_text_type_sql_declaration(self, column):
+    def get_text_type_declaration_sql(self, column):
         return 'TEXT'
 
-    def get_json_type_sql_declaration(self, column):
+    def get_json_type_declaration_sql(self, column):
         return 'JSON'
 
-    def get_decimal_type_sql_declaration(self, column):
+    def get_decimal_type_declaration_sql(self, column):
         if 'precision' not in column or not column['precision']:
             column['precision'] = 10
 
@@ -283,7 +319,7 @@ class PostgresPlatform(Platform):
 
         return 'DECIMAL(%s, %s)' % (column['precision'], column['scale'])
 
-    def get_float_type_sql_declaration(self, column):
+    def get_float_type_declaration_sql(self, column):
         return 'DOUBLE PRECISION'
 
     def supports_foreign_key_constraints(self):

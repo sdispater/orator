@@ -318,7 +318,7 @@ class Connection(ConnectionInterface):
         raise QueryException(query, bindings, e)
 
     def _caused_by_lost_connection(self, e):
-        message = e.message
+        message = str(e)
 
         for s in ['server has gone away',
                   'no connection to the server',

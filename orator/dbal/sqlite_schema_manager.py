@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import re
+from collections import OrderedDict
 from .schema_manager import SchemaManager
 from .column import Column
+from .foreign_key_constraint import ForeignKeyConstraint
 
 
 class SQLiteSchemaManager(SchemaManager):
@@ -68,22 +70,80 @@ class SQLiteSchemaManager(SchemaManager):
 
         return column
 
-    def list_table_indexes(self, table):
-        sql = self._platform.get_list_table_indexes_sql(table)
+    def _get_portable_table_indexes_list(self, table_indexes, table_name):
+        index_buffer = []
 
-        cursor = self._connection.get_connection().cursor()
-        table_indexes = cursor.execute(sql).fetchall()
+        # Fetch primary
+        info = self._connection.select('PRAGMA TABLE_INFO (%s)' % table_name)
 
-        indexes = []
+        for row in info:
+            if row['pk'] != 0:
+                index_buffer.append({
+                    'key_name': 'primary',
+                    'primary': True,
+                    'non_unique': False,
+                    'column_name': row['name']
+                })
+
+        # Fetch regular indexes
         for index in table_indexes:
-            table_index = dict(index.items())
-            index_info = cursor.execute('PRAGMA index_info(%s)' % index['name']).fetchall()
-            columns = []
-            for column in index_info:
-                columns.append(column['name'])
+            # Ignore indexes with reserved names, e.g. autoindexes
+            if index['name'].find('sqlite_') == -1:
+                key_name = index['name']
+                idx = {
+                    'key_name': key_name,
+                    'primary': False,
+                    'non_unique': not bool(index['unique'])
+                }
 
-            table_index['columns'] = columns
+                info = self._connection.select('PRAGMA INDEX_INFO (\'%s\')' % key_name)
+                for row in info:
+                    idx['column_name'] = row['name']
+                    index_buffer.append(idx)
 
-            indexes.append(table_index)
+        return super(SQLiteSchemaManager, self)._get_portable_table_indexes_list(index_buffer, table_name)
 
-        return indexes
+    def _get_portable_table_foreign_keys_list(self, table_foreign_keys):
+        foreign_keys = OrderedDict()
+
+        for value in table_foreign_keys:
+            value = dict((k.lower(), v) for k, v in value.items())
+            name = value.get('constraint_name', '')
+
+            if name not in foreign_keys:
+                if 'on_delete' not in value or value['on_delete'] == 'RESTRICT':
+                    value['on_delete'] = None
+
+                if 'on_update' not in value or value['on_update'] == 'RESTRICT':
+                    value['on_update'] = None
+
+                foreign_keys[name] = {
+                    'name': name,
+                    'local': [],
+                    'foreign': [],
+                    'foreign_table': value['table'],
+                    'on_delete': value['on_delete'],
+                    'on_update': value['on_update'],
+                    'deferrable': value.get('deferrable', False),
+                    'deferred': value.get('deferred', False)
+                }
+
+            foreign_keys[name]['local'].append(value['from'])
+            foreign_keys[name]['foreign'].append(value['to'])
+
+        result = []
+        for constraint in foreign_keys.values():
+            result.append(
+                ForeignKeyConstraint(
+                    constraint['local'], constraint['foreign_table'],
+                    constraint['foreign'], constraint['name'],
+                    {
+                        'on_delete': constraint['on_delete'],
+                        'on_update': constraint['on_update'],
+                        'deferrable': constraint['deferrable'],
+                        'deferred': constraint['deferred']
+                    }
+                )
+            )
+
+        return result

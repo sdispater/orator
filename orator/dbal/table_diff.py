@@ -15,9 +15,9 @@ class TableDiff(object):
         self.added_columns = added_columns or OrderedDict()
         self.changed_columns = changed_columns or OrderedDict()
         self.removed_columns = removed_columns or OrderedDict()
-        self.added_indexes = added_indexes or []
-        self.changed_indexes = changed_indexes or []
-        self.removed_indexes = removed_indexes or []
+        self.added_indexes = added_indexes or OrderedDict()
+        self.changed_indexes = changed_indexes or OrderedDict()
+        self.removed_indexes = removed_indexes or OrderedDict()
         self.added_foreign_keys = []
         self.changed_foreign_keys = []
         self.removed_foreign_keys = []
