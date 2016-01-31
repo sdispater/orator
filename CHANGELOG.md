@@ -1,3 +1,35 @@
+## 0.8
+
+##### Improvements
+
+- Adding a make:model command
+- [#30](https://github.com/sdispater/orator/issues/30) Support for default values
+- [#29](https://github.com/sdispater/orator/issues/29) Supporting only one timetamp column on models
+- [#28](https://github.com/sdispater/orator/issues/28) Making where_in() method accept Collection instances
+- Improving dbal to support SQLite fully.
+- Using unicode by default for mysql and postgres.
+- [#26](https://github.com/sdispater/orator/issues/26) Adding support for extra conditions on relationships
+- Adding support for a `use_current()` on timestamps
+- Adds `flatten()` method to Collection class
+- Improves how queries are run in Connection class
+- Improving fluents
+- Improving global scopes
+
+##### Fixes
+
+- [#33](https://github.com/sdispater/orator/issues/33) [SQLite] Renaming or dropping columns loses NULL constraint
+- [#32](https://github.com/sdispater/orator/issues/32) [SQLite] Renaming or dropping columns fails when columns' name is a keyword
+- [#31](https://github.com/sdispater/orator/issues/31) [SQLite] Changing columns loses default column values.
+- Fixing `Connection._try_again_if_caused_by_lost_connection()` not being called
+- Preventing default connection being set to None
+- Fixing json type behavior for Postgres
+- Fixes soft deletes
+- Fixing migration stubs
+- Fixes `Model.get_foreign_key()` method
+- Avoid going through \_\_setattr\_\_ method when setting timestamps
+- Fixes query grammar default columns value
+
+
 ### 0.7.1
 
 (November 30th, 2015)
