@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import arrow
+from datetime import datetime, timedelta
 from orator import Model, Collection
-from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to
+from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope
 from orator.orm.relations import BelongsToMany
 from orator.exceptions.orm import ModelNotFound
 
@@ -314,6 +315,19 @@ class IntegrationTestCase(object):
         photo = OratorTestPhoto.find(photo.id)
         self.assertEqual('bar', photo.metadata['foo'])
 
+    def test_local_scopes(self):
+        yesterday = created_at=datetime.utcnow() - timedelta(days=1)
+        john = OratorTestUser.create(id=1, email='john@doe.com', created_at=yesterday, updated_at=yesterday)
+        jane = OratorTestUser.create(id=2, email='jane@doe.com')
+
+        result = OratorTestUser.older_than(minutes=30).get()
+        self.assertEqual(1, len(result))
+        self.assertEqual('john@doe.com', result.first().email)
+
+        result = OratorTestUser.where_not_null('id').older_than(minutes=30).get()
+        self.assertEqual(1, len(result))
+        self.assertEqual('john@doe.com', result.first().email)
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
@@ -344,6 +358,10 @@ class OratorTestUser(Model):
     @morph_many('imageable')
     def photos(self):
         return OratorTestPhoto.order_by('name')
+
+    @scope
+    def older_than(self, query, **kwargs):
+        query.where('updated_at', '<', datetime.utcnow() - timedelta(**kwargs))
 
 
 class OratorTestPost(Model):

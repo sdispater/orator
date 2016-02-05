@@ -112,6 +112,34 @@ class column(object):
         return accessor(f, self.attribute)
 
 
+class scope(classmethod):
+    """
+    Decorator to add local scopes.
+    """
+
+    def __init__(self, method):
+        super(scope, self).__init__(method)
+
+        self._method = method
+        self._owner = None
+
+        update_wrapper(self, method)
+
+    def __get__(self, instance, owner, *args, **kwargs):
+        if instance:
+            self._owner = None
+        else:
+            self._owner = owner
+
+        return self
+
+    def __call__(self, *args, **kwargs):
+        if not self._owner:
+            return self._method(self._owner, *args, **kwargs)
+        else:
+            return getattr(self._owner.query(), self._method.__name__)(*args, **kwargs)
+
+
 # Relations decorators
 class relation(object):
     """

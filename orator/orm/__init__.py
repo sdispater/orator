@@ -10,5 +10,6 @@ from .utils import (
     has_one, morph_one,
     belongs_to, morph_to,
     has_many, has_many_through, morph_many,
-    belongs_to_many, morph_to_many, morphed_by_many
+    belongs_to_many, morph_to_many, morphed_by_many,
+    scope
 )

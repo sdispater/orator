@@ -1122,12 +1122,21 @@ class Builder(object):
         return self._macros.get(name)
 
     def __dynamic(self, method):
-        scope = 'scope_%s' % method
+        from .utils import scope
+
+        scope_method = 'scope_%s' % method
         is_scope = False
         is_macro = False
-        if hasattr(self._model, scope):
+
+        # New scope definition check
+        if hasattr(self._model, method) and isinstance(getattr(self._model, method), scope):
             is_scope = True
-            attribute = getattr(self._model, scope)
+            attribute = getattr(self._model, method)
+            scope_method = method
+        # Old scope definition check
+        elif hasattr(self._model, scope_method):
+            is_scope = True
+            attribute = getattr(self._model, scope_method)
         elif method in self._macros:
             is_macro = True
             attribute = self._macros[method]
@@ -1139,7 +1148,7 @@ class Builder(object):
 
         def call(*args, **kwargs):
             if is_scope:
-                return self._call_scope(scope, *args, **kwargs)
+                return self._call_scope(scope_method, *args, **kwargs)
             if is_macro:
                 return attribute(self, *args, **kwargs)
 

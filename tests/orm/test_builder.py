@@ -3,12 +3,11 @@
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
-
 from orator.query.grammars.grammar import QueryGrammar
 from orator.query.builder import QueryBuilder
 from orator.orm.builder import Builder
 from orator.orm.model import Model
-from orator.orm import belongs_to, has_many
+from orator.orm import belongs_to, has_many, scope
 from orator.exceptions.orm import ModelNotFound
 from orator.orm.collection import Collection
 from orator.connections import Connection
@@ -477,7 +476,8 @@ class OrmBuilderTestModelFarRelatedStub(OratorTestModel):
 
 class OrmBuilderTestModelScopeStub(OratorTestModel):
 
-    def scope_approved(self, query):
+    @scope
+    def approved(self, query):
         query.where('foo', 'bar')
 
 
