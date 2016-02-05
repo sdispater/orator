@@ -6,6 +6,7 @@
 - [#30](https://github.com/sdispater/orator/issues/30) Support for default values
 - [#29](https://github.com/sdispater/orator/issues/29) Supporting only one timetamp column on models
 - [#28](https://github.com/sdispater/orator/issues/28) Making where_in() method accept Collection instances
+- Adding `@scope` decorator to define query scopes.
 - Improving dbal to support SQLite fully.
 - Using unicode by default for mysql and postgres.
 - [#26](https://github.com/sdispater/orator/issues/26) Adding support for extra conditions on relationships
