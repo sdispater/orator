@@ -1,2 +1,6 @@
 include README.rst LICENSE
 recursive-exclude tests *
+recursive-exclude benchmark *
+recursive-exclude seeders *
+recursive-exclude seeds *
+recursive-exclude migrations *
