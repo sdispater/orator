@@ -1,3 +1,66 @@
+## 0.8
+
+##### Improvements
+
+###### ORM
+
+- [#30](https://github.com/sdispater/orator/issues/30) Support for default values
+- [#29](https://github.com/sdispater/orator/issues/29) Supporting only one timetamp column on models
+- [#26](https://github.com/sdispater/orator/issues/26) Adding support for extra conditions on relationships
+- Adding `@scope` decorator to define query scopes.
+- Improving global scopes
+
+###### Schema builder
+
+- Adding support for a `use_current()` on timestamps
+- Improving dbal to support SQLite fully.
+- Improving fluents
+
+###### Query Builder
+
+- [#28](https://github.com/sdispater/orator/issues/28) Making where_in() method accept Collection instances
+
+###### Commands
+
+- Adding a `make:model` command
+
+###### Connection
+
+- Using unicode by default for mysql and postgres.
+- Improves how queries are run in `Connection` class
+
+###### Collections
+
+- Adds `flatten()` method to `Collection` class
+
+##### Fixes
+
+###### ORM
+
+- Fixes `Model.get_foreign_key()` method
+- Fixes soft deletes
+- Avoid going through \_\_setattr\_\_ method when setting timestamps
+
+###### Schema Builder
+
+- [#33](https://github.com/sdispater/orator/issues/33) [SQLite] Renaming or dropping columns loses NULL constraint
+- [#32](https://github.com/sdispater/orator/issues/32) [SQLite] Renaming or dropping columns fails when columns' name is a keyword
+- [#31](https://github.com/sdispater/orator/issues/31) [SQLite] Changing columns loses default column values.
+
+###### Query Builder
+
+- Fixes query grammar default columns value
+
+###### Connection
+
+- Fixing `Connection._try_again_if_caused_by_lost_connection()` not being called
+- Preventing default connection being set to None
+- Fixing json type behavior for Postgres
+
+###### Migrations
+- Fixing migration stubs
+
+
 ### 0.7.1
 
 (November 30th, 2015)
@@ -64,9 +127,9 @@
 ##### Fixes
 
 - Fixes a bug when results rather than the relation was returned
-- #7 Starting a new query from a BelongsToMany relation does not maintain pivot columns.
-- #6 Model.set_table() method does not properly handle pivot classes.
-- #5 Model.fresh() method raises an error for models retrieved from relations.
+- Starting a new query from a BelongsToMany relation does not maintain pivot columns.
+- Model.set_table() method does not properly handle pivot classes.
+- Model.fresh() method raises an error for models retrieved from relations.
 
 
 ### 0.6.1

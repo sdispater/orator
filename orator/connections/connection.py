@@ -2,6 +2,7 @@
 
 import time
 import logging
+from functools import wraps
 from contextlib import contextmanager
 from .connection_interface import ConnectionInterface
 from ..query.grammars.grammar import QueryGrammar
@@ -10,13 +11,40 @@ from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
 from ..schema.builder import SchemaBuilder
 from ..dbal.schema_manager import SchemaManager
+from ..dbal.platforms import PLATFORMS
 from ..exceptions.query import QueryException
 
 
 query_logger = logging.getLogger('orator.connection.queries')
 
 
+def run(wrapped):
+    """
+    Special decorator encapsulating query method.
+    """
+    @wraps(wrapped)
+    def _run(self, query, bindings=None, *args, **kwargs):
+        self._reconnect_if_missing_connection()
+
+        start = time.time()
+        try:
+            result = wrapped(self, query, bindings, *args, **kwargs)
+        except Exception as e:
+            result = self._try_again_if_caused_by_lost_connection(
+                e, query, bindings, wrapped
+            )
+
+        t = self._get_elapsed_time(start)
+        self.log_query(query, bindings, t)
+
+        return result
+
+    return _run
+
+
 class Connection(ConnectionInterface):
+
+    name = None
 
     def __init__(self, connection, database='', table_prefix='', config=None,
                  builder_class=QueryBuilder, builder_default_kwargs=None):
@@ -68,6 +96,8 @@ class Connection(ConnectionInterface):
 
         self._post_processor = self.get_default_post_processor()
 
+        self._server_version = None
+
         self.use_default_query_grammar()
 
     def use_default_query_grammar(self):
@@ -87,6 +117,19 @@ class Connection(ConnectionInterface):
 
     def get_default_post_processor(self):
         return QueryProcessor()
+
+    def get_database_platform(self):
+        platforms = PLATFORMS[self.name]
+
+        server_version = self.server_version
+        version = '%s.%s' % (server_version[0], server_version[1])
+
+        if version not in platforms:
+            platform = platforms['default']
+        else:
+            platform = platforms[version]
+
+        return platform()
 
     def get_schema_builder(self):
         """
@@ -147,18 +190,16 @@ class Connection(ConnectionInterface):
 
         return self.select(query, bindings)
 
+    @run
     def select(self, query, bindings=None, use_read_connection=True):
-        def callback(me, query_, bindings_):
-            if me.pretending():
-                return []
+        if self.pretending():
+            return []
 
-            bindings_ = me.prepare_bindings(bindings_)
-            cursor = self._get_cursor_for_select(use_read_connection)
-            cursor.execute(query_, bindings_)
+        bindings = self.prepare_bindings(bindings)
+        cursor = self._get_cursor_for_select(use_read_connection)
+        cursor.execute(query, bindings)
 
-            return cursor.fetchall()
-
-        return self._run(query, bindings, callback)
+        return cursor.fetchall()
 
     def _get_cursor_for_select(self, use_read_connection=True):
         if use_read_connection:
@@ -177,30 +218,26 @@ class Connection(ConnectionInterface):
     def delete(self, query, bindings=None):
         return self.affecting_statement(query, bindings)
 
+    @run
     def statement(self, query, bindings=None):
-        def callback(me, query_, bindings_):
-            if me.pretending():
-                return True
+        if self.pretending():
+            return True
 
-            bindings_ = me.prepare_bindings(bindings_)
+        bindings = self.prepare_bindings(bindings)
 
-            return me._new_cursor().execute(query_, bindings_)
+        return self._new_cursor().execute(query, bindings)
 
-        return self._run(query, bindings, callback)
-
+    @run
     def affecting_statement(self, query, bindings=None):
-        def callback(me, query_, bindings_):
-            if me.pretending():
-                return True
+        if self.pretending():
+            return True
 
-            bindings_ = me.prepare_bindings(bindings_)
+        bindings = self.prepare_bindings(bindings)
 
-            cursor = me._new_cursor()
-            cursor.execute(query_, bindings_)
+        cursor = self._new_cursor()
+        cursor.execute(query, bindings)
 
-            return cursor.rowcount
-
-        return self._run(query, bindings, callback)
+        return cursor.rowcount
 
     def _new_cursor(self):
         self._cursor = self.get_connection().cursor()
@@ -210,14 +247,12 @@ class Connection(ConnectionInterface):
     def get_cursor(self):
         return self._cursor
 
+    @run
     def unprepared(self, query):
-        def callback(me, query_, _):
-            if me.pretending():
-                return True
+        if self.pretending():
+            return True
 
-            return bool(me.get_connection().execute(query_))
-
-        return self._run(query, {}, callback)
+        return bool(self.get_connection().execute(query))
 
     def prepare_bindings(self, bindings):
         if bindings is None:
@@ -274,42 +309,16 @@ class Connection(ConnectionInterface):
 
         self._logging_queries = logging_queries
 
-    def _run(self, query, bindings, callback):
-        self._reconnect_if_missing_connection()
-
-        start = time.time()
-
-        try:
-            result = self._run_query_callback(query, bindings, callback)
-        except QueryException as e:
-            result = self._try_again_if_caused_by_lost_connection(
-                e, query, bindings, callback
-            )
-
-        t = self._get_elapsed_time(start)
-        self.log_query(query, bindings, t)
-
-        return result
-
-    def _run_query_callback(self, query, bindings, callback):
-        try:
-            result = callback(self, query, bindings)
-        except Exception as e:
-            raise QueryException(query, self.prepare_bindings(bindings), e)
-
-        return result
-
-    def _try_again_if_caused_by_lost_connection(self, e, query,
-                                                bindings, callback):
+    def _try_again_if_caused_by_lost_connection(self, e, query, bindings, callback, *args, **kwargs):
         if self._caused_by_lost_connection(e):
             self.reconnect()
 
-            return self._run_query_callback(query, bindings, callback)
+            return callback(self, query, bindings, *args, **kwargs)
 
-        raise e
+        raise QueryException(query, bindings, e)
 
     def _caused_by_lost_connection(self, e):
-        message = e.message
+        message = str(e)
 
         for s in ['server has gone away',
                   'no connection to the server',
@@ -492,3 +501,13 @@ class Connection(ConnectionInterface):
         else:
             self.rollback()
             raise (exc_type, exc_val, exc_tb)
+
+    @property
+    def server_version(self):
+        if self._server_version is None:
+            self._server_version = self.get_server_version()
+
+        return self._server_version
+
+    def get_server_version(self):
+        raise NotImplementedError()

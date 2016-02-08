@@ -6,6 +6,8 @@ try:
 except ImportError:
     from queue import Queue
 
+from flexmock import flexmock
+
 from .. import OratorTestCase
 from .. import mock
 from ..orm.models import User
@@ -52,6 +54,16 @@ class ConnectionTestCase(OratorTestCase):
         connection.begin_transaction.assert_called_once()
         connection.rollback.assert_called_once()
         self.assertFalse(connection.commit.called)
+
+    def test_try_again_if_caused_by_lost_connection_is_called(self):
+        connection = flexmock(Connection(None, 'database'))
+        cursor = flexmock()
+        connection.should_receive('_try_again_if_caused_by_lost_connection').once()
+        connection.should_receive('_get_cursor_for_select').and_return(cursor)
+        connection.should_receive('reconnect')
+        cursor.should_receive('execute').and_raise(Exception('error'))
+
+        connection.select('SELECT * FROM "users"')
 
 
 class ConnectionThreadLocalTest(OratorTestCase):

@@ -5,19 +5,14 @@ from .base_command import BaseCommand
 
 
 class InstallCommand(BaseCommand):
+    """
+    Create the migration repository.
 
-    name = 'migrations:install'
+    migrate:install
+        {--d|database= : The database connection to use.}
+    """
 
-    description = 'Create the migration repository'
-
-    options = [{
-        'name': 'database',
-        'shortcut': 'd',
-        'description': 'The database connection to use.',
-        'value_required': True
-    }]
-
-    def fire(self):
+    def handle(self):
         """
         Executes the command
         """

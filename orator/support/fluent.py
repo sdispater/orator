@@ -1,64 +1,94 @@
 # -*- coding: utf-8 -*-
 
 import simplejson as json
+from wrapt import ObjectProxy
+from ..utils import value
+
+
+class Dynamic(ObjectProxy):
+
+    _key = None
+    _fluent = None
+
+    def __init__(self, value, key, fluent):
+        super(Dynamic, self).__init__(value)
+
+        self._key = key
+        self._fluent = fluent
+
+    def __call__(self, *args, **kwargs):
+        if len(args):
+            self.__set_value(args[0])
+        else:
+            self.__set_value(True)
+
+        return self._fluent
+
+    def __set_value(self, value):
+        self._fluent._attributes[self._key] = value
 
 
 class Fluent(object):
 
     def __init__(self, **attributes):
-        self.__attributes = {}
+        self._attributes = {}
 
         for key, value in attributes.items():
-            self.__attributes[key] = value
+            self._attributes[key] = value
 
     def get(self, key, default=None):
-        return self.__attributes.get(key, default)
+        return self._attributes.get(key, value(default))
 
     def get_attributes(self):
-        return self.__attributes
+        return self._attributes
 
     def to_dict(self):
-        return self.__attributes
+        return self.serialize()
+
+    def serialize(self):
+        return self._attributes
 
     def to_json(self, **options):
-        return json.dumps(self.to_dict(), **options)
+        return json.dumps(self.serialize(), **options)
 
     def __contains__(self, item):
-        return item in self.__attributes
+        return item in self._attributes
 
     def __getitem__(self, item):
-        return self.__attributes[item]
+        return self._attributes[item]
 
     def __setitem__(self, key, value):
-        self.__attributes[key] = value
+        self._attributes[key] = value
 
     def __delitem__(self, key):
-        del self.__attributes[key]
+        del self._attributes[key]
 
     def __dynamic(self, method):
         def call(*args, **kwargs):
             if len(args):
-                self.__attributes[method] = args[0]
+                self._attributes[method] = args[0]
             else:
-                self.__attributes[method] = True
+                self._attributes[method] = True
 
             return self
 
         return call
 
     def __getattr__(self, item):
-        if item in self.__attributes:
-            return self.__attributes[item]
-
-        return self.__dynamic(item)
+        return self.get(item, lambda: Dynamic(None, item, self))
 
     def __setattr__(self, key, value):
-        if key.startswith(('_Fluent__', '_%s__' % self.__class__.__name__, '__')):
+        if key == '_attributes':
             super(Fluent, self).__setattr__(key, value)
-        elif callable(getattr(self, key, None)):
+
+        try:
+            super(Fluent, self).__getattribute__(key)
+
             return super(Fluent, self).__setattr__(key, value)
-        else:
-            self.__attributes[key] = value
+        except AttributeError:
+            pass
+
+        self._attributes[key] = value
 
     def __delattr__(self, item):
-        del self.__attributes[item]
+        del self._attributes[item]

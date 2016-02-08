@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import copy
 from itertools import chain
 from collections import OrderedDict
 from .expression import QueryExpression
@@ -8,6 +9,7 @@ from .join_clause import JoinClause
 from ..pagination import Paginator, LengthAwarePaginator
 from ..utils import basestring, Null
 from ..exceptions import ArgumentError
+from ..support import Collection
 
 
 class QueryBuilder(object):
@@ -435,6 +437,16 @@ class QueryBuilder(object):
 
         return self.add_nested_where_query(query, boolean)
 
+    def for_nested_where(self):
+        """
+        Create a new query instance for nested where condition.
+
+        :rtype: QueryBuilder
+        """
+        query = self.new_query()
+
+        return query.from_(self.from__)
+
     def add_nested_where_query(self, query, boolean='and'):
         if len(query.wheres):
             type = 'nested'
@@ -465,6 +477,18 @@ class QueryBuilder(object):
         return self
 
     def where_exists(self, query, boolean='and', negate=False):
+        """
+        Add an exists clause to the query.
+
+        :param query: The exists query
+        :type query: QueryBuilder
+
+        :type boolean: str
+
+        :type negate: bool
+
+        :rtype: QueryBuilder
+        """
         if negate:
             type = 'not_exists'
         else:
@@ -480,14 +504,42 @@ class QueryBuilder(object):
 
         return self
 
-    def or_where_exists(self, callback, negate=False):
-        return self.where_exists(callback, 'or', negate)
+    def or_where_exists(self, query, negate=False):
+        """
+        Add an or exists clause to the query.
 
-    def where_not_exists(self, callback, boolean='and'):
-        return self.where_exists(callback, boolean, True)
+        :param query: The exists query
+        :type query: QueryBuilder
 
-    def or_where_not_exists(self, callback):
-        self.or_where_exists(callback, True)
+        :type negate: bool
+
+        :rtype: QueryBuilder
+        """
+        return self.where_exists(query, 'or', negate)
+
+    def where_not_exists(self, query, boolean='and'):
+        """
+        Add a where not exists clause to the query.
+
+        :param query: The exists query
+        :type query: QueryBuilder
+
+        :type boolean: str
+
+        :rtype: QueryBuilder
+        """
+        return self.where_exists(query, boolean, True)
+
+    def or_where_not_exists(self, query):
+        """
+        Add a or where not exists clause to the query.
+
+        :param query: The exists query
+        :type query: QueryBuilder
+
+        :rtype: QueryBuilder
+        """
+        return self.or_where_exists(query, True)
 
     def where_in(self, column, values, boolean='and', negate=False):
         if negate:
@@ -497,6 +549,9 @@ class QueryBuilder(object):
 
         if isinstance(values, QueryBuilder):
             return self._where_in_sub(column, values, boolean, negate)
+
+        if isinstance(values, Collection):
+            values = values.all()
 
         self.wheres.append({
             'type': type,
@@ -1543,6 +1598,37 @@ class QueryBuilder(object):
 
         return self
 
+    def merge(self, query):
+        """
+        Merge current query with another.
+
+        :param query: The query to merge with
+        :type query: QueryBuilder
+        """
+        self.joins += query.joins
+        self.wheres += query.wheres
+        self.groups += query.groups
+        self.havings += query.havings
+        self.orders += query.orders
+
+        if query.limit_:
+            self.limit_ = query.limit_
+
+        if query.offset_:
+            self.offset_ = None
+
+        self.unions += query.unions
+
+        if query.union_limit:
+            self.union_limit = query.union_limit
+
+        if query.union_offset:
+            self.union_offset = query.union_offset
+
+        self.union_orders += query.union_orders
+
+        self.merge_bindings(query)
+
     def get_connection(self):
         """
         Get the query connection
@@ -1579,6 +1665,15 @@ class QueryBuilder(object):
         if item.startswith('where_'):
             return self.dynamic_where(item)
 
-        object.__getattribute__(self, item)
+        raise AttributeError(item)
+
+    def __copy__(self):
+        new = self.__class__(self._connection, self._grammar, self._processor)
+
+        new.__dict__.update(dict((k, v) for k, v
+                                 in copy.deepcopy(self.__dict__).items()
+                                 if k != '_connection'))
+
+        return new
 
 

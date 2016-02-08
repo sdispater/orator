@@ -47,13 +47,13 @@ class DummyClass(Migration):
         \"\"\"
         Run the migrations.
         \"\"\"
-        with self.schema.create('dummy_table') as table:
+        with self.schema.table('dummy_table') as table:
             pass
 
     def down(self):
         \"\"\"
         Revert the migrations.
         \"\"\"
-        with self.schema.create('dummy_table') as table:
+        with self.schema.table('dummy_table') as table:
             pass
 """

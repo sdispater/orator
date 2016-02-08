@@ -7,10 +7,6 @@ from .result import Result
 
 class BelongsTo(Relation):
 
-    _other_key = None
-    _relation = None
-    _foreign_key = None
-
     def __init__(self, query, parent, foreign_key, other_key, relation):
         """
         :param query: A Builder instance
@@ -188,9 +184,9 @@ class BelongsTo(Relation):
     def get_qualified_other_key_name(self):
         return '%s.%s' % (self._related.get_table(), self._other_key)
 
-    def new_instance(self, model):
+    def _new_instance(self, model):
         return BelongsTo(
-            self._related.new_query(),
+            self.new_query(),
             model,
             self._foreign_key,
             self._other_key,

@@ -852,9 +852,9 @@ class BelongsToMany(Relation):
     def get_relation_name(self):
         return self._relation_name
 
-    def new_instance(self, model):
+    def _new_instance(self, model):
         relation = BelongsToMany(
-            self._related.new_query(),
+            self.new_query(),
             model,
             self._table,
             self._foreign_key,

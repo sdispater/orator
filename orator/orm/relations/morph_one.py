@@ -33,12 +33,3 @@ class MorphOne(MorphOneOrMany):
         :type relation:  str
         """
         return self.match_one(models, results, relation)
-
-    def new_instance(self, parent):
-        return MorphOne(
-            self._related.new_query(),
-            parent,
-            self._morph_type,
-            self._foreign_key,
-            self._local_key
-        )

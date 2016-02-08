@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import re
+import binascii
+from ..utils import encode
 
 
 class AbstractAsset(object):
@@ -73,3 +75,13 @@ class AbstractAsset(object):
                 parts[k] = platform.quote_identifier(v)
 
         return '.'.join(parts)
+
+    def _generate_identifier_name(self, columns, prefix='', max_size=30):
+        """
+        Generates an identifier from a list of column names obeying a certain string length.
+        """
+        hash = ''
+        for column in columns:
+            hash += '%x' % binascii.crc32(encode(column))
+
+        return (prefix + '_' + hash)[:max_size]

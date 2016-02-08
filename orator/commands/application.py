@@ -3,7 +3,7 @@
 from cleo import Application
 from ..version import VERSION
 
-application = Application('Orator', VERSION)
+application = Application('Orator', VERSION, complete=True)
 
 # Migrations
 from .migrations import (
@@ -25,3 +25,8 @@ from .seeds import SeedersMakeCommand, SeedCommand
 
 application.add(SeedersMakeCommand())
 application.add(SeedCommand())
+
+# Models
+from .models import ModelMakeCommand
+
+application.add(ModelMakeCommand())

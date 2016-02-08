@@ -3,12 +3,11 @@
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
-
 from orator.query.grammars.grammar import QueryGrammar
 from orator.query.builder import QueryBuilder
 from orator.orm.builder import Builder
 from orator.orm.model import Model
-from orator.orm import belongs_to, has_many
+from orator.orm import belongs_to, has_many, scope
 from orator.exceptions.orm import ModelNotFound
 from orator.orm.collection import Collection
 from orator.connections import Connection
@@ -427,6 +426,17 @@ class BuilderTestCase(OratorTestCase):
 
         self.assertEqual(builder, result)
 
+    def test_where_exists_accepts_builder_instance(self):
+        model = OrmBuilderTestModelCloseRelated
+
+        builder = model.where_exists(OrmBuilderTestModelFarRelatedStub.where('foo', 'bar')).to_sql()
+
+        self.assertEqual(
+            'SELECT * FROM "orm_builder_test_model_close_relateds" '
+            'WHERE EXISTS (SELECT * FROM "orm_builder_test_model_far_related_stubs" WHERE "foo" = ?)',
+            builder
+        )
+
     def get_builder(self):
         return Builder(self.get_mock_query_builder())
 
@@ -466,7 +476,8 @@ class OrmBuilderTestModelFarRelatedStub(OratorTestModel):
 
 class OrmBuilderTestModelScopeStub(OratorTestModel):
 
-    def scope_approved(self, query):
+    @scope
+    def approved(self, query):
         query.where('foo', 'bar')
 
 

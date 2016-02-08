@@ -6,7 +6,7 @@ from ...query.expression import QueryExpression
 from ...support.fluent import Fluent
 
 
-class MySqlSchemaGrammar(SchemaGrammar):
+class MySQLSchemaGrammar(SchemaGrammar):
 
     _modifiers = [
         'unsigned', 'charset', 'collate', 'nullable',
@@ -176,6 +176,9 @@ class MySqlSchemaGrammar(SchemaGrammar):
         return 'ENUM(\'%s\')' % '\', \''.join(column.allowed)
 
     def _type_json(self, column):
+        if self.platform_version() >= (5, 7):
+            return 'JSON'
+
         return 'TEXT'
 
     def _type_date(self, column):
@@ -188,8 +191,11 @@ class MySqlSchemaGrammar(SchemaGrammar):
         return 'TIME'
 
     def _type_timestamp(self, column):
-        if getattr(column, 'nullable', False):
-            return 'TIMESTAMP DEFAULT 0'
+        if column.use_current:
+            if self.platform_version() >= (5, 6):
+                return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
+            else:
+                return 'TIMESTAMP DEFAULT 0'
 
         return 'TIMESTAMP'
 

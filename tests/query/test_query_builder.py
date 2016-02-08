@@ -11,11 +11,12 @@ from orator.query.grammars import (
     QueryGrammar,
     PostgresQueryGrammar,
     SQLiteQueryGrammar,
-    MySqlQueryGrammar
+    MySQLQueryGrammar
 )
 from orator.query.builder import QueryBuilder
 from orator.query.expression import QueryExpression
 from orator.query.join_clause import JoinClause
+from orator.support import Collection
 
 
 class QueryBuilderTestCase(OratorTestCase):
@@ -307,6 +308,16 @@ class QueryBuilderTestCase(OratorTestCase):
             builder.to_sql()
         )
         self.assertEqual([1], builder.get_bindings())
+
+    def test_where_in_accepts_collections(self):
+        builder = self.get_builder()
+        builder.select('*').from_('users').where_in('id', Collection([1, 2, 3]))
+
+        self.assertEqual(
+            'SELECT * FROM "users" WHERE "id" IN (?, ?, ?)',
+            builder.to_sql()
+        )
+        self.assertEqual([1, 2, 3], builder.get_bindings())
 
     def test_unions(self):
         builder = self.get_builder()
@@ -1558,8 +1569,17 @@ class QueryBuilderTestCase(OratorTestCase):
         for users in builder.from_('users').chunk(2):
             self.assertEqual(2, len(users))
 
+    def test_not_specifying_columns_sects_all(self):
+        builder = self.get_builder()
+        builder.from_('users')
+
+        self.assertEqual(
+            'SELECT * FROM "users"',
+            builder.to_sql()
+        )
+
     def get_mysql_builder(self):
-        grammar = MySqlQueryGrammar()
+        grammar = MySQLQueryGrammar()
         processor = MockProcessor().prepare_mock()
         connection = MockConnection().prepare_mock()
 

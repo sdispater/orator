@@ -24,7 +24,7 @@ class QueryGrammar(Grammar):
     ]
 
     def compile_select(self, query):
-        if query.columns is None:
+        if not query.columns:
             query.columns = ['*']
 
         return self._concatenate(self._compile_components(query)).strip()

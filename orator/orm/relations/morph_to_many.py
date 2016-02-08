@@ -5,11 +5,6 @@ from .belongs_to_many import BelongsToMany
 
 class MorphToMany(BelongsToMany):
 
-    _name = None
-    _inverse = None
-    _morph_type = None
-    _morph_name = None
-
     def __init__(self, query, parent, name, table,
                  foreign_key, other_key, relation_name=None, inverse=False):
         """
@@ -38,7 +33,10 @@ class MorphToMany(BelongsToMany):
         self._morph_type = name + '_type'
         self._morph_name = query.get_model().get_morph_name() if inverse else parent.get_morph_name()
 
-        super(MorphToMany, self).__init__(query, parent, table, foreign_key, other_key, relation_name)
+        super(MorphToMany, self).__init__(
+                query, parent, table,
+                foreign_key, other_key, relation_name
+        )
 
     def _set_where(self):
         """
@@ -114,9 +112,9 @@ class MorphToMany(BelongsToMany):
     def get_morph_name(self):
         return self._morph_name
 
-    def new_instance(self, model):
+    def _new_instance(self, model):
         return MorphToMany(
-            self._related.new_query(),
+            self.new_query(),
             model,
             self._name,
             self._table,

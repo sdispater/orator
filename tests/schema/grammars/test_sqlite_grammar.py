@@ -350,6 +350,17 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
+    def test_adding_timestamp_with_current(self):
+        blueprint = Blueprint('users')
+        blueprint.timestamp('foo').use_current()
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE "users" ADD COLUMN "foo" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL',
+            statements[0]
+        )
+
     def test_adding_timestamps(self):
         blueprint = Blueprint('users')
         blueprint.timestamps()
@@ -376,8 +387,20 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
+    def test_adding_json(self):
+        blueprint = Blueprint('users')
+        blueprint.json('foo')
+
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE "users" ADD COLUMN "foo" TEXT NOT NULL',
+            statements[0]
+        )
+
     def get_connection(self):
         return flexmock(Connection(None))
 
     def get_grammar(self):
-        return SQLiteSchemaGrammar()
+        return SQLiteSchemaGrammar(self.get_connection())

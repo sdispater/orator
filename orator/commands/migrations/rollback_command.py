@@ -5,37 +5,22 @@ from .base_command import BaseCommand
 
 
 class RollbackCommand(BaseCommand):
+    """
+    Rollback the last database migration.
 
-    name = 'migrations:rollback'
+    migrate:rollback
+        {--d|database= : The database connection to use.}
+        {--p|path= : The path of migrations files to be executed.}
+        {--P|pretend : Dump the SQL queries that would be run.}
+    """
 
-    description = 'Rollback the last database migration.'
-
-    options = [{
-        'name': 'database',
-        'shortcut': 'd',
-        'description': 'The database connection to use.',
-        'value_required': True
-    }, {
-        'name': 'path',
-        'shortcut': 'p',
-        'description': 'The path of migrations files to be executed.',
-        'value_required': True
-    }, {
-        'name': 'pretend',
-        'shortcut': 'P',
-        'description': 'Dump the SQL queries that would be run.',
-        'flag': True
-    }]
-
-    def fire(self):
+    def handle(self):
         """
         Executes the command.
         """
-        dialog = self.get_helper('dialog')
-        confirm = dialog.ask_confirmation(
-            self.output,
+        confirm = self.confirm(
             '<question>Are you sure you want to rollback the last migration?</question> ',
-            False
+            True
         )
         if not confirm:
             return

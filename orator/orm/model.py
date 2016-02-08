@@ -4,8 +4,10 @@ import simplejson as json
 import arrow
 import inflection
 import inspect
+import uuid
 from warnings import warn
 from six import add_metaclass
+from collections import OrderedDict
 from ..utils import basestring, deprecated
 from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound
 from ..query import QueryBuilder
@@ -17,6 +19,7 @@ from .relations import (
 )
 from .relations.wrapper import Wrapper, BelongsToManyWrapper
 from .utils import mutator, accessor
+from .scopes import Scope
 from ..events import Event
 
 
@@ -104,6 +107,8 @@ class Model(object):
 
     _register = ModelRegister()
 
+    __attributes__ = {}
+
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
     CREATED_AT = 'created_at'
@@ -117,7 +122,9 @@ class Model(object):
 
         self._exists = False
         self._original = {}
-        self._attributes = {}
+
+        # Setting default attributes' values
+        self._attributes = dict((k, v) for k, v in self.__attributes__.items())
         self._relations = {}
 
         self.sync_original()
@@ -179,17 +186,27 @@ class Model(object):
                 getattr(mixin, method)(cls)
 
     @classmethod
-    def add_global_scope(cls, scope):
+    def add_global_scope(cls, scope, implementation = None):
         """
         Register a new global scope on the model.
 
         :param scope: The scope to register
-        :type scope: orator.orm.scopes.scope.Scope
+        :type scope: orator.orm.scopes.scope.Scope or callable or str
+
+        :param implementation: The scope implementation
+        :type implementation: callbale or None
         """
         if cls not in cls._global_scopes:
-            cls._global_scopes[cls] = {}
+            cls._global_scopes[cls] = OrderedDict()
 
-        cls._global_scopes[cls][scope.__class__] = scope
+        if isinstance(scope, basestring) and implementation is not None:
+            cls._global_scopes[cls][scope] = implementation
+        elif callable(scope):
+            cls._global_scopes[cls][uuid.uuid4().hex] = scope
+        elif isinstance(scope, Scope):
+            cls._global_scopes[cls][scope.__class__] = scope
+        else:
+            raise Exception('Global scope must be an instance of Scope or a callable')
 
     @classmethod
     def has_global_scope(cls, scope):
@@ -197,7 +214,7 @@ class Model(object):
         Determine if a model has a global scope.
 
         :param scope: The scope to register
-        :type scope: orator.orm.scopes.scope.Scope
+        :type scope: orator.orm.scopes.scope.Scope or str
         """
         return cls.get_global_scope(scope) is not None
 
@@ -207,7 +224,7 @@ class Model(object):
         Get a global scope registered with the model.
 
         :param scope: The scope to register
-        :type scope: orator.orm.scopes.scope.Scope
+        :type scope: orator.orm.scopes.scope.Scope or str
         """
         for key, value in cls._global_scopes[cls].items():
             if isinstance(scope, key):
@@ -426,7 +443,7 @@ class Model(object):
         :return: The new instance
         :rtype: Model
         """
-        instance = cls.where(attributes).first()
+        instance = cls().new_query_without_scopes().where(attributes).first()
 
         if instance is not None:
             return instance
@@ -444,7 +461,7 @@ class Model(object):
         :return: The new instance
         :rtype: Model
         """
-        instance = cls.where(attributes).first()
+        instance = cls().new_query_without_scopes().where(attributes).first()
 
         if instance is not None:
             return instance
@@ -1671,11 +1688,25 @@ class Model(object):
         """
         time = self.fresh_timestamp()
 
-        if not self.is_dirty(self.UPDATED_AT):
+        if not self.is_dirty(self.UPDATED_AT) and self._should_set_timestamp(self.UPDATED_AT):
             self.set_updated_at(time)
 
-        if not self._exists and not self.is_dirty(self.CREATED_AT):
+        if not self._exists and not self.is_dirty(self.CREATED_AT) and self._should_set_timestamp(self.CREATED_AT):
             self.set_created_at(time)
+
+    def _should_set_timestamp(self, timestamp):
+        """
+        Determine if a timestamp should be set.
+
+        :param timestamp: The timestamp to check
+        :type timestamp: str
+
+        :rtype: bool
+        """
+        if isinstance(self.__timestamps__, bool):
+            return self.__timestamps__
+
+        return timestamp in self.__timestamps__
 
     def set_created_at(self, value):
         """
@@ -1684,7 +1715,7 @@ class Model(object):
         :param value: The value
         :type value: datetime
         """
-        setattr(self, self.CREATED_AT, value)
+        self.set_attribute(self.CREATED_AT, value)
 
     def set_updated_at(self, value):
         """
@@ -1693,7 +1724,7 @@ class Model(object):
         :param value: The value
         :type value: datetime
         """
-        setattr(self, self.UPDATED_AT, value)
+        self.set_attribute(self.UPDATED_AT, value)
 
     def get_created_at_column(self):
         """
@@ -1728,7 +1759,10 @@ class Model(object):
         """
         builder = self.new_query_without_scopes()
 
-        return self.apply_global_scopes(builder)
+        for identifier, scope in self.get_global_scopes().items():
+            builder.with_global_scope(identifier, scope)
+
+        return builder
 
     def new_query_without_scope(self, scope):
         """
@@ -1738,9 +1772,8 @@ class Model(object):
         :rtype: Builder
         """
         builder = self.new_query()
-        self.get_global_scope(scope).remove(builder, self)
 
-        return builder
+        return builder.without_global_scope(scope)
 
     def new_query_without_scopes(self):
         """
@@ -1754,34 +1787,6 @@ class Model(object):
         )
 
         return builder.set_model(self).with_(*self._with)
-
-    def apply_global_scopes(self, builder):
-        """
-        Apply all of the global scopes to a builder.
-
-        :param builder: A Builder instance
-        :type builder: Builder
-
-        :rtype: Builder
-        """
-        for scope in self.get_global_scopes().values():
-            scope.apply(builder, self)
-
-        return builder
-
-    def remove_global_scopes(self, builder):
-        """
-        Remove all of the global scopes from a builder.
-
-        :param builder: A Builder instance
-        :type builder: Builder
-
-        :rtype: Builder
-        """
-        for scope in self.get_global_scopes().values():
-            scope.remove(builder, self)
-
-        return builder
 
     @classmethod
     def query(cls):
@@ -1947,7 +1952,7 @@ class Model(object):
 
         :rtype: str
         """
-        return '%s_id' % inflection.singularize(inflection.tableize(self.__class__.__name__))
+        return '%s_id' % inflection.singularize(self.get_table())
 
     def get_hidden(self):
         """
@@ -2426,7 +2431,7 @@ class Model(object):
             return str(value)
         elif type in ['bool', 'boolean']:
             return bool(value)
-        elif type in ['dict', 'list', 'json']:
+        elif type in ['dict', 'list', 'json'] and isinstance(value, basestring):
             return json.loads(value)
         else:
             return value

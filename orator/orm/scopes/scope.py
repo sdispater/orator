@@ -14,15 +14,3 @@ class Scope(object):
         :type model: orator.orm.Model
         """
         raise NotImplementedError
-
-    def remove(self, builder, model):
-        """
-        Remove the scope from a given query builder.
-
-        :param builder: The query builder
-        :type builder: orator.orm.Builder
-
-        :param model: The model
-        :type model: orator.orm.Model
-        """
-        raise NotImplementedError

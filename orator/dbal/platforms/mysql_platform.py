@@ -5,7 +5,7 @@ from .keywords.mysql_keywords import MySQLKeywords
 from ..identifier import Identifier
 
 
-class MySqlPlatform(Platform):
+class MySQLPlatform(Platform):
 
     LENGTH_LIMIT_TINYTEXT = 255
     LENGTH_LIMIT_TEXT = 65535
@@ -48,7 +48,7 @@ class MySqlPlatform(Platform):
         'tinyblob': 'blob',
         'binary': 'binary',
         'varbinary': 'binary',
-        'set': 'simple_array'
+        'set': 'simple_array',
     }
 
     def get_list_table_columns_sql(self, table, database=None):
@@ -64,7 +64,18 @@ class MySqlPlatform(Platform):
                % (database, table)
 
     def get_list_table_indexes_sql(self, table, current_database=None):
-        return 'SHOW INDEX FROM %s' % table
+        sql = """
+            SELECT TABLE_NAME AS `Table`, NON_UNIQUE AS Non_Unique, INDEX_NAME AS Key_name,
+            SEQ_IN_INDEX AS Seq_in_index, COLUMN_NAME AS Column_Name, COLLATION AS Collation,
+            CARDINALITY AS Cardinality, SUB_PART AS Sub_Part, PACKED AS Packed,
+            NULLABLE AS `Null`, INDEX_TYPE AS Index_Type, COMMENT AS Comment
+            FROM information_schema.STATISTICS WHERE TABLE_NAME = '%s'
+        """
+
+        if current_database:
+            sql += ' AND TABLE_SCHEMA = \'%s\'' % current_database
+
+        return sql % table
 
     def get_list_table_foreign_keys_sql(self, table, database=None):
         sql = ("SELECT DISTINCT k.`CONSTRAINT_NAME` AS `name`, k.`COLUMN_NAME`, k.`REFERENCED_TABLE_NAME`, "
@@ -143,31 +154,31 @@ class MySqlPlatform(Platform):
 
         return item
 
-    def get_boolean_type_sql_declaration(self, column):
+    def get_boolean_type_declaration_sql(self, column):
         return 'TINYINT(1)'
 
-    def get_integer_type_sql_declaration(self, column):
+    def get_integer_type_declaration_sql(self, column):
         return 'INT ' + self._get_common_integer_type_declaration_sql(column)
 
-    def get_bigint_type_sql_declaration(self, column):
+    def get_bigint_type_declaration_sql(self, column):
         return 'BIGINT ' + self._get_common_integer_type_declaration_sql(column)
 
-    def get_smallint_type_sql_declaration(self, column):
+    def get_smallint_type_declaration_sql(self, column):
         return 'SMALLINT ' + self._get_common_integer_type_declaration_sql(column)
 
-    def get_guid_type_sql_declaration(self, column):
+    def get_guid_type_declaration_sql(self, column):
         return 'UUID'
 
-    def get_datetime_type_sql_declaration(self, column):
+    def get_datetime_type_declaration_sql(self, column):
         if 'version' in column and column['version'] == True:
             return 'TIMESTAMP'
 
         return 'DATETIME'
 
-    def get_date_type_sql_declaration(self, column):
+    def get_date_type_declaration_sql(self, column):
         return 'DATE'
 
-    def get_time_type_sql_declaration(self, column):
+    def get_time_type_declaration_sql(self, column):
         return 'TIME'
 
     def get_varchar_type_declaration_sql_snippet(self, length, fixed):
@@ -182,7 +193,7 @@ class MySqlPlatform(Platform):
         else:
             return 'VARBINARY(%s)' % (length or 255)
 
-    def get_text_type_sql_declaration(self, column):
+    def get_text_type_declaration_sql(self, column):
         length = column.get('length')
         if length:
             if length <= self.LENGTH_LIMIT_TINYTEXT:
@@ -196,7 +207,7 @@ class MySqlPlatform(Platform):
 
         return 'LONGTEXT'
 
-    def get_blob_type_sql_declaration(self, column):
+    def get_blob_type_declaration_sql(self, column):
         length = column.get('length')
         if length:
             if length <= self.LENGTH_LIMIT_TINYBLOB:
@@ -210,8 +221,22 @@ class MySqlPlatform(Platform):
 
         return 'LONGBLOB'
 
-    def get_decimal_type_sql_declaration(self, column):
-        decl = super(MySqlPlatform, self).get_decimal_type_sql_declaration(column)
+    def get_clob_type_declaration_sql(self, column):
+        length = column.get('length')
+        if length:
+            if length <= self.LENGTH_LIMIT_TINYTEXT:
+                return 'TINYTEXT'
+
+            if length <= self.LENGTH_LIMIT_TEXT:
+                return 'TEXT'
+
+            if length <= self.LENGTH_LIMIT_MEDIUMTEXT:
+                return 'MEDIUMTEXT'
+
+        return 'LONGTEXT'
+
+    def get_decimal_type_declaration_sql(self, column):
+        decl = super(MySQLPlatform, self).get_decimal_type_declaration_sql(column)
 
         return decl + self.get_unsigned_declaration(column)
 
@@ -228,7 +253,7 @@ class MySqlPlatform(Platform):
 
         return self.get_unsigned_declaration(column) + autoinc
 
-    def get_float_type_sql_declaration(self, column):
+    def get_float_type_declaration_sql(self, column):
         return 'DOUBLE PRECISION' + self.get_unsigned_declaration(column)
 
     def supports_foreign_key_constraints(self):

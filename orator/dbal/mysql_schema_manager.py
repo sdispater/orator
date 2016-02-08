@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import re
+from collections import OrderedDict
 from .column import Column
+from .foreign_key_constraint import ForeignKeyConstraint
 from .schema_manager import SchemaManager
-from .platforms.mysql_platform import MySqlPlatform
+from .platforms.mysql_platform import MySQLPlatform
 
 
-class MySqlSchemaManager(SchemaManager):
+class MySQLSchemaManager(SchemaManager):
 
     def _get_portable_table_column_definition(self, table_column):
         db_type = table_column['type'].lower()
@@ -41,17 +43,17 @@ class MySqlSchemaManager(SchemaManager):
                 scale = match.group(2)
                 length = None
         elif db_type == 'tinytext':
-            length = MySqlPlatform.LENGTH_LIMIT_TINYTEXT
+            length = MySQLPlatform.LENGTH_LIMIT_TINYTEXT
         elif db_type == 'text':
-            length = MySqlPlatform.LENGTH_LIMIT_TEXT
+            length = MySQLPlatform.LENGTH_LIMIT_TEXT
         elif db_type == 'mediumtext':
-            length = MySqlPlatform.LENGTH_LIMIT_MEDIUMTEXT
+            length = MySQLPlatform.LENGTH_LIMIT_MEDIUMTEXT
         elif db_type == 'tinyblob':
-            length = MySqlPlatform.LENGTH_LIMIT_TINYBLOB
+            length = MySQLPlatform.LENGTH_LIMIT_TINYBLOB
         elif db_type == 'blob':
-            length = MySqlPlatform.LENGTH_LIMIT_BLOB
+            length = MySQLPlatform.LENGTH_LIMIT_BLOB
         elif db_type == 'mediumblob':
-            length = MySqlPlatform.LENGTH_LIMIT_MEDIUMBLOB
+            length = MySQLPlatform.LENGTH_LIMIT_MEDIUMBLOB
         elif db_type in ['tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'year']:
             length = None
 
@@ -80,5 +82,59 @@ class MySqlSchemaManager(SchemaManager):
 
         return column
 
-    def get_database_platform(self):
-        return MySqlPlatform()
+    def _get_portable_table_indexes_list(self, table_indexes, table_name):
+        new = []
+        for v in table_indexes:
+            v = dict((k.lower(), value) for k, value in v.items())
+            if v['key_name'] == 'PRIMARY':
+                v['primary'] = True
+            else:
+                v['primary'] = False
+
+            if 'FULLTEXT' in v['index_type']:
+                v['flags'] = {'FULLTEXT': True}
+            else:
+                v['flags'] = {'SPATIAL': True}
+                
+            new.append(v)
+            
+        return super(MySQLSchemaManager, self)._get_portable_table_indexes_list(new, table_name)
+
+    def _get_portable_table_foreign_keys_list(self, table_foreign_keys):
+        foreign_keys = OrderedDict()
+
+        for value in table_foreign_keys:
+            value = dict((k.lower(), v) for k, v in value.items())
+            name = value.get('constraint_name', '')
+
+            if name not in foreign_keys:
+                if 'delete_rule' not in value or value['delete_rule'] == 'RESTRICT':
+                    value['delete_rule'] = ''
+
+                if 'update_rule' not in value or value['update_rule'] == 'RESTRICT':
+                    value['update_rule'] = ''
+
+                foreign_keys[name] = {
+                    'name': name,
+                    'local': [],
+                    'foreign': [],
+                    'foreign_table': value['referenced_table_name'],
+                    'on_delete': value['delete_rule'],
+                    'on_update': value['update_rule']
+                }
+
+            foreign_keys[name]['local'].append(value['column_name'])
+            foreign_keys[name]['foreign'].append(value['referenced_column_name'])
+
+        result = []
+        for constraint in foreign_keys.values():
+            result.append(ForeignKeyConstraint(
+                constraint['local'], constraint['foreign_table'],
+                constraint['foreign'], constraint['name'],
+                {
+                    'on_delete': constraint['on_delete'],
+                    'on_update': constraint['on_update']
+                }
+            ))
+
+        return result

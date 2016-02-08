@@ -32,7 +32,7 @@ class Seeder(object):
         self._resolve(klass).run()
 
         if self._command:
-            self._command.get_output().writeln('<info>Seeded:</info> <fg=cyan>%s</>' % klass.__name__)
+            self._command.line('<info>Seeded:</info> <fg=cyan>%s</>' % klass.__name__)
 
     def _resolve(self, klass):
         """
@@ -41,11 +41,18 @@ class Seeder(object):
         :param klass: The Seeder class
         :type klass: class
         """
+        resolver = None
+
+        if self._resolver:
+            resolver = self._resolver
+        elif self._command:
+            resolver = self._command.resolver
+
         instance = klass()
+        instance.set_connection_resolver(resolver)
 
         if self._command:
             instance.set_command(self._command)
-            instance.set_connection_resolver(self._command.get_connection_resolver())
 
         return instance
 

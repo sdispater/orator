@@ -35,14 +35,14 @@ setup(
         'arrow',
         'inflection',
         'six',
-        'cleo>=0.3',
+        'cleo>=0.4',
         'blinker',
         'lazy-object-proxy',
         'fake-factory',
         'wrapt',
         'pyaml'
     ],
-    tests_require=['pytest', 'mock', 'flexmock'],
+    tests_require=['pytest', 'mock', 'flexmock==0.9.7'],
     test_suite='nose.collector',
     scripts=['bin/orator'],
     classifiers=[

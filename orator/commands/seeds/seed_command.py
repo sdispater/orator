@@ -10,31 +10,21 @@ from ...utils import load_module
 
 
 class SeedCommand(BaseCommand):
+    """
+    Seed the database with records.
 
-    name = 'db:seed'
+    db:seed
+        {--d|database= : The database connection to use.}
+        {--p|path= : The path to seeders files.
+                     Defaults to <comment>./seeds</comment>.}
+        {--seeder=database_seeder : The name of the root seeder.}
+    """
 
-    description = 'Seed the database with records.'
-
-    options = [{
-        'name': 'database',
-        'shortcut': 'd',
-        'description': 'The database connection to use.',
-        'value_required': True
-    }, {
-        'name': 'path',
-        'shortcut': 'p',
-        'description': 'The path of seeds files to be executed. '
-                       'Defaults to <comment>./seeders</comment>',
-        'value_required': True
-    }]
-
-    def fire(self):
+    def handle(self):
         """
         Executes the command.
         """
-        dialog = self.get_helper('dialog')
-        confirm = dialog.ask_confirmation(
-            self.output,
+        confirm = self.confirm(
             '<question>Are you sure you want to seed the database?</question> ',
             False
         )
@@ -45,15 +35,17 @@ class SeedCommand(BaseCommand):
 
         self._get_seeder().run()
 
+        self.info('Database seeded!')
+
     def _get_seeder(self):
         name = self._parse_name(self.option('seeder'))
         seeder_file = self._get_path(name)
 
         # Loading parent module
-        load_module('seeders', self._get_path('__init__'))
+        load_module('seeds', self._get_path('__init__'))
 
         # Loading module
-        mod = load_module('seeders.%s' % name, seeder_file)
+        mod = load_module('seeds.%s' % name, seeder_file)
 
         klass = getattr(mod, inflection.camelize(name))
 

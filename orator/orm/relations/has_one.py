@@ -34,9 +34,9 @@ class HasOne(HasOneOrMany):
         """
         return self.match_one(models, results, relation)
 
-    def new_instance(self, model):
+    def _new_instance(self, model):
         return HasOne(
-            self._related.new_query(),
+            self.new_query(),
             model,
             self._foreign_key,
             self._local_key

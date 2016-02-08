@@ -17,16 +17,6 @@ class Command(BaseCommand):
 
         super(Command, self).__init__()
 
-    def initialize(self, i, o):
-        """
-        Initialize command.
-
-        :type i: cleo.inputs.input.Input
-        :type o: cleo.outputs.output.Output
-        """
-        self.input = i
-        self.output = o
-
     def configure(self):
         super(Command, self).configure()
 
@@ -40,41 +30,25 @@ class Command(BaseCommand):
     def execute(self, i, o):
         """
         Executes the command.
-
-        :type i: cleo.inputs.input.Input
-        :type o: cleo.outputs.output.Output
         """
+        self.set_style('question', fg='blue')
+
         if self.needs_config and not self.resolver:
             self._handle_config(self.option('config'))
 
-        return self.fire()
-
-    def fire(self):
-        """
-        Executes the command.
-        """
-        raise NotImplementedError()
+        return self.handle()
 
     def call(self, name, options=None):
-        """
-        Call another command.
-
-        :param name: The command name
-        :type name: str
-
-        :param options: The options
-        :type options: list or None
-        """
-        if options is None:
-            options = []
-
         command = self.get_application().find(name)
-        if self.resolver:
-            command.resolver = self.resolver
+        command.resolver = self.resolver
 
-        options = [('command', command.get_name())] + options
+        return super(Command, self).call(name, options)
 
-        return command.run(ListInput(options), self.output)
+    def call_silent(self, name, options=None):
+        command = self.get_application().find(name)
+        command.resolver = self.resolver
+
+        return super(Command, self).call_silent(name, options)
 
     def _get_migration_path(self):
         return os.path.join(os.getcwd(), 'migrations')
@@ -136,60 +110,3 @@ class Command(BaseCommand):
             raise RuntimeError('Config file [%s] is not supported.' % path)
 
         return config
-
-    def line(self, text):
-        """
-        Write a string as information output.
-
-        :param text: The line to write
-        :type text: str
-        """
-        self.output.writeln(text)
-
-    def info(self, text):
-        """
-        Write a string as information output.
-
-        :param text: The line to write
-        :type text: str
-        """
-        self.line('<info>%s</info>' % text)
-
-    def comment(self, text):
-        """
-        Write a string as comment output.
-
-        :param text: The line to write
-        :type text: str
-        """
-        self.line('<comment>%s</comment>' % text)
-
-    def question(self, text):
-        """
-        Write a string as question output.
-
-        :param text: The line to write
-        :type text: str
-        """
-        self.line('<question>%s</question>' % text)
-
-    def error(self, text):
-        """
-        Write a string as error output.
-
-        :param text: The line to write
-        :type text: str
-        """
-        self.line('<error>%s</error>' % text)
-
-    def argument(self, key=None):
-        if key is None:
-            return self.input.get_arguments()
-
-        return self.input.get_argument(key)
-
-    def option(self, key=None):
-        if key is None:
-            return self.input.get_options()
-
-        return self.input.get_option(key)

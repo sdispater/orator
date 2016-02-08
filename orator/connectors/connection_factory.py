@@ -3,17 +3,31 @@
 import random
 from ..exceptions import ArgumentError
 from ..exceptions.connectors import UnsupportedDriver
-from .mysql_connector import MySqlConnector
+from .mysql_connector import MySQLConnector
 from .postgres_connector import PostgresConnector
 from .sqlite_connector import SQLiteConnector
 from ..connections import (
-    MySqlConnection,
+    MySQLConnection,
     PostgresConnection,
     SQLiteConnection
 )
 
 
 class ConnectionFactory(object):
+
+    CONNECTORS = {
+        'sqlite': SQLiteConnector,
+        'mysql': MySQLConnector,
+        'postgres': PostgresConnector,
+        'pgsql': PostgresConnector
+    }
+
+    CONNECTIONS = {
+        'sqlite': SQLiteConnection,
+        'mysql': MySQLConnection,
+        'postgres': PostgresConnection,
+        'pgsql': PostgresConnection
+    }
 
     def make(self, config, name=None):
         if 'read' in config:
@@ -75,24 +89,24 @@ class ConnectionFactory(object):
 
         driver = config['driver']
 
-        if driver == 'mysql':
-            return MySqlConnector()
-        elif driver == 'postgres':
-            return PostgresConnector()
-        elif driver == 'sqlite':
-            return SQLiteConnector()
+        if driver not in self.CONNECTORS:
+            raise UnsupportedDriver(driver)
 
-        raise UnsupportedDriver(driver)
+        return self.CONNECTORS[driver]()
+
+    @classmethod
+    def register_connector(cls, name, connector):
+        cls.CONNECTORS[connector] = connector
+
+    @classmethod
+    def register_connection(cls, name, connection):
+        cls.CONNECTIONS[name] = connection
 
     def _create_connection(self, driver, connection, database, prefix='', config=None):
         if config is None:
             config = {}
 
-        if driver == 'mysql':
-            return MySqlConnection(connection, database, prefix, config)
-        elif driver == 'postgres':
-            return PostgresConnection(connection, database, prefix, config)
-        elif driver == 'sqlite':
-            return SQLiteConnection(connection, database, prefix, config)
+        if driver not in self.CONNECTIONS:
+            raise UnsupportedDriver(driver)
 
-        raise UnsupportedDriver(driver)
+        return self.CONNECTIONS[driver](connection, database, prefix, config)

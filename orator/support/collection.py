@@ -326,6 +326,26 @@ class Collection(object):
         else:
             return default
 
+    def flatten(self):
+        """
+        Get a flattened list of the items in the collection.
+
+        :rtype: Collection
+        """
+        def _flatten(d):
+            if isinstance(d, dict):
+                for v in d.values():
+                    for nested_v in _flatten(v):
+                        yield nested_v
+            elif isinstance(d, list):
+                for list_v in d:
+                    for nested_v in _flatten(list_v):
+                        yield nested_v
+            else:
+                yield d
+
+        return Collection(list(_flatten(self.items)))
+
     def flip(self):
         """
         Flip the items in the collection.

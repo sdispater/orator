@@ -3,7 +3,7 @@
 from .processor import QueryProcessor
 
 
-class MySqlQueryProcessor(QueryProcessor):
+class MySQLQueryProcessor(QueryProcessor):
 
     def process_insert_get_id(self, query, sql, values, sequence=None):
         """

@@ -4,7 +4,7 @@ from .grammar import QueryGrammar
 from ...utils import basestring
 
 
-class MySqlQueryGrammar(QueryGrammar):
+class MySQLQueryGrammar(QueryGrammar):
 
     _select_components = [
         'aggregate_',
@@ -30,7 +30,7 @@ class MySqlQueryGrammar(QueryGrammar):
         :return: The compiled sql
         :rtype: str
         """
-        sql = super(MySqlQueryGrammar, self).compile_select(query)
+        sql = super(MySQLQueryGrammar, self).compile_select(query)
 
         if query.unions:
             sql = '(%s) %s' % (sql, self._compile_unions(query))
@@ -88,7 +88,7 @@ class MySqlQueryGrammar(QueryGrammar):
         :return: The compiled update
         :rtype: str
         """
-        sql = super(MySqlQueryGrammar, self).compile_update(query, values)
+        sql = super(MySQLQueryGrammar, self).compile_update(query, values)
 
         if query.orders:
             sql += ' %s' % self._compile_orders(query, query.orders)

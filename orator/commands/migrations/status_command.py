@@ -5,28 +5,20 @@ from .base_command import BaseCommand
 
 
 class StatusCommand(BaseCommand):
+    """
+    Show a list of migrations up/down.
 
-    name = 'migrations:status'
+    migrate:status
+        {--d|database= : The database connection to use.}
+        {--p|path= : The path of migrations files to be executed.}
+    """
 
-    description = 'Show a list of migrations up/down'
-
-    options = [{
-        'name': 'database',
-        'shortcut': 'd',
-        'description': 'The database connection to use.',
-        'value_required': True
-    }, {
-        'name': 'path',
-        'shortcut': 'p',
-        'description': 'The path of migrations files to be executed.',
-        'value_required': True
-    }]
-
-    def fire(self):
+    def handle(self):
         """
         Executes the command.
         """
         database = self.option('database')
+
         repository = DatabaseMigrationRepository(self.resolver, 'migrations')
 
         migrator = Migrator(repository, self.resolver)
@@ -46,15 +38,16 @@ class StatusCommand(BaseCommand):
         migrations = []
         for migration in migrator._get_migration_files(path):
             if migration in ran:
-                migrations.append(['<fg=cyan>%s</>' % migration, '<info>Yes</info>'])
+                migrations.append(['<fg=cyan>%s</>' % migration, '<info>Yes</>'])
             else:
                 migrations.append(['<fg=cyan>%s</>' % migration, '<fg=red>No</>'])
 
         if migrations:
-            table = self.get_helper('table')
-            table.set_headers(['Migration', 'Ran?'])
-            table.set_rows(migrations)
-            table.render(self.output)
+            table = self.table(
+                ['Migration', 'Ran?'],
+                migrations
+            )
+            table.render()
         else:
             return self.error('No migrations found')
 

@@ -196,6 +196,58 @@ class OrmModelTestCase(OratorTestCase):
         model.new_query.assert_called_once_with()
         self.assertTrue(model._update_timestamps.called)
 
+    def test_creating_with_only_created_at_column(self):
+        query_builder = flexmock(QueryBuilder)
+        query_builder.should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+
+        model = flexmock(OrmModelCreatedAt())
+        model.should_receive('new_query').and_return(Builder(QueryBuilder(None, None, None)))
+        model.should_receive('set_created_at').once()
+        model.should_receive('set_updated_at').never()
+        model.name = 'john'
+        model.save()
+
+    def test_creating_with_only_updated_at_column(self):
+        query_builder = flexmock(QueryBuilder)
+        query_builder.should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
+
+        model = flexmock(OrmModelUpdatedAt())
+        model.should_receive('new_query').and_return(Builder(QueryBuilder(None, None, None)))
+        model.should_receive('set_created_at').never()
+        model.should_receive('set_updated_at').once()
+        model.name = 'john'
+        model.save()
+
+    def test_updating_with_only_created_at_column(self):
+        query = flexmock(Builder)
+        query.should_receive('where').once().with_args('id', 1)
+        query.should_receive('update').once().with_args({'name': 'john'})
+
+        model = flexmock(OrmModelCreatedAt())
+        model.id = 1
+        model.sync_original()
+        model.set_exists(True)
+        model.should_receive('new_query').and_return(Builder(QueryBuilder(None, None, None)))
+        model.should_receive('set_created_at').never()
+        model.should_receive('set_updated_at').never()
+        model.name = 'john'
+        model.save()
+
+    def test_updating_with_only_updated_at_column(self):
+        query = flexmock(Builder)
+        query.should_receive('where').once().with_args('id', 1)
+        query.should_receive('update').once().with_args({'name': 'john'})
+
+        model = flexmock(OrmModelUpdatedAt())
+        model.id = 1
+        model.sync_original()
+        model.set_exists(True)
+        model.should_receive('new_query').and_return(Builder(QueryBuilder(None, None, None)))
+        model.should_receive('set_created_at').never()
+        model.should_receive('set_updated_at').once()
+        model.name = 'john'
+        model.save()
+
     def test_update_is_cancelled_if_updating_event_returns_false(self):
         model = flexmock(OrmModelStub())
         query = flexmock(Builder(flexmock(QueryBuilder(None, None, None))))
@@ -398,11 +450,10 @@ class OrmModelTestCase(OratorTestCase):
         self.assertFalse(model.exists)
 
     def test_delete_properly_deletes_model(self):
-        query = flexmock(Builder)
         model = OrmModelStub()
-        builder = Builder(QueryBuilder(None, None, None))
-        query.should_receive('where').once().with_args('id', 1).and_return(builder)
-        query.should_receive('delete').once()
+        builder = flexmock(Builder(QueryBuilder(None, None, None)))
+        builder.should_receive('where').once().with_args('id', 1).and_return(builder)
+        builder.should_receive('delete').once()
         model.new_query = mock.MagicMock(return_value=builder)
         model.touch_owners = mock.MagicMock()
 
@@ -413,7 +464,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.touch_owners.called)
 
     def test_push_no_relations(self):
-        flexmock(Builder)
         model = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -429,7 +479,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.exists)
 
     def test_push_empty_one_relation(self):
-        flexmock(Builder)
         model = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -447,7 +496,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertIsNone(model.relation_one)
 
     def test_push_one_relation(self):
-        flexmock(Builder)
         related1 = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -479,7 +527,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(related1.exists)
 
     def test_push_empty_many_relation(self):
-        flexmock(Builder)
         model = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -497,7 +544,6 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual(0, len(model.relation_many))
 
     def test_push_many_relation(self):
-        flexmock(Builder)
         related1 = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -508,7 +554,6 @@ class OrmModelTestCase(OratorTestCase):
         related1.name = 'related1'
         related1.set_exists(False)
 
-        flexmock(Builder)
         related2 = flexmock(Model())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -746,8 +791,9 @@ class OrmModelTestCase(OratorTestCase):
         model = flexmock(OrmModelStub())
         model.id = 1
         model.set_exists(True)
-        builder = flexmock(Builder)
-        query = Builder(flexmock(QueryBuilder(None, None, None)))
+        flexmock(Builder)
+        q = flexmock(QueryBuilder(None, None, None))
+        query = flexmock(Builder(q))
         query.should_receive('where').and_return(query)
         query.get_query().should_receive('take').and_return(query)
         query.should_receive('get').and_return(Collection([]))
@@ -856,9 +902,9 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual({'foo': 'bar'}, model.sixth)
         self.assertEqual({'foo': 'bar'}, model.eighth)
         self.assertEqual(['foo', 'bar'], model.seventh)
-        
+
         d = model.to_dict()
-        
+
         self.assertIsInstance(d['first'], int)
         self.assertIsInstance(d['second'], float)
         self.assertIsInstance(d['third'], basestring)
@@ -892,9 +938,9 @@ class OrmModelTestCase(OratorTestCase):
         self.assertIsNone(model.sixth)
         self.assertIsNone(model.seventh)
         self.assertIsNone(model.eighth)
-        
+
         d = model.to_dict()
-        
+
         self.assertIsNone(d['first'])
         self.assertIsNone(d['second'])
         self.assertIsNone(d['third'])
@@ -903,6 +949,17 @@ class OrmModelTestCase(OratorTestCase):
         self.assertIsNone(d['sixth'])
         self.assertIsNone(d['seventh'])
         self.assertIsNone(d['eighth'])
+
+    def test_get_foreign_key(self):
+        model = OrmModelStub()
+        model.set_table('stub')
+
+        self.assertEqual('stub_id', model.get_foreign_key())
+
+    def test_default_values(self):
+        model = OrmModelDefaultAttributes()
+
+        self.assertEqual('bar', model.foo)
 
 
 class OrmModelStub(Model):
@@ -1027,4 +1084,20 @@ class OrmModelCastingStub(Model):
         'sixth': 'dict',
         'seventh': 'list',
         'eighth': 'json'
+    }
+
+class OrmModelCreatedAt(Model):
+
+    __timestamps__ = ['created_at']
+
+
+class OrmModelUpdatedAt(Model):
+
+    __timestamps__ = ['updated_at']
+
+
+class OrmModelDefaultAttributes(Model):
+
+    __attributes__ = {
+        'foo': 'bar'
     }

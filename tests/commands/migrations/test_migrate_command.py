@@ -40,7 +40,7 @@ class MigrateCommandTestCase(OratorCommandTestCase):
         command = flexmock(MigrateCommand())
         command.should_receive('_get_config').and_return({})
         command.should_receive('call').once()\
-            .with_args('migrations:install', [('--database', None), ('--config', None)])
+            .with_args('migrate:install', [('--config', None)])
 
         self.run_command(command, input_stream=self.get_input_stream('y\n'))
 
@@ -67,10 +67,12 @@ class MigrateCommandTestCase(OratorCommandTestCase):
         migrator_mock.should_receive('set_connection').once().with_args('foo')
         migrator_mock.should_receive('run').once().with_args(os.path.join(os.getcwd(), 'migrations'), False)
         migrator_mock.should_receive('get_notes').and_return([])
-        migrator_mock.should_receive('repository_exists').once().and_return(True)
+        migrator_mock.should_receive('repository_exists').once().and_return(False)
 
         command = flexmock(MigrateCommand())
         command.should_receive('_get_config').and_return({})
+        command.should_receive('call').once()\
+            .with_args('migrate:install', [('--database', 'foo'), ('--config', None)])
 
         self.run_command(command, [('--database', 'foo')], input_stream=self.get_input_stream('y\n'))
 
