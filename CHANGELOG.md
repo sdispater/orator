@@ -1,3 +1,11 @@
+## 0.8.1
+
+##### Fixes
+
+###### Commands
+
+- Fixing `orator` command not working on Windows
+
 ## 0.8
 
 ##### Improvements
