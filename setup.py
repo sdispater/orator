@@ -25,6 +25,9 @@ setup(
     version=__version__,
     description='The Orator ORM provides a simple yet beautiful ActiveRecord implementation.',
     long_description=open('README.rst').read(),
+    entry_points={
+        'console_scripts': ['orator=orator.commands.application:application.run'],
+    },
     author='Sébastien Eustace',
     author_email='sebastien.eustace@gmail.com',
     url='https://github.com/sdispater/orator',
@@ -44,7 +47,6 @@ setup(
     ],
     tests_require=['pytest', 'mock', 'flexmock==0.9.7'],
     test_suite='nose.collector',
-    scripts=['bin/orator'],
     classifiers=[
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
