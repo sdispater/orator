@@ -22,4 +22,4 @@ class InstallCommand(BaseCommand):
         repository.set_source(database)
         repository.create_repository()
 
-        self.info('✓ Migration table created successfully')
+        self.info('Migration table created successfully')
