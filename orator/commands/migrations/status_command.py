@@ -19,6 +19,8 @@ class StatusCommand(BaseCommand):
         """
         database = self.option('database')
 
+        self.resolver.set_default_connection(database)
+
         repository = DatabaseMigrationRepository(self.resolver, 'migrations')
 
         migrator = Migrator(repository, self.resolver)
