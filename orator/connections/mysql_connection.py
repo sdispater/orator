@@ -67,6 +67,8 @@ class MySQLConnection(Connection):
         return self._cursor._last_executed.decode()
 
     def get_server_version(self):
-        tuple_version = self._connection._server_version
+        sql = 'select version() as version'
+        rows = self.select(sql)
+        version = rows[0]['version']
 
-        return tuple_version[:2]
+        return tuple(version.split('.'))[:2]
