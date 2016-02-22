@@ -310,7 +310,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_command('char', column, length=length)
+        return self._add_column('char', column, length=length)
 
     def string(self, column, length=255):
         """
