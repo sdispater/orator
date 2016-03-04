@@ -52,7 +52,7 @@ and passing it to a ``DatabaseManager`` instance.
             'driver': 'mysql',
             'host': 'localhost',
             'database': 'database',
-            'username': 'root',
+            'user': 'root',
             'password': '',
             'prefix': ''
         }
@@ -785,7 +785,7 @@ Here is an example of how read / write connections should be configured:
             },
             'driver': 'mysql',
             'database': 'database',
-            'username': 'root',
+            'user': 'root',
             'password': '',
             'prefix': ''
         }
