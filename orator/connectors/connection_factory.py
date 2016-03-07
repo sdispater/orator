@@ -47,7 +47,7 @@ class ConnectionFactory(object):
         )
 
     def _create_read_write_connection(self, config):
-        connection = self._create_single_connection(config)
+        connection = self._create_single_connection(self._get_write_config(config))
 
         connection.set_read_connection(self._create_read_connection(config))
 
