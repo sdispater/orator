@@ -62,9 +62,9 @@ class MySQLConnection(Connection):
             return super(MySQLConnection, self)._get_cursor_query(query, bindings)
 
         if PY2:
-            return self._cursor._last_executed
+            return self._cursor._last_executed.decode()
 
-        return self._cursor._last_executed.decode()
+        return self._cursor._last_executed
 
     def get_server_version(self):
         version = self._connection.get_server_info()
