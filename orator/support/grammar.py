@@ -15,7 +15,7 @@ class Grammar(object):
         if self.is_expression(table):
             return self.get_value(table)
 
-        return self.wrap(self._table_prefix + table, True)
+        return self.wrap(self._table_prefix + str(table), True)
 
     def wrap(self, value, prefix_alias=False):
         if self.is_expression(value):

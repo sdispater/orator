@@ -82,6 +82,6 @@ class AbstractAsset(object):
         """
         hash = ''
         for column in columns:
-            hash += '%x' % binascii.crc32(encode(column))
+            hash += '%x' % binascii.crc32(encode(str(column)))
 
         return (prefix + '_' + hash)[:max_size]

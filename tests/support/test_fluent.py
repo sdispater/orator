@@ -26,3 +26,12 @@ class FluentTestCase(OratorTestCase):
         self.assertEqual(25, fluent.age)
 
         self.assertEqual({'name': 'john', 'developer': True, 'age': 25}, fluent.get_attributes())
+
+    def test_chained_attributes(self):
+        fluent = Fluent()
+        fluent.unsigned = False
+
+        fluent.integer('status').unsigned()
+
+        self.assertEqual('status', fluent.integer)
+        self.assertTrue(fluent.unsigned)

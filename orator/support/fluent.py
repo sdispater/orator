@@ -75,7 +75,7 @@ class Fluent(object):
         return call
 
     def __getattr__(self, item):
-        return self.get(item, lambda: Dynamic(None, item, self))
+        return Dynamic(self._attributes.get(item), item, self)
 
     def __setattr__(self, key, value):
         if key == '_attributes':

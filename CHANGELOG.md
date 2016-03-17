@@ -2,9 +2,19 @@
 
 ##### Fixes
 
+###### Schema Builder
+
+- Fixing `Blueprint.char()` method (thanks to [ihumanable](https://github.com/ihumanable)).
+- Fixing `Fluent` behavior.
+
 ###### Commands
 
-- Fixing `orator` command not working on Windows
+- Fixing `orator` command not working on Windows.
+- Fixing `migrate:status` command not switching databases.
+
+###### Connection
+
+- Fixing `MySQLConnection.get_server_version()` method to be compatible with `PyMySQL` (thanks to [gdraynz](https://github.com/gdraynz)).
 
 ## 0.8
 

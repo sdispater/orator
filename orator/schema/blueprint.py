@@ -695,7 +695,7 @@ class Blueprint(object):
         if not isinstance(columns, list):
             columns = [columns]
 
-        index = '%s_%s_%s' % (self._table, '_'.join(columns), type)
+        index = '%s_%s_%s' % (self._table, '_'.join([str(column) for column in columns]), type)
 
         return index.lower().replace('-', '_').replace('.', '_')
 
