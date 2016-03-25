@@ -2,6 +2,10 @@
 
 ##### Fixes
 
+###### ORM
+
+- Removing call to `Model._boot_columns()` to avoid errors for column types not supported by the dbal.
+
 ###### Schema Builder
 
 - Fixing `Blueprint.char()` method (thanks to [ihumanable](https://github.com/ihumanable)).
