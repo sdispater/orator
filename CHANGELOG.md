@@ -18,6 +18,7 @@
 
 ###### Connection
 
+- Fixing a bug when calling `Connnection.disconnect()` after a reconnection when not using read/write connections.
 - Fixing `MySQLConnection.get_server_version()` method to be compatible with `PyMySQL` (thanks to [gdraynz](https://github.com/gdraynz)).
 
 ## 0.8

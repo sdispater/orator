@@ -48,3 +48,7 @@ class DatabaseIntegrationConnectionResolver(object):
 
     def set_default_connection(self, name):
         pass
+
+    def disconnect(self):
+        if self._connection:
+            self._connection.disconnect()

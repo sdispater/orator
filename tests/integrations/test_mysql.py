@@ -4,6 +4,7 @@ import os
 
 from .. import OratorTestCase
 from . import IntegrationTestCase
+from orator import DatabaseManager
 from orator.connections import MySQLConnection
 from orator.connectors.mysql_connector import MySQLConnector
 
@@ -48,3 +49,7 @@ class DatabaseIntegrationConnectionResolver(object):
 
     def set_default_connection(self, name):
         pass
+
+    def disconnect(self):
+        if self._connection:
+            self._connection.disconnect()

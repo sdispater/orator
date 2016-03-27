@@ -328,6 +328,18 @@ class IntegrationTestCase(object):
         self.assertEqual(1, len(result))
         self.assertEqual('john@doe.com', result.first().email)
 
+    def test_reconnection(self):
+        db = self.get_connection_resolver()
+
+        OratorTestUser.create(id=1, email='john@doe.com')
+
+        db.disconnect()
+
+        user = OratorTestUser.first()
+        self.assertEqual('john@doe.com', user.email)
+
+        db.disconnect()
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
