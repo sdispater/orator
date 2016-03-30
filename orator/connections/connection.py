@@ -16,6 +16,7 @@ from ..exceptions.query import QueryException
 
 
 query_logger = logging.getLogger('orator.connection.queries')
+connection_logger = logging.getLogger('orator.connection')
 
 
 def run(wrapped):
@@ -329,15 +330,19 @@ class Connection(ConnectionInterface):
         return False
 
     def disconnect(self):
+        connection_logger.debug('%s is disconnecting' % self.__class__.__name__)
         if self._connection:
             self._connection.close()
 
-        if self._read_connection:
+        if self._read_connection and self._connection != self._read_connection:
             self._read_connection.close()
 
         self.set_connection(None).set_read_connection(None)
 
+        connection_logger.debug('%s disconnected' % self.__class__.__name__)
+
     def reconnect(self):
+        connection_logger.debug('%s is reconnecting' % self.__class__.__name__)
         if self._reconnector is not None and callable(self._reconnector):
             return self._reconnector(self)
 

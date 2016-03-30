@@ -164,7 +164,6 @@ class Model(object):
                 cls._mutator_cache[cls][method.attribute] = method
 
         cls._boot_mixins()
-        cls._boot_columns()
 
     @classmethod
     def _boot_columns(cls):

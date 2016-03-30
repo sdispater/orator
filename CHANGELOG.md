@@ -1,3 +1,26 @@
+## 0.8.1
+
+##### Fixes
+
+###### ORM
+
+- Removing call to `Model._boot_columns()` to avoid errors for column types not supported by the dbal.
+
+###### Schema Builder
+
+- Fixing `Blueprint.char()` method (thanks to [ihumanable](https://github.com/ihumanable)).
+- Fixing `Fluent` behavior.
+
+###### Commands
+
+- Fixing `orator` command not working on Windows.
+- Fixing `migrate:status` command not switching databases.
+
+###### Connection
+
+- Fixing a bug when calling `Connnection.disconnect()` after a reconnection when not using read/write connections.
+- Fixing `MySQLConnection.get_server_version()` method to be compatible with `PyMySQL` (thanks to [gdraynz](https://github.com/gdraynz)).
+
 ## 0.8
 
 ##### Improvements

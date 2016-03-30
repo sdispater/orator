@@ -101,4 +101,4 @@ class MigrationCreator(object):
         return os.path.join(path, self._get_date_prefix() + '_' + name + '.py')
 
     def _get_date_prefix(self):
-        return datetime.datetime.utcnow().strftime('%Y_%m_%d_%H%M%s')
+        return datetime.datetime.utcnow().strftime('%Y_%m_%d_%H%M%S')

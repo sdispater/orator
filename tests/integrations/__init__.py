@@ -2,7 +2,7 @@
 
 import arrow
 from datetime import datetime, timedelta
-from orator import Model, Collection
+from orator import Model, Collection, DatabaseManager
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope
 from orator.orm.relations import BelongsToMany
 from orator.exceptions.orm import ModelNotFound
@@ -15,8 +15,12 @@ class IntegrationTestCase(object):
         Model.set_connection_resolver(cls.get_connection_resolver())
 
     @classmethod
-    def get_connection_resolver(cls):
+    def get_manager_config(cls):
         raise NotImplementedError()
+
+    @classmethod
+    def get_connection_resolver(cls):
+        return DatabaseManager(cls.get_manager_config())
 
     @classmethod
     def tearDownClass(cls):
@@ -51,10 +55,10 @@ class IntegrationTestCase(object):
             table.timestamps(use_current=True)
 
     def tearDown(self):
-        self.schema().drop('test_users')
-        self.schema().drop('test_friends')
-        self.schema().drop('test_posts')
-        self.schema().drop('test_photos')
+        self.schema().drop_if_exists('test_users')
+        self.schema().drop_if_exists('test_friends')
+        self.schema().drop_if_exists('test_posts')
+        self.schema().drop_if_exists('test_photos')
 
     def test_basic_model_retrieval(self):
         OratorTestUser.create(email='john@doe.com')
@@ -144,12 +148,12 @@ class IntegrationTestCase(object):
         models = OratorTestUser.hydrate_raw(
             'SELECT * FROM test_users WHERE email = %s' % self.marker,
             ['jane@doe.com'],
-            'foo_connection'
+            self.connection().get_name()
         )
         self.assertIsInstance(models, Collection)
         self.assertIsInstance(models[0], OratorTestUser)
         self.assertEqual('jane@doe.com', models[0].email)
-        self.assertEqual('foo_connection', models[0].get_connection_name())
+        self.assertEqual(self.connection().get_name(), models[0].get_connection_name())
         self.assertEqual(1, len(models))
 
     def test_has_on_self_referencing_belongs_to_many_relationship(self):
@@ -327,6 +331,14 @@ class IntegrationTestCase(object):
         result = OratorTestUser.where_not_null('id').older_than(minutes=30).get()
         self.assertEqual(1, len(result))
         self.assertEqual('john@doe.com', result.first().email)
+
+    def test_reconnection(self):
+        db = Model.get_connection_resolver()
+
+        db.disconnect()
+        db.reconnect()
+
+        db.disconnect()
 
     def grammar(self):
         return self.connection().get_default_query_grammar()
