@@ -18,6 +18,8 @@ class PostgresConnector(Connector):
         'register_unicode'
     ]
 
+    SUPPORTED_PACKAGES = ['psycopg2']
+
     def connect(self, config):
         connection = self.get_api().connect(
             connection_factory=psycopg2.extras.DictConnection,
