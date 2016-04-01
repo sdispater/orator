@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 
+from ..exceptions.connectors import MissingPackage
+
 
 class Connector(object):
 
     RESERVED_KEYWORDS = [
         'log_queries', 'driver', 'prefix', 'name'
     ]
+
+    SUPPORTED_PACKAGES = []
+
+    def __init__(self, driver=None):
+        if self.get_api() is None:
+            raise MissingPackage(driver, self.SUPPORTED_PACKAGES)
 
     def get_api(self):
         raise NotImplementedError()
