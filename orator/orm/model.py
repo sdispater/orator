@@ -1933,7 +1933,7 @@ class Model(object):
         Get the name for polymorphic relations.
         """
         if not cls.__morph_name__:
-            return inflection.tableize(cls.__name__)
+            return cls._register.inverse[cls]
 
         return cls.__morph_name__
 

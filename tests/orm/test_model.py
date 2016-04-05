@@ -961,6 +961,11 @@ class OrmModelTestCase(OratorTestCase):
 
         self.assertEqual('bar', model.foo)
 
+    def test_get_morph_name(self):
+        model = OrmModelStub()
+
+        self.assertEqual('stub', model.get_morph_name())
+
 
 class OrmModelStub(Model):
 
