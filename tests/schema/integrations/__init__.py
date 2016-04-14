@@ -22,6 +22,11 @@ class IntegrationTestCase(object):
 
     def setUp(self):
         with self.connection().transaction():
+            self.schema().drop_if_exists('photos')
+            self.schema().drop_if_exists('posts')
+            self.schema().drop_if_exists('friends')
+            self.schema().drop_if_exists('users')
+
             with self.schema().create('users') as table:
                 table.increments('id')
                 table.string('email').unique()

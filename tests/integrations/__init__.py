@@ -31,6 +31,11 @@ class IntegrationTestCase(object):
         return self.grammar().get_marker()
 
     def setUp(self):
+        self.schema().drop_if_exists('test_users')
+        self.schema().drop_if_exists('test_friends')
+        self.schema().drop_if_exists('test_posts')
+        self.schema().drop_if_exists('test_photos')
+
         with self.schema().create('test_users') as table:
             table.increments('id')
             table.string('email').unique()
@@ -331,6 +336,13 @@ class IntegrationTestCase(object):
         result = OratorTestUser.where_not_null('id').older_than(minutes=30).get()
         self.assertEqual(1, len(result))
         self.assertEqual('john@doe.com', result.first().email)
+
+    def test_repr_relations(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        photo = user.photos().create(name='Avatar 1', metadata={'foo': 'bar'})
+
+        repr(OratorTestUser.first().photos)
+        repr(OratorTestUser.with_('photos').first().photos)
 
     def test_reconnection(self):
         db = Model.get_connection_resolver()
