@@ -190,7 +190,7 @@ class Relation(object):
 
     def wrap(self, value):
         """
-        Wrap the given calue with the parent's query grammar.
+        Wrap the given value with the parent's query grammar.
 
         :rtype: str
         """
