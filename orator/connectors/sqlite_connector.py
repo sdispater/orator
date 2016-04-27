@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import sqlite3
+try:
+    import sqlite3
+except ImportError:
+    sqlite3 = None
 
 from .connector import Connector
 
