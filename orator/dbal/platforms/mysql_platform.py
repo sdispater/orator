@@ -78,7 +78,7 @@ class MySQLPlatform(Platform):
         return sql % table
 
     def get_list_table_foreign_keys_sql(self, table, database=None):
-        sql = ("SELECT DISTINCT k.`CONSTRAINT_NAME` AS `name`, k.`COLUMN_NAME`, k.`REFERENCED_TABLE_NAME`, "
+        sql = ("SELECT DISTINCT k.`CONSTRAINT_NAME`, k.`COLUMN_NAME`, k.`REFERENCED_TABLE_NAME`, "
                "k.`REFERENCED_COLUMN_NAME` /*!50116 , c.update_rule, c.delete_rule */ "
                "FROM information_schema.key_column_usage k /*!50116 "
                "INNER JOIN information_schema.referential_constraints c ON "

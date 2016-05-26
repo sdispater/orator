@@ -98,6 +98,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         sql += self._add_primary_keys(blueprint)
 
+        print(sql + ')')
+
         return sql + ')'
 
     def _add_foreign_keys(self, blueprint):
@@ -127,7 +129,11 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         on_columns = self.columnize(references)
 
-        return ', FOREIGN KEY(%s) REFERENCES %s(%s)' % (columns, on, on_columns)
+        constraint = ''
+        if foreign.index:
+            constraint = 'CONSTRAINT %s ' % self.wrap(foreign.index)
+
+        return ', %sFOREIGN KEY(%s) REFERENCES %s(%s)' % (constraint, columns, on, on_columns)
 
     def _add_primary_keys(self, blueprint):
         primary = self._get_command_by_name(blueprint, 'primary')

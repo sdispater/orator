@@ -13,6 +13,9 @@ class SchemaBuilderSQLiteIntegrationTestCase(IntegrationTestCase, OratorTestCase
     def get_connection_resolver(cls):
         return DatabaseIntegrationConnectionResolver()
 
+    def test_foreign_keys_creation(self):
+        pass
+
 
 class SchemaBuilderSQLiteIntegrationCascadingTestCase(OratorTestCase):
 
