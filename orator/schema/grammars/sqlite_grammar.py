@@ -98,8 +98,6 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         sql += self._add_primary_keys(blueprint)
 
-        print(sql + ')')
-
         return sql + ')'
 
     def _add_foreign_keys(self, blueprint):
