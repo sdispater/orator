@@ -1670,8 +1670,8 @@ class QueryBuilder(object):
     def __copy__(self):
         new = self.__class__(self._connection, self._grammar, self._processor)
 
-        new.__dict__.update(dict((k, v) for k, v
-                                 in copy.deepcopy(self.__dict__).items()
+        new.__dict__.update(dict((k, copy.deepcopy(v)) for k, v
+                                 in self.__dict__.items()
                                  if k != '_connection'))
 
         return new

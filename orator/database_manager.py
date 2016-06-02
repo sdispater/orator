@@ -75,6 +75,9 @@ class BaseDatabaseManager(ConnectionResolverInterface):
 
         :rtype: None
         """
+        if name is None:
+            name = self.get_default_connection()
+
         self.disconnect(name)
 
         if name in self._connections:

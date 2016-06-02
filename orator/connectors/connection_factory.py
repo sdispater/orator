@@ -92,7 +92,7 @@ class ConnectionFactory(object):
         if driver not in self.CONNECTORS:
             raise UnsupportedDriver(driver)
 
-        return self.CONNECTORS[driver]()
+        return self.CONNECTORS[driver](driver)
 
     @classmethod
     def register_connector(cls, name, connector):

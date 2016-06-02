@@ -26,6 +26,8 @@ class MySQLConnector(Connector):
         'name'
     ]
 
+    SUPPORTED_PACKAGES = ['PyMySQL', 'mysqlclient']
+
     def connect(self, config):
         config = dict(config.items())
         for key, value in keys_fix.items():

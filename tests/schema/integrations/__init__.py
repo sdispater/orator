@@ -22,6 +22,11 @@ class IntegrationTestCase(object):
 
     def setUp(self):
         with self.connection().transaction():
+            self.schema().drop_if_exists('photos')
+            self.schema().drop_if_exists('posts')
+            self.schema().drop_if_exists('friends')
+            self.schema().drop_if_exists('users')
+
             with self.schema().create('users') as table:
                 table.increments('id')
                 table.string('email').unique()
@@ -44,7 +49,7 @@ class IntegrationTestCase(object):
                 table.string('tag').nullable().default('tag')
                 table.timestamps(use_current=True)
 
-                table.foreign('user_id').references('id').on('users')
+                table.foreign('user_id', 'users_foreign_key').references('id').on('users')
 
             with self.schema().create('photos') as table:
                 table.increments('id')
@@ -64,6 +69,16 @@ class IntegrationTestCase(object):
         self.schema().drop('posts')
         self.schema().drop('friends')
         self.schema().drop('users')
+
+    def test_foreign_keys_creation(self):
+        posts_foreign_keys = self.connection().get_schema_manager().list_table_foreign_keys('posts')
+        friends_foreign_keys = self.connection().get_schema_manager().list_table_foreign_keys('friends')
+
+        self.assertEqual('users_foreign_key', posts_foreign_keys[0].get_name())
+        self.assertEqual(
+            ['friends_friend_id_foreign', 'friends_user_id_foreign'],
+            sorted([f.get_name() for f in friends_foreign_keys])
+        )
 
     def test_add_columns(self):
         with self.schema().table('posts') as table:

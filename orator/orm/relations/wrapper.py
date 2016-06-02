@@ -36,6 +36,9 @@ class Wrapper(Proxy):
     def __call__(self, *args, **kwargs):
         return self._relation.new_instance(self._relation.get_parent())
 
+    def __repr__(self):
+        return repr(self.__wrapped__)
+
 
 class BelongsToManyWrapper(Wrapper):
 

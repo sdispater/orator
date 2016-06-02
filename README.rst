@@ -229,7 +229,7 @@ To create a new record in the database, simply create a new model instance and c
 
 You can also use the ``create`` method to save a model in a single line, but you will need to specify
 either the ``__fillable__`` or ``__guarded__`` property on the model since all models are protected against
-mass-assigment by default.
+mass-assignment by default.
 
 After saving or creating a new model with auto-incrementing IDs, you can retrieve the ID by accessing
 the object's ``id`` attribute:
@@ -330,7 +330,7 @@ these columns, just add the ``__timestamps__`` property:
 Providing a custom timestamp format
 -----------------------------------
 
-If you whish to customize the format of your timestamps (the default is the ISO Format) that will be returned when using the ``to_dict``
+If you wish to customize the format of your timestamps (the default is the ISO Format) that will be returned when using the ``to_dict``
 or the ``to_json`` methods, you can override the ``get_date_format`` method:
 
 .. code-block:: python
