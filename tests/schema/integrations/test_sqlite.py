@@ -16,6 +16,18 @@ class SchemaBuilderSQLiteIntegrationTestCase(IntegrationTestCase, OratorTestCase
     def test_foreign_keys_creation(self):
         pass
 
+    def test_rename_columns_with_foreign_keys(self):
+        super(SchemaBuilderSQLiteIntegrationTestCase, self).test_rename_columns_with_foreign_keys()
+
+        old_foreign_keys = self.connection().get_schema_manager().list_table_foreign_keys('friends')
+
+        with self.schema().table('friends') as table:
+            table.rename_column('user_id', 'my_user_id')
+
+        foreign_keys = self.connection().get_schema_manager().list_table_foreign_keys('friends')
+
+        self.assertEqual(len(old_foreign_keys), len(foreign_keys))
+
 
 class SchemaBuilderSQLiteIntegrationCascadingTestCase(OratorTestCase):
 
