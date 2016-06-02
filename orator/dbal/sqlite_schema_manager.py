@@ -108,7 +108,10 @@ class SQLiteSchemaManager(SchemaManager):
 
         for value in table_foreign_keys:
             value = dict((k.lower(), v) for k, v in value.items())
-            name = value.get('constraint_name', '')
+            name = value.get('constraint_name', None)
+
+            if name is None:
+                name = '%s_%s_%s' % (value['from'], value['table'], value['to'])
 
             if name not in foreign_keys:
                 if 'on_delete' not in value or value['on_delete'] == 'RESTRICT':
