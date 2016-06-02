@@ -1,3 +1,28 @@
+## 0.8.2
+
+##### Fixes
+
+###### ORM
+
+- Fixing a possible `Memory Error: stack overflow` error when accessing relations.
+- Fixing builder copying process to avoir issues with `PyMySQL`(thanks to [ihumanable](https://github.com/ihumanable)).
+
+###### Commands
+
+- Fixing the `-n/--no-interaction` option not automatically confirming questions.
+- Removing the check character in migration commands output to avoid errors on Windows.
+
+###### Connection
+
+- Updating connectors to raise an exception when backend packages are missing.
+- Adding standard name resolution to the `purge` method (thanks to [ihumanable](https://github.com/ihumanable)).
+
+###### DBAL
+
+- Fixing setting foreign key constraint name for MySQL.
+- Handling missing `constraint_name` for sqlite (thanks to [ihumanable](https://github.com/ihumanable)).
+
+
 ## 0.8.1
 
 ##### Fixes
