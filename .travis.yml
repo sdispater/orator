@@ -18,7 +18,6 @@ before_install:
   - sudo apt-get install -qq mysql-server-5.6 mysql-client-5.6 mysql-client-core-5.6
 
 install:
-  - pip install -r requirements.txt
   - pip install -r tests-requirements.txt
 
 script: py.test tests/
