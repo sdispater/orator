@@ -20,6 +20,8 @@ class MySQLQueryGrammar(QueryGrammar):
         'lock_'
     ]
 
+    marker = '%s'
+
     def compile_select(self, query):
         """
         Compile a select query into SQL
@@ -146,6 +148,3 @@ class MySQLQueryGrammar(QueryGrammar):
             return value
 
         return '`%s`' % value.replace('`', '``')
-
-    def get_marker(self):
-        return '%s'

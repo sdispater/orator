@@ -352,6 +352,24 @@ class IntegrationTestCase(object):
 
         db.disconnect()
 
+    def test_raw_query(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        photo = user.photos().create(name='Avatar 1', metadata={'foo': 'bar'})
+
+        user = self.connection().table('test_users')\
+            .where_raw('test_users.email = %s' % self.get_marker(), 'john@doe.com')\
+            .first()
+
+        self.assertEqual(1, user['id'])
+
+        photos = self.connection().select(
+            'SELECT * FROM test_photos WHERE imageable_id = %(marker)s and imageable_type = %(marker)s'
+            % {"marker": self.get_marker()},
+            [str(user['id']), 'test_users']
+        )
+
+        self.assertEqual('Avatar 1', photos[0]['name'])
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
@@ -360,6 +378,9 @@ class IntegrationTestCase(object):
 
     def schema(self):
         return self.connection().get_schema_builder()
+
+    def get_marker(self):
+        return '?'
 
 
 class OratorTestUser(Model):

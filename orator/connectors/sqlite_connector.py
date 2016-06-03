@@ -34,7 +34,7 @@ class SQLiteConnector(Connector):
 
     RESERVED_KEYWORDS = [
         'log_queries', 'driver', 'prefix', 'name',
-        'foreign_keys'
+        'foreign_keys', 'use_qmark'
     ]
 
     def connect(self, config):

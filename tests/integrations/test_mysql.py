@@ -30,3 +30,6 @@ class MySQLIntegrationTestCase(IntegrationTestCase, OratorTestCase):
                 'password': password
             }
         }
+
+    def get_marker(self):
+        return '%s'

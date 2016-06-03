@@ -5,8 +5,13 @@ from ..query.expression import QueryExpression
 
 class Grammar(object):
 
-    def __init__(self):
+    marker = '?'
+
+    def __init__(self, marker=None):
         self._table_prefix = ''
+
+        if marker:
+            self.marker = marker
 
     def wrap_list(self, values):
         return map(self.wrap, values)
@@ -85,4 +90,4 @@ class Grammar(object):
         return self
 
     def get_marker(self):
-        return '?'
+        return self.marker

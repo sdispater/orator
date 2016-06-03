@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 try:
     import MySQLdb as mysql
     from MySQLdb.cursors import DictCursor as cursor_class
@@ -7,15 +9,32 @@ try:
         'password': 'passwd',
         'database': 'db'
     }
-except ImportError:
+except ImportError as e:
     try:
         import pymysql as mysql
         from pymysql.cursors import DictCursor as cursor_class
         keys_fix = {}
-    except ImportError:
+    except ImportError as e:
         mysql = None
+        cursor_class = object
 
 from .connector import Connector
+from ..utils.qmarker import qmark, denullify
+
+
+class DictCursor(cursor_class):
+
+    def execute(self, query, args=None):
+        query = qmark(query)
+
+        return super(DictCursor, self).execute(query, args)
+
+    def executemany(self, query, args):
+        query = qmark(query)
+
+        return super(DictCursor, self).executemany(
+            query, denullify(args)
+        )
 
 
 class MySQLConnector(Connector):
@@ -23,7 +42,7 @@ class MySQLConnector(Connector):
     RESERVED_KEYWORDS = [
         'log_queries', 'driver', 'prefix',
         'engine', 'collation',
-        'name'
+        'name', 'use_qmark'
     ]
 
     SUPPORTED_PACKAGES = ['PyMySQL', 'mysqlclient']
@@ -35,7 +54,7 @@ class MySQLConnector(Connector):
             del config[key]
 
         config['autocommit'] = True
-        config['cursorclass'] = cursor_class
+        config['cursorclass'] = self.get_cursor_class(config)
 
         return self.get_api().connect(**self.get_config(config))
 
@@ -44,6 +63,12 @@ class MySQLConnector(Connector):
             'charset': 'utf8',
             'use_unicode': True
         }
+
+    def get_cursor_class(self, config):
+        if config.get('use_qmark'):
+            return DictCursor
+
+        return cursor_class
 
     def get_api(self):
         return mysql
