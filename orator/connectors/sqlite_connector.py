@@ -26,6 +26,12 @@ class DictCursor(object):
     def __getitem__(self, item):
         return self.dict[item]
 
+    def keys(self):
+        return self.dict.keys()
+
+    def values(self):
+        return self.dict.values()
+
     def items(self):
         return self.dict.items()
 
@@ -37,7 +43,7 @@ class SQLiteConnector(Connector):
         'foreign_keys', 'use_qmark'
     ]
 
-    def connect(self, config):
+    def _do_connect(self, config):
         connection = self.get_api().connect(**self.get_config(config))
         connection.isolation_level = None
         connection.row_factory = DictCursor

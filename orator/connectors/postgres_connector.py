@@ -50,7 +50,7 @@ class PostgresConnector(Connector):
 
     SUPPORTED_PACKAGES = ['psycopg2']
 
-    def connect(self, config):
+    def _do_connect(self, config):
         connection = self.get_api().connect(
             connection_factory=self.get_connection_class(config),
             **self.get_config(config)

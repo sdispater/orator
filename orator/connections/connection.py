@@ -51,7 +51,7 @@ class Connection(ConnectionInterface):
                  builder_class=QueryBuilder, builder_default_kwargs=None):
         """
         :param connection: A dbapi connection instance
-        :type connection: mixed
+        :type connection: Connector
 
         :param database: The database name
         :type database: str
@@ -482,6 +482,9 @@ class Connection(ConnectionInterface):
 
     def get_schema_manager(self):
         return SchemaManager(self)
+
+    def get_params(self):
+        return self._connection.get_params()
 
     def set_builder_class(self, klass, default_kwargs=None):
         self._builder_class = klass

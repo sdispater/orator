@@ -47,7 +47,7 @@ class MySQLConnector(Connector):
 
     SUPPORTED_PACKAGES = ['PyMySQL', 'mysqlclient']
 
-    def connect(self, config):
+    def _do_connect(self, config):
         config = dict(config.items())
         for key, value in keys_fix.items():
             config[value] = config[key]
