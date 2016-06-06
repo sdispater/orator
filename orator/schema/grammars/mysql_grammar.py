@@ -22,7 +22,10 @@ class MySQLSchemaGrammar(SchemaGrammar):
 
         :rtype: str
         """
-        return 'SELECT * FROM information_schema.tables WHERE table_schema = %s AND table_name = %s'
+        return 'SELECT * ' \
+               'FROM information_schema.tables ' \
+               'WHERE table_schema = %(marker)s ' \
+               'AND table_name = %(marker)s' % {'marker': self.get_marker()}
 
     def compile_column_exists(self, table):
         """

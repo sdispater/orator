@@ -78,7 +78,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         :rtype: str
         """
-        return "SELECT * FROM sqlite_master WHERE type = 'table' AND name = ?"
+        return "SELECT * FROM sqlite_master WHERE type = 'table' AND name = %(marker)s" % {'marker': self.get_marker()}
 
     def compile_column_exists(self, table):
         """
