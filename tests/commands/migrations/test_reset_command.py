@@ -6,6 +6,7 @@ from flexmock import flexmock
 from orator.migrations import Migrator
 from orator.commands.migrations import ResetCommand
 from orator import DatabaseManager
+from orator.connections import Connection
 from .. import OratorCommandTestCase
 
 
@@ -17,9 +18,9 @@ class ResetCommandTestCase(OratorCommandTestCase):
 
         migrator_mock = flexmock(Migrator)
         migrator_mock.should_receive('set_connection').once().with_args(None)
-        migrator_mock.should_receive('rollback').twice()\
+        migrator_mock.should_receive('reset').once()\
             .with_args(os.path.join(os.getcwd(), 'migrations'), False)\
-            .and_return(1, 0).one_by_one()
+            .and_return(2)
         migrator_mock.should_receive('get_notes').and_return([])
 
         command = flexmock(ResetCommand())
@@ -33,9 +34,9 @@ class ResetCommandTestCase(OratorCommandTestCase):
 
         migrator_mock = flexmock(Migrator)
         migrator_mock.should_receive('set_connection').once().with_args(None)
-        migrator_mock.should_receive('rollback').twice()\
+        migrator_mock.should_receive('reset').once()\
             .with_args(os.path.join(os.getcwd(), 'migrations'), True)\
-            .and_return(1, 0).one_by_one()
+            .and_return(2)
         migrator_mock.should_receive('get_notes').and_return([])
 
         command = flexmock(ResetCommand())
@@ -49,9 +50,9 @@ class ResetCommandTestCase(OratorCommandTestCase):
 
         migrator_mock = flexmock(Migrator)
         migrator_mock.should_receive('set_connection').once().with_args('foo')
-        migrator_mock.should_receive('rollback').twice()\
+        migrator_mock.should_receive('reset').once()\
             .with_args(os.path.join(os.getcwd(), 'migrations'), False)\
-            .and_return(1, 0).one_by_one()
+            .and_return(2)
         migrator_mock.should_receive('get_notes').and_return([])
 
         command = flexmock(ResetCommand())

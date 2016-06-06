@@ -168,7 +168,7 @@ class ConnectionInterface(object):
     def transaction_level(self):
         raise NotImplementedError()
 
-    def pretend(self, callback):
+    def pretend(self):
         raise NotImplementedError()
 
 

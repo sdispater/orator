@@ -90,6 +90,7 @@ class Connection(ConnectionInterface):
         self._builder_default_kwargs = builder_default_kwargs
 
         self._logging_queries = config.get('log_queries', False)
+        self._logged_queries = []
 
         self._query_grammar = self.get_default_query_grammar()
 
@@ -297,18 +298,18 @@ class Connection(ConnectionInterface):
     def transaction_level(self):
         return self._transactions
 
-    def pretend(self, callback):
-        logging_queries = self._logging_queries
-
-        self.enable_query_log()
+    @contextmanager
+    def pretend(self):
+        self._logged_queries = []
 
         self._pretending = True
 
-        callback(self)
+        try:
+            yield self
+        except Exception:
+            self._pretending = False
 
         self._pretending = False
-
-        self._logging_queries = logging_queries
 
     def _try_again_if_caused_by_lost_connection(self, e, query, bindings, callback, *args, **kwargs):
         if self._caused_by_lost_connection(e):
@@ -353,6 +354,9 @@ class Connection(ConnectionInterface):
             self.reconnect()
 
     def log_query(self, query, bindings, time_=None):
+        if self.pretending():
+            self._logged_queries.append(self._get_cursor_query(query, bindings))
+
         if not self._logging_queries:
             return
 
@@ -379,6 +383,9 @@ class Connection(ConnectionInterface):
             return query, bindings
 
         return query, bindings
+
+    def get_logged_queries(self):
+        return self._logged_queries
 
     def get_connection(self):
         return self._connection

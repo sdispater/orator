@@ -39,14 +39,10 @@ class ResetCommand(BaseCommand):
         if path is None:
             path = self._get_migration_path()
 
-        while True:
-            count = migrator.rollback(path, pretend)
+        migrator.reset(path, pretend)
 
-            for note in migrator.get_notes():
-                self.line(note)
-
-            if count == 0:
-                break
+        for note in migrator.get_notes():
+            self.line(note)
 
     def _prepare_database(self, migrator, database):
         migrator.set_connection(database)
