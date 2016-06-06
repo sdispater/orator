@@ -43,7 +43,8 @@ setup(
         'lazy-object-proxy',
         'fake-factory',
         'wrapt',
-        'pyaml'
+        'pyaml',
+        'pygments'
     ],
     tests_require=['pytest', 'mock', 'flexmock==0.9.7'],
     test_suite='nose.collector',

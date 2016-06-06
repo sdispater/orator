@@ -8,3 +8,4 @@ lazy-object-proxy
 fake-factory
 wrapt
 pyaml
+pygments
