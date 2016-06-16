@@ -45,6 +45,7 @@ class IntegrationTestCase(object):
             table.increments('id')
             table.integer('user_id')
             table.integer('friend_id')
+            table.boolean('is_close').default(False)
 
         with self.schema().create('test_posts') as table:
             table.increments('id')
@@ -370,6 +371,16 @@ class IntegrationTestCase(object):
 
         self.assertEqual('Avatar 1', photos[0]['name'])
 
+    def test_pivot(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        friend = OratorTestUser.create(id=2, email='jane@doe.com')
+        another_friend = OratorTestUser.create(id=3, email='another@doe.com')
+        user.friends().attach(friend)
+        user.friends().attach(another_friend)
+
+        user.friends().update_existing_pivot(friend.id, {'is_close': True})
+        self.assertTrue(user.friends().where('test_users.email', 'jane@doe.com').first().pivot.is_close)
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
@@ -388,7 +399,7 @@ class OratorTestUser(Model):
     __table__ = 'test_users'
     __guarded__ = []
 
-    @belongs_to_many('test_friends', 'user_id', 'friend_id', with_pivot=['id'])
+    @belongs_to_many('test_friends', 'user_id', 'friend_id', with_pivot=['id', 'is_close'])
     def friends(self):
         return OratorTestUser
 
