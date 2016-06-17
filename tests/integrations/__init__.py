@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import arrow
+import simplejson as json
 from datetime import datetime, timedelta
 from orator import Model, Collection, DatabaseManager
-from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope
+from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope, accessor
 from orator.orm.relations import BelongsToMany
 from orator.exceptions.orm import ModelNotFound
 
@@ -381,6 +382,19 @@ class IntegrationTestCase(object):
         user.friends().update_existing_pivot(friend.id, {'is_close': True})
         self.assertTrue(user.friends().where('test_users.email', 'jane@doe.com').first().pivot.is_close)
 
+    def test_serialization(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        photo = user.photos().create(name='Avatar 1', metadata={'foo': 'bar'})
+
+        serialized_user = OratorTestUser.first().serialize()
+        serialized_photo = OratorTestPhoto.first().serialize()
+
+        self.assertEqual(1, serialized_user['id'])
+        self.assertEqual('john@doe.com', serialized_user['email'])
+        self.assertEqual('Avatar 1', serialized_photo['name'])
+        self.assertEqual('bar', serialized_photo['metadata']['foo'])
+        self.assertEqual('Avatar 1', json.loads(OratorTestPhoto.first().to_json())['name'])
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
@@ -446,3 +460,7 @@ class OratorTestPhoto(Model):
     @morph_to
     def imageable(self):
         return
+
+    @accessor
+    def created_at(self):
+        return arrow.get(self._attributes['created_at'].to('Europe/Paris'))

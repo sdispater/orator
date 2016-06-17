@@ -2165,14 +2165,13 @@ class Model(object):
         :rtype: dict
         """
         attributes = self._get_dictable_attributes()
+        mutated_attributes = self._get_mutated_attributes()
 
         for key in self.get_dates():
-            if not key in attributes:
+            if not key in attributes or key in mutated_attributes:
                 continue
 
             attributes[key] = self._format_date(attributes[key])
-
-        mutated_attributes = self._get_mutated_attributes()
 
         for key in mutated_attributes:
             if key not in attributes:
@@ -2350,6 +2349,9 @@ class Model(object):
 
         if hasattr(value, 'to_dict'):
             return value.to_dict()
+
+        if key in self.get_dates():
+            return self._format_date(value)
 
         return value
 
