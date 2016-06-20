@@ -1605,11 +1605,15 @@ class QueryBuilder(object):
         :param query: The query to merge with
         :type query: QueryBuilder
         """
+        self.columns += query.columns
         self.joins += query.joins
         self.wheres += query.wheres
         self.groups += query.groups
         self.havings += query.havings
         self.orders += query.orders
+
+        if self.columns:
+            self.columns = Collection(self.columns).unique().all()
 
         if query.limit_:
             self.limit_ = query.limit_

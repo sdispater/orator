@@ -14,7 +14,7 @@ class Grammar(object):
             self.marker = marker
 
     def wrap_list(self, values):
-        return map(self.wrap, values)
+        return list(map(self.wrap, values))
 
     def wrap_table(self, table):
         if self.is_expression(table):

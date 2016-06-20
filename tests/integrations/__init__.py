@@ -283,9 +283,11 @@ class IntegrationTestCase(object):
         post2 = user.posts().create(name='Second Post')
 
         user = OratorTestUser.with_('posts').first()
+        columns = ', '.join(self.connection().get_query_grammar().wrap_list(['id', 'name', 'user_id']))
         self.assertEqual(
-            'SELECT * FROM %(table)s WHERE %(table)s.%(user_id)s = %(marker)s ORDER BY %(name)s DESC'
+            'SELECT %(columns)s FROM %(table)s WHERE %(table)s.%(user_id)s = %(marker)s ORDER BY %(name)s DESC'
             % {
+                'columns': columns,
                 'marker': self.marker,
                 'table': self.grammar().wrap('test_posts'),
                 'user_id': self.grammar().wrap('user_id'),
@@ -296,8 +298,9 @@ class IntegrationTestCase(object):
 
         user = OratorTestUser.first()
         self.assertEqual(
-            'SELECT * FROM %(table)s WHERE %(table)s.%(user_id)s = %(marker)s ORDER BY %(name)s DESC'
+            'SELECT %(columns)s FROM %(table)s WHERE %(table)s.%(user_id)s = %(marker)s ORDER BY %(name)s DESC'
             % {
+                'columns': columns,
                 'marker': self.marker,
                 'table': self.grammar().wrap('test_posts'),
                 'user_id': self.grammar().wrap('user_id'),
@@ -423,7 +426,7 @@ class OratorTestUser(Model):
 
     @has_one('user_id')
     def post(self):
-        return OratorTestPost.order_by('name', 'desc')
+        return OratorTestPost.select('id', 'name', 'name', 'user_id').order_by('name', 'desc')
 
     @morph_many('imageable')
     def photos(self):
