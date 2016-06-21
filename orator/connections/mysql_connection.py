@@ -69,7 +69,3 @@ class MySQLConnection(Connection):
             return self._cursor._last_executed.decode()
 
         return self._cursor._last_executed
-
-    def get_server_version(self):
-        version = self._connection.get_server_info()
-        return tuple([int(n) for n in version.split('.')[:2]])

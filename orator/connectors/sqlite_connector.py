@@ -5,6 +5,7 @@ try:
 except ImportError:
     sqlite3 = None
 
+from ..dbal.platforms import SQLitePlatform
 from .connector import Connector
 
 
@@ -56,3 +57,17 @@ class SQLiteConnector(Connector):
 
     def get_api(self):
         return sqlite3
+
+    def get_dbal_platform(self):
+        return SQLitePlatform()
+
+    def is_version_aware(self):
+        return False
+
+    def get_server_version(self):
+        sql = 'select sqlite_version() AS sqlite_version'
+
+        rows = self._connection.execute(sql).fetchall()
+        version = rows[0]['sqlite_version']
+
+        return tuple(version.split('.')[:3] + [''])

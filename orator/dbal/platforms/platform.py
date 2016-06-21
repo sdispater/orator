@@ -669,3 +669,6 @@ class Platform(object):
 
     def supports_foreign_key_on_update(self):
         return self.supports_foreign_key_constraints()
+
+    def has_native_json_type(self):
+        return False

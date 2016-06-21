@@ -18,6 +18,7 @@ except ImportError as e:
         mysql = None
         cursor_class = object
 
+from ..dbal.platforms import MySQLPlatform, MySQL57Platform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
 
@@ -72,3 +73,35 @@ class MySQLConnector(Connector):
 
     def get_api(self):
         return mysql
+
+    def get_server_version(self):
+        version = self._connection.get_server_info()
+
+        version_parts = re.match('^(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?', version)
+
+        major = int(version_parts.group('major'))
+        minor = version_parts.group('minor') or 0
+        patch = version_parts.group('patch') or 0
+
+        minor, patch = int(minor), int(patch)
+
+        server_version = (major, minor, patch, '')
+
+        if 'mariadb' in version.lower():
+            server_version = (major, minor, patch, 'mariadb')
+
+        return server_version
+
+    def _create_database_platform_for_version(self, version):
+        major, minor, _, extra = version
+
+        if extra == 'mariadb':
+            return self.get_dbal_platform()
+
+        if (major, minor) >= (5, 7):
+            return MySQL57Platform()
+
+        return self.get_dbal_platform()
+
+    def get_dbal_platform(self):
+        return MySQLPlatform()

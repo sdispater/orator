@@ -52,11 +52,3 @@ class SQLiteConnection(Connection):
             return map(lambda x: decode(x) if isinstance(x, str) else x, bindings)
 
         return bindings
-
-    def get_server_version(self):
-        sql = 'select sqlite_version() AS sqlite_version'
-
-        rows = self.select(sql)
-        version = rows[0]['sqlite_version']
-
-        return tuple(version.split('.'))[:2]

@@ -11,7 +11,6 @@ from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
 from ..schema.builder import SchemaBuilder
 from ..dbal.schema_manager import SchemaManager
-from ..dbal.platforms import PLATFORMS
 from ..exceptions.query import QueryException
 
 
@@ -121,17 +120,7 @@ class Connection(ConnectionInterface):
         return QueryProcessor()
 
     def get_database_platform(self):
-        platforms = PLATFORMS[self.name]
-
-        server_version = self.server_version
-        version = '%s.%s' % (server_version[0], server_version[1])
-
-        if version not in platforms:
-            platform = platforms['default']
-        else:
-            platform = platforms[version]
-
-        return platform()
+        return self._connection.get_database_platform()
 
     def get_schema_builder(self):
         """
@@ -525,4 +514,4 @@ class Connection(ConnectionInterface):
         return self._server_version
 
     def get_server_version(self):
-        raise NotImplementedError()
+        return self._connection.get_server_version()

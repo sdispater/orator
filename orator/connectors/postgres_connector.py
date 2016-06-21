@@ -15,6 +15,7 @@ except ImportError:
     BaseDictConnection = object
     BaseDictCursor = object
 
+from ..dbal.platforms import PostgresPlatform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
 
@@ -72,3 +73,17 @@ class PostgresConnector(Connector):
 
     def get_api(self):
         return psycopg2
+
+    def get_dbal_platform(self):
+        return PostgresPlatform()
+
+    def is_version_aware(self):
+        return False
+
+    def get_server_version(self):
+        int_version = self._connection.server_version
+        major = int_version // 10000
+        minor = int_version // 100 % 100
+        fix = int_version % 10
+
+        return major, minor, fix, ''

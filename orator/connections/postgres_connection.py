@@ -75,11 +75,3 @@ class PostgresConnection(Connection):
             return self._cursor.query
 
         return self._cursor.query.decode()
-
-    def get_server_version(self):
-        int_version = self._connection.server_version
-        major = int_version // 10000
-        minor = int_version // 100 % 100
-        fix = int_version % 10
-
-        return major, minor

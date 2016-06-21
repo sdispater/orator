@@ -325,5 +325,8 @@ class PostgresPlatform(Platform):
     def supports_foreign_key_constraints(self):
         return True
 
+    def has_native_json_type(self):
+        return True
+
     def _get_reserved_keywords_class(self):
         return PostgreSQLKeywords

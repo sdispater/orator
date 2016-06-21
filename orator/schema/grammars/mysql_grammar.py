@@ -179,7 +179,7 @@ class MySQLSchemaGrammar(SchemaGrammar):
         return 'ENUM(\'%s\')' % '\', \''.join(column.allowed)
 
     def _type_json(self, column):
-        if self.platform_version() >= (5, 7):
+        if self.platform().has_native_json_type():
             return 'JSON'
 
         return 'TEXT'

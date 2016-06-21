@@ -4,6 +4,7 @@ from flexmock import flexmock, flexmock_teardown
 from orator.connections import Connection
 from orator.schema.grammars import MySQLSchemaGrammar
 from orator.schema.blueprint import Blueprint
+from orator.connectors import MySQLConnector
 from ... import OratorTestCase
 
 
@@ -558,7 +559,19 @@ class MySQLSchemaGrammarTestCase(OratorTestCase):
         blueprint = Blueprint('users')
         blueprint.json('foo')
 
-        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6)))
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 0, '')))
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE `users` ADD `foo` TEXT NOT NULL',
+            statements[0]
+        )
+
+    def test_adding_json_mariadb(self):
+        blueprint = Blueprint('users')
+        blueprint.json('foo')
+
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((10, 6, 0, 'mariadb')))
 
         self.assertEqual(1, len(statements))
         self.assertEqual(
@@ -568,10 +581,11 @@ class MySQLSchemaGrammarTestCase(OratorTestCase):
 
     def get_connection(self, version=None):
         if version is None:
-            version = (5, 7)
+            version = (5, 7, 11, '')
 
-        conn = flexmock(Connection(None))
-        conn.should_receive('get_server_version').and_return(version)
+        connector = flexmock(MySQLConnector())
+        connector.should_receive('get_server_version').and_return(version)
+        conn = flexmock(Connection(connector))
 
         return conn
 
