@@ -8,16 +8,26 @@ try:
 
     from psycopg2 import extensions
 
-    BaseDictConnection = psycopg2.extras.DictConnection
-    BaseDictCursor = psycopg2.extras.DictCursor
+    connection_class = psycopg2.extras.DictConnection
+    cursor_class = psycopg2.extras.DictCursor
+    row_class = psycopg2.extras.DictRow
 except ImportError:
     psycopg2 = None
-    BaseDictConnection = object
-    BaseDictCursor = object
+    connection_class = object
+    cursor_class = object
+    row_class = object
 
 from ..dbal.platforms import PostgresPlatform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
+
+
+class BaseDictConnection(connection_class):
+
+    def cursor(self, *args, **kwargs):
+        kwargs.setdefault('cursor_factory', BaseDictCursor)
+
+        return super(BaseDictConnection, self).cursor(*args, **kwargs)
 
 
 class DictConnection(BaseDictConnection):
@@ -26,6 +36,14 @@ class DictConnection(BaseDictConnection):
         kwargs.setdefault('cursor_factory', DictCursor)
 
         return super(DictConnection, self).cursor(*args, **kwargs)
+
+
+class BaseDictCursor(cursor_class):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['row_factory'] = DictRow
+        super(cursor_class, self).__init__(*args, **kwargs)
+        self._prefetch = 1
 
 
 class DictCursor(BaseDictCursor):
@@ -40,6 +58,12 @@ class DictCursor(BaseDictCursor):
 
         return super(DictCursor, self).executemany(
             query, denullify(args_seq))
+
+
+class DictRow(row_class):
+
+    def __getattr__(self, item):
+        return self[item]
 
 
 class PostgresConnector(Connector):

@@ -23,7 +23,23 @@ from .connector import Connector
 from ..utils.qmarker import qmark, denullify
 
 
-class DictCursor(cursor_class):
+class Record(dict):
+
+    def __getattr__(self, item):
+        return self[item]
+
+
+class BaseDictCursor(cursor_class):
+
+    def _fetch_row(self, size=1):
+        if not self._result:
+            return ()
+        rows = self._result.fetch_row(size, self._fetch_type)
+
+        return tuple(Record(r) for r in rows)
+
+
+class DictCursor(BaseDictCursor):
 
     def execute(self, query, args=None):
         query = qmark(query)
@@ -69,7 +85,7 @@ class MySQLConnector(Connector):
         if config.get('use_qmark'):
             return DictCursor
 
-        return cursor_class
+        return BaseDictCursor
 
     def get_api(self):
         return mysql

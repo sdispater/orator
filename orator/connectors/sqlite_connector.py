@@ -20,8 +20,8 @@ class DictCursor(object):
 
     def __getattr__(self, item):
         try:
-            return object.__getattribute__(self, item)
-        except AttributeError:
+            return self[item]
+        except KeyError:
             return getattr(self.cursor, item)
 
     def __getitem__(self, item):

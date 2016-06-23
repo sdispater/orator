@@ -398,6 +398,15 @@ class IntegrationTestCase(object):
         self.assertEqual('bar', serialized_photo['metadata']['foo'])
         self.assertEqual('Avatar 1', json.loads(OratorTestPhoto.first().to_json())['name'])
 
+    def test_query_builder_results_attribute_retrieval(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        users = self.connection().table('test_users').get()
+
+        self.assertEqual('john@doe.com', users[0].email)
+        self.assertEqual('john@doe.com', users[0]['email'])
+        self.assertEqual(1, users[0].id)
+        self.assertEqual(1, users[0]['id'])
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
