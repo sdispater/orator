@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import arrow
+import pendulum
 from flexmock import flexmock, flexmock_teardown
 from ... import OratorTestCase, mock
 

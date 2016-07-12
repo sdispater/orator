@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import arrow
+import pendulum
 from flexmock import flexmock, flexmock_teardown
 from ... import OratorTestCase
 from ...utils import MockConnection
@@ -175,7 +175,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         relation = self._get_relation().with_timestamps()
         query = flexmock()
         query.should_receive('from_').once().with_args('user_role').and_return(query)
-        now = arrow.get().naive
+        now = pendulum.now()
         query.should_receive('insert').once().with_args(
             [
                 {'user_id': 1, 'role_id': 2, 'foo': 'bar', 'created_at': now, 'updated_at': now}
@@ -194,7 +194,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         relation = self._get_relation().with_pivot('created_at')
         query = flexmock()
         query.should_receive('from_').once().with_args('user_role').and_return(query)
-        now = arrow.get().naive
+        now = pendulum.now()
         query.should_receive('insert').once().with_args(
             [
                 {'user_id': 1, 'role_id': 2, 'foo': 'bar', 'created_at': now}
@@ -213,7 +213,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         relation = self._get_relation().with_pivot('updated_at')
         query = flexmock()
         query.should_receive('from_').once().with_args('user_role').and_return(query)
-        now = arrow.get().naive
+        now = pendulum.now()
         query.should_receive('insert').once().with_args(
             [
                 {'user_id': 1, 'role_id': 2, 'foo': 'bar', 'updated_at': now}
@@ -451,7 +451,7 @@ class OrmBelongsToTestCase(OratorTestCase):
     def test_touch_method_syncs_timestamps(self):
         relation = self._get_relation()
         relation.get_related().should_receive('get_updated_at_column').and_return('updated_at')
-        now = arrow.get().naive
+        now = pendulum.now()
         relation.get_related().should_receive('fresh_timestamp').and_return(now)
         relation.get_related().should_receive('get_qualified_key_name').and_return('table.id')
         relation.get_query().get_query().should_receive('select').once().with_args('table.id')\

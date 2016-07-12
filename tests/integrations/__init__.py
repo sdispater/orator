@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import arrow
+import pendulum
 import simplejson as json
 from datetime import datetime, timedelta
 from orator import Model, Collection, DatabaseManager
@@ -212,7 +212,7 @@ class IntegrationTestCase(object):
         self.assertEqual('First Post', photos[3].imageable.name)
 
     def test_multi_insert_with_different_values(self):
-        date = arrow.utcnow().naive
+        date = pendulum.utcnow()._datetime
         result = OratorTestPost.insert([
             {
                 'user_id': 1, 'name': 'Post', 'created_at': date, 'updated_at': date
@@ -225,7 +225,7 @@ class IntegrationTestCase(object):
         self.assertEqual(2, OratorTestPost.count())
 
     def test_multi_insert_with_same_values(self):
-        date = arrow.utcnow().naive
+        date = pendulum.utcnow()._datetime
         result = OratorTestPost.insert([
             {
                 'user_id': 1, 'name': 'Post', 'created_at': date, 'updated_at': date
@@ -443,7 +443,7 @@ class OratorTestUser(Model):
 
     @scope
     def older_than(self, query, **kwargs):
-        query.where('updated_at', '<', datetime.utcnow() - timedelta(**kwargs))
+        query.where('updated_at', '<', (pendulum.utcnow() - timedelta(**kwargs))._datetime)
 
 
 class OratorTestPost(Model):
@@ -475,4 +475,4 @@ class OratorTestPhoto(Model):
 
     @accessor
     def created_at(self):
-        return arrow.get(self._attributes['created_at'].to('Europe/Paris'))
+        return pendulum.instance(self._attributes['created_at']).to('Europe/Paris')

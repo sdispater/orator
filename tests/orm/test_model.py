@@ -4,7 +4,7 @@ import simplejson as json
 import hashlib
 import time
 import datetime
-from arrow import Arrow
+from pendulum import Pendulum
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
@@ -329,8 +329,8 @@ class OrmModelTestCase(OratorTestCase):
             'updated_at': '2015-03-24'
         })
 
-        self.assertIsInstance(model.created_at, Arrow)
-        self.assertIsInstance(model.updated_at, Arrow)
+        self.assertIsInstance(model.created_at, Pendulum)
+        self.assertIsInstance(model.updated_at, Pendulum)
 
     def test_timestamps_are_returned_as_objects_from_timestamps_and_datetime(self):
         model = Model()
@@ -339,8 +339,8 @@ class OrmModelTestCase(OratorTestCase):
             'updated_at': time.time()
         })
 
-        self.assertIsInstance(model.created_at, Arrow)
-        self.assertIsInstance(model.updated_at, Arrow)
+        self.assertIsInstance(model.created_at, Pendulum)
+        self.assertIsInstance(model.updated_at, Pendulum)
 
     def test_timestamps_are_returned_as_objects_on_create(self):
         model = Model()
@@ -353,8 +353,8 @@ class OrmModelTestCase(OratorTestCase):
 
         instance = model.new_instance(timestamps)
 
-        self.assertIsInstance(instance.created_at, Arrow)
-        self.assertIsInstance(instance.updated_at, Arrow)
+        self.assertIsInstance(instance.created_at, Pendulum)
+        self.assertIsInstance(instance.updated_at, Pendulum)
 
         model.reguard()
 
@@ -661,7 +661,7 @@ class OrmModelTestCase(OratorTestCase):
         class Stub(Model):
 
             def get_date_format(self):
-                return 'DD-MM-YY'
+                return '%d-%m-%-y'
 
         flexmock(Stub).should_receive('_boot_columns').and_return(['created_at', 'updated_at'])
 

@@ -1,5 +1,5 @@
 simplejson
-arrow
+pendulum
 inflection
 six
 cleo>=0.4.1

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import arrow
+import pendulum
 from flexmock import flexmock, flexmock_teardown
 from ... import OratorTestCase
 
@@ -35,7 +35,7 @@ class OrmRelationTestCase(OratorTestCase):
         relation = HasOne(Builder(QueryBuilder(None, None, None)), parent, 'foreign_key', 'id')
         related.should_receive('get_table').and_return('table')
         related.should_receive('get_updated_at_column').and_return('updated_at')
-        now = arrow.get()
+        now = pendulum.now()
         related.should_receive('fresh_timestamp').and_return(now)
         builder.should_receive('update').once().with_args({'updated_at': now})
 

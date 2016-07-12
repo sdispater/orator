@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import re
+from pendulum import Pendulum
 
 try:
     import MySQLdb as mysql
+
+    # Fix for understanding Pendulum object
+    import MySQLdb.converters
+    MySQLdb.converters.conversions[Pendulum] = MySQLdb.converters.DateTime2literal
+
     from MySQLdb.cursors import DictCursor as cursor_class
     keys_fix = {
         'password': 'passwd',
@@ -12,6 +18,11 @@ try:
 except ImportError as e:
     try:
         import pymysql as mysql
+
+        # Fix for understanding Pendulum object
+        import pymysql.converters
+        pymysql.converters.converters[Pendulum] = pymysql.converters.escape_datetime
+
         from pymysql.cursors import DictCursor as cursor_class
         keys_fix = {}
     except ImportError as e:

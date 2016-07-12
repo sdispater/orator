@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import arrow
+import pendulum
 from flexmock import flexmock, flexmock_teardown
 from orator import Model, SoftDeletes
 from orator.orm import Builder
@@ -9,7 +9,7 @@ from orator.query import QueryBuilder
 from ... import OratorTestCase
 
 
-t = arrow.get().naive
+t = pendulum.now()
 
 
 class SoftDeletesTestCase(OratorTestCase):

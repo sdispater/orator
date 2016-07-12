@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import simplejson as json
-import arrow
+import pendulum
 import inflection
 import inspect
 import uuid
@@ -1745,9 +1745,9 @@ class Model(object):
         """
         Get a fresh timestamp for the model.
 
-        :return: arrow.Arrow
+        :return: pendulum.Pendulum
         """
-        return arrow.get().naive
+        return pendulum.utcnow()
 
     def new_query(self):
         """
@@ -2453,18 +2453,24 @@ class Model(object):
 
         :rtype: datetime.datetime
         """
-        if isinstance(value, arrow.Arrow):
-            return value.naive
+        if isinstance(value, pendulum.Pendulum):
+            return value
 
-        return arrow.get(value).naive
+        return pendulum.instance(value)
 
     def as_datetime(self, value):
         """
         Return a timestamp as a datetime.
 
-        :rtype: arrow.Arrow
+        :rtype: pendulum.Pendulum
         """
-        return arrow.get(value)
+        if isinstance(value, basestring):
+            return pendulum.parse(value)
+
+        if isinstance(value, (int, float)):
+            return pendulum.from_timestamp(value)
+
+        return pendulum.instance(value)
 
     def get_date_format(self):
         """
@@ -2479,7 +2485,7 @@ class Model(object):
         Format a date or timestamp.
 
         :param date: The date or timestamp
-        :type date: datetime.datetime or datetime.date or arrow.Arrow
+        :type date: datetime.datetime or datetime.date or pendulum.Pendulum
 
         :rtype: str
         """
@@ -2490,14 +2496,12 @@ class Model(object):
 
         if format == 'iso':
             if isinstance(date, basestring):
-                return arrow.get(date).isoformat()
+                return pendulum.parse(date).isoformat()
 
             return date.isoformat()
         else:
-            if isinstance(date, arrow.Arrow):
-                return date.format(format)
-            elif isinstance(date, basestring):
-                return arrow.get(date).format(format)
+            if isinstance(date, basestring):
+                return pendulum.parse(date).format(format)
 
             return date.strftime(format)
 

@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from pendulum import Pendulum
+
 try:
     import sqlite3
+
+    from sqlite3 import register_adapter
+
+    register_adapter(Pendulum, lambda val: val.isoformat(' '))
 except ImportError:
     sqlite3 = None
 

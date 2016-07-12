@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import arrow
+import pendulum
 from flexmock import flexmock, flexmock_teardown
 from ... import OratorTestCase
 
@@ -123,7 +123,7 @@ class OrmHasManyTestCase(OratorTestCase):
     def test_update_updates_models_with_timestamps(self):
         relation = self._get_relation()
         relation.get_related().should_receive('uses_timestamps').once().and_return(True)
-        now = arrow.get()
+        now = pendulum.now()
         relation.get_related().should_receive('fresh_timestamp').once().and_return(now)
         relation.get_query().should_receive('update').once().with_args({'foo': 'bar', 'updated_at': now}).and_return('results')
 
