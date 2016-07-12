@@ -35,7 +35,7 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires=[
         'simplejson',
-        'arrow',
+        'pendulum',
         'inflection',
         'six',
         'cleo>=0.4.1',
