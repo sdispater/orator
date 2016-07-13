@@ -197,10 +197,6 @@ class relation(object):
         raise NotImplementedError()
 
     def _set_conditions(self, relation):
-        print(self._conditions)
-        print(self._conditions.columns)
-        print(relation)
-        print(relation.get_query().columns)
         relation.merge_query(self._conditions)
         relation.set_extra_query(self._conditions)
 
