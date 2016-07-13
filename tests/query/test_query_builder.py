@@ -1578,6 +1578,25 @@ class QueryBuilderTestCase(OratorTestCase):
             builder.to_sql()
         )
 
+    def test_merge(self):
+        b1 = self.get_builder()
+        b1.from_('test').select('foo', 'bar').where('baz', 'boom')
+
+        b2 = self.get_builder()
+        b2.where('foo', 'bar')
+
+        b1.merge(b2)
+
+        self.assertEqual(
+            'SELECT "foo", "bar" FROM "test" WHERE "baz" = ? AND "foo" = ?',
+            b1.to_sql()
+        )
+
+        self.assertEqual(
+            ['boom', 'bar'],
+            b1.get_bindings()
+        )
+
     def get_mysql_builder(self):
         grammar = MySQLQueryGrammar()
         processor = MockProcessor().prepare_mock()

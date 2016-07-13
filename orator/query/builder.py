@@ -77,7 +77,7 @@ class QueryBuilder(object):
         if not columns:
             columns = ['*']
 
-        self.columns = columns
+        self.columns = list(columns)
 
         return self
 
@@ -138,7 +138,7 @@ class QueryBuilder(object):
         if not column:
             column = []
 
-        self.columns += column
+        self.columns += list(column)
 
         return self
 
