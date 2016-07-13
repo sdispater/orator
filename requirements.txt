@@ -1,5 +1,5 @@
 simplejson
-pendulum
+git+https://github.com/sdispater/pendulum.git@master#egg=pendulum
 inflection
 six
 cleo>=0.4.1
