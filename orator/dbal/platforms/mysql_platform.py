@@ -49,6 +49,7 @@ class MySQLPlatform(Platform):
         'binary': 'binary',
         'varbinary': 'binary',
         'set': 'simple_array',
+        'enum': 'enum',
     }
 
     def get_list_table_columns_sql(self, table, database=None):
@@ -255,6 +256,9 @@ class MySQLPlatform(Platform):
 
     def get_float_type_declaration_sql(self, column):
         return 'DOUBLE PRECISION' + self.get_unsigned_declaration(column)
+
+    def get_enum_type_declaration_sql(self, column):
+        return 'ENUM{}'.format(column['extra']['definition'])
 
     def supports_foreign_key_constraints(self):
         return True

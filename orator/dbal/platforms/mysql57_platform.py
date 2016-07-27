@@ -39,6 +39,7 @@ class MySQL57Platform(MySQLPlatform):
         'binary': 'binary',
         'varbinary': 'binary',
         'set': 'simple_array',
+        'enum': 'enum',
         'json': 'json',
     }
 

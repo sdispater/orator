@@ -253,6 +253,19 @@ class MySQLSchemaGrammar(SchemaGrammar):
 
         return ''
 
+    def _get_column_change_options(self, fluent):
+        """
+        Get the column change options.
+        """
+        options = super(MySQLSchemaGrammar, self)._get_column_change_options(fluent)
+
+        if fluent.type == 'enum':
+            options['extra'] = {
+                'definition': '(\'{}\')'.format('\',\''.join(fluent.allowed))
+            }
+
+        return options
+
     def _wrap_value(self, value):
         if value == '*':
             return value
