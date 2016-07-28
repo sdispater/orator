@@ -33,3 +33,4 @@ profile.html
 /benchmark
 benchmark.py
 results.json
+*.so

@@ -151,7 +151,7 @@ class MorphTo(BelongsTo):
         """
         foreign = self._foreign_key
 
-        keys = BaseCollection.make(self._dictionary[type])\
+        keys = BaseCollection.make(list(self._dictionary[type].values()))\
             .map(lambda models: getattr(models[0], foreign))\
             .unique()
 

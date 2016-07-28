@@ -51,6 +51,11 @@ drop-mysql:
 	@-mysql -u root -e 'DROP DATABASE orator_test;' > /dev/null 2>&1
 	@-mysql -u root -e "DROP USER 'orator'@'localhost';" > /dev/null 2>&1
 
+extensions:
+	@echo 'Making C extensions'
+	cython orator/support/_collection.pyx
+	cython orator/utils/_helpers.pyx
+
 # test your application (tests in the tests/ directory)
 test:
 	@py.test tests -sq

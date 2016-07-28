@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .. import OratorTestCase
-from orator.support.collection import Collection, CollectionError
+from orator.support.collection import Collection
 
 
 class CollectionTestCase(OratorTestCase):
@@ -27,11 +27,6 @@ class CollectionTestCase(OratorTestCase):
         self.assertEqual('foo', c.pop(0))
         self.assertEqual('bar', c.first())
 
-        c = Collection({'foo': 'bar', 'baz': 'boom'})
-
-        self.assertEqual('boom', c.pop('baz'))
-        self.assertIsNone(c.get('baz'))
-
     def test_shift_removes_and_returns_first_item(self):
         c = Collection(['foo', 'bar'])
 
@@ -41,11 +36,9 @@ class CollectionTestCase(OratorTestCase):
     def test_empty_collection_is_empty(self):
         c = Collection()
         c2 = Collection([])
-        c3 = Collection({})
 
         self.assertTrue(c.is_empty())
         self.assertTrue(c2.is_empty())
-        self.assertTrue(c3.is_empty())
 
     def test_collection_is_constructed(self):
         c = Collection('foo')
@@ -64,16 +57,6 @@ class CollectionTestCase(OratorTestCase):
         self.assertEqual([], c.all())
 
     def test_offset_access(self):
-        c = Collection({'name': 'john'})
-        self.assertEqual('john', c['name'])
-
-        c['name'] = 'david'
-        self.assertEqual('david', c['name'])
-
-        del c['name']
-
-        self.assertIsNone(c.get('name'))
-
         c = Collection(['foo', 'bar'])
         self.assertEqual('bar', c[1])
 
@@ -89,10 +72,6 @@ class CollectionTestCase(OratorTestCase):
         self.assertEqual('bar', c[0])
         c.forget(0, 1)
         self.assertTrue(c.is_empty())
-
-        c = Collection({'foo': 'bar', 'baz': 'boom'})
-        c.forget('foo')
-        self.assertIsNone(c.get('foo'))
 
     def test_get_avg_items_from_collection(self):
         c = Collection([{'foo': 10}, {'foo': 20}])
@@ -138,10 +117,6 @@ class CollectionTestCase(OratorTestCase):
         self.assertTrue(c.contains('v', 1))
         self.assertFalse(c.contains('v', 2))
 
-        c = Collection({'foo': 'bar', 'baz': 'boom'})
-        self.assertTrue(c.contains('foo'))
-        self.assertIn('baz', c)
-
     def test_countable(self):
         c = Collection(['foo', 'bar'])
         self.assertEqual(2, c.count())
@@ -150,10 +125,6 @@ class CollectionTestCase(OratorTestCase):
     def test_diff(self):
         c = Collection(['foo', 'bar'])
         self.assertEqual(['foo'], c.diff(Collection(['bar', 'baz'])).all())
-
-        c = Collection({'id': 1, 'first_word': 'hello'})
-        items = {'first_word': 'hello', 'last_word': 'world'}
-        self.assertEqual({'id': 1}, c.diff(items).all())
 
     def test_each(self):
         original = ['foo', 'bar', 'baz']
@@ -180,10 +151,6 @@ class CollectionTestCase(OratorTestCase):
         c = Collection([{'v': 1}, {'v': 3}, {'v': 2}, {'v': 3}, {'v': 4}])
         self.assertEqual([{'v': 3}, {'v': 3}], c.where('v', 3).all())
 
-    def test_flip(self):
-        c = Collection({'foo': 'bar', 'baz': 'boom'})
-        self.assertEqual({'bar': 'foo', 'boom': 'baz'}, c.flip().all())
-
     def test_implode(self):
         obj1 = type('lamdbaobject', (object,), {})()
         obj1.name = 'john'
@@ -201,7 +168,7 @@ class CollectionTestCase(OratorTestCase):
         obj1.name = 'john'
         obj1.email = 'foo'
         c = Collection([obj1, {'name': 'jane', 'email': 'bar'}])
-        self.assertEqual({'john': 'foo', 'jane': 'bar'}, c.lists('email', 'name').all())
+        self.assertEqual({'john': 'foo', 'jane': 'bar'}, c.lists('email', 'name'))
         self.assertEqual(['foo', 'bar'], c.pluck('email').all())
 
     def test_map(self):
@@ -216,10 +183,6 @@ class CollectionTestCase(OratorTestCase):
         c = Collection(Collection([1, 2, 3]))
         c.merge([4, 5, 6])
         self.assertEqual([1, 2, 3, 4, 5, 6], c.all())
-
-        c = Collection({'foo': 'bar'})
-        c.merge({'baz': 'boom'})
-        self.assertEqual({'foo': 'bar', 'baz': 'boom'}, c.all())
 
     def test_for_page(self):
         c = Collection([1, 2, 3, 4, 5, 6])
@@ -241,18 +204,10 @@ class CollectionTestCase(OratorTestCase):
         c.pull(2)
         self.assertEqual([1, 2, 4], c.all())
 
-        c = Collection({'foo': 'bar', 'baz': 'boom'})
-        c.pull('baz')
-        self.assertEqual({'foo': 'bar'}, c.all())
-
     def test_put(self):
         c = Collection([1, 2, 4])
         c.put(2, 3)
         self.assertEqual([1, 2, 3], c.all())
-
-        c = Collection({'foo': 'bar'})
-        c.put('baz', 'boom')
-        self.assertEqual({'foo': 'bar', 'baz': 'boom'}, c.all())
 
     def test_reject(self):
         c = Collection([1, 2, 3, 4, 5, 6])
@@ -286,17 +241,10 @@ class CollectionTestCase(OratorTestCase):
         c = Collection([1, 2, 3, 4, 5])
         self.assertEqual([2, 4], c.only(1, 3).all())
 
-        c = Collection({'foo': 'bar', 'baz': 'boom'})
-        self.assertEqual({'baz': 'boom'}, c.only('baz').all())
-
     def test_without(self):
         c = Collection([1, 2, 3, 4, 5])
         self.assertEqual([1, 3, 5], c.without(1, 3).all())
         self.assertEqual([1, 2, 3, 4, 5], c.all())
-
-        c = Collection({'foo': 'bar', 'baz': 'boom'})
-        self.assertEqual({'baz': 'boom'}, c.without('foo').all())
-        self.assertEqual({'foo': 'bar', 'baz': 'boom'}, c.all())
 
     def test_flatten(self):
         c = Collection({'foo': [5, 6], 'bar': 7, 'baz': {'boom': [1, 2, 3, 4]}})
