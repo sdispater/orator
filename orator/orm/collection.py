@@ -9,7 +9,7 @@ class Collection(BaseCollection):
         """
         Load a set of relationships onto the collection.
         """
-        if len(self._items) > 0:
+        if len(self.items) > 0:
             query = self.first().new_query().with_(*relations)
 
             self._set_items(query.eager_load_relations(self.items))

@@ -583,10 +583,10 @@ class QueryBuilderTestCase(OratorTestCase):
                 'WHERE "department" = ? ' \
                 'GROUP BY "category" ' \
                 'HAVING "total" > ?'
-        results = {
+        results = [{
             'category': 'rock',
             'total': 5
-        }
+        }]
         builder.get_connection().select.return_value = results
         builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results: results)
         result = builder.select('category', QueryExpression('count(*) as "total"'))\

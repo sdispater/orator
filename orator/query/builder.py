@@ -1026,12 +1026,7 @@ class QueryBuilder(object):
         if not columns:
             columns = ['*']
 
-        results = self.take(limit).get(columns)
-
-        if len(results) > 0:
-            return results[0]
-
-        return
+        return self.take(limit).get(columns).first()
 
     def get(self, columns=None):
         """
@@ -1041,30 +1036,21 @@ class QueryBuilder(object):
         :type columns: list
 
         :return: The result
-        :rtype: list
+        :rtype: Collection
         """
         if not columns:
             columns = ['*']
 
-        return self.get_fresh(columns)
+        original = self.columns
 
-    def get_fresh(self, columns=None):
-        """
-        Execute the query as a fresh "select" statement
-
-        :param columns: The columns to get
-        :type columns: list
-
-        :return: The result
-        :rtype: list
-        """
-        if not columns:
-            columns = ['*']
-
-        if not self.columns:
+        if not original:
             self.columns = columns
 
-        return self._processor.process_select(self, self._run_select())
+        results = self._processor.process_select(self, self._run_select())
+
+        self.columns = original
+
+        return Collection(results)
 
     def _run_select(self):
         """
@@ -1165,7 +1151,7 @@ class QueryBuilder(object):
         page = 1
         results = self.for_page(page, count).get()
 
-        while len(results) > 0:
+        while not results.is_empty():
             yield results
 
             page += 1
@@ -1183,7 +1169,7 @@ class QueryBuilder(object):
         :type key: str
 
         :return: The list of values
-        :rtype: list or dict
+        :rtype: Collection or dict
         """
         columns = self._get_list_select(column, key)
 
@@ -1192,7 +1178,7 @@ class QueryBuilder(object):
             for result in self.get(columns):
                 results[result[key]] = result[column]
         else:
-            results = list(map(lambda x: x[column], self.get(columns)))
+            results = Collection(list(map(lambda x: x[column], self.get(columns))))
 
         return results
 
@@ -1238,7 +1224,7 @@ class QueryBuilder(object):
         :return: The glued value
         :rtype: str
         """
-        return glue.join(self.lists(column))
+        return self.lists(column).implode(glue)
 
     def exists(self):
         """
@@ -1345,7 +1331,7 @@ class QueryBuilder(object):
 
         previous_columns = self.columns
 
-        results = self.get(*columns)
+        results = self.get(*columns).all()
 
         self.aggregate_ = None
 

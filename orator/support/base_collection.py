@@ -15,7 +15,8 @@ class BaseCollection(object):
         Creates a new Collection
 
         :param items: The collection items
-        :type items: dict or list or Collection or map
+        :param items: The collection itdems
+        :type items: list or Collection or map
 
         :rtype: None
         """
@@ -36,7 +37,7 @@ class BaseCollection(object):
         Create a new Collection instance if the value isn't one already
 
         :param items: The collection items
-        :type items: dict or list or Collection
+        :type items: list or Collection
 
         :return: A Collection instance
         :rtype: Collection
@@ -121,17 +122,14 @@ class BaseCollection(object):
 
     def collapse(self):
         """
-        Collapse the collection items into a single element (dict or list)
+        Collapse the collection items into a single element (list)
 
         :return: A new Collection instance with collapsed items
         :rtype: Collection
         """
         results = []
 
-        if isinstance(self.items, dict):
-            items = self.items.values()
-        else:
-            items = self.items
+        items = self.items
 
         for values in items:
             if isinstance(values, BaseCollection):
@@ -154,17 +152,7 @@ class BaseCollection(object):
         :return: A Collection instance
         :rtype: Collection
         """
-        if isinstance(self.items, dict):
-            elements = {}
-            for key, val in self.items.items():
-                if key not in items:
-                    elements[key] = val
-                elif items[key] != val:
-                    elements[key] = val
-
-            return self.__class__(elements)
-        else:
-            return self.__class__([i for i in self.items if i not in items])
+        return self.__class__([i for i in self.items if i not in items])
 
     def each(self, callback):
         """
@@ -186,10 +174,7 @@ class BaseCollection(object):
 
         :rtype: Collection
         """
-        if isinstance(self.items, dict):
-            items = self.items.values()
-        else:
-            items = self.items
+        items = self.items
 
         for item in items:
             if callback(item) is False:
@@ -228,8 +213,7 @@ class BaseCollection(object):
         """
         items = copy(self.items)
 
-        if not isinstance(items, dict):
-            keys = reversed(sorted(keys))
+        keys = reversed(sorted(keys))
 
         for key in keys:
             del items[key]
@@ -245,18 +229,11 @@ class BaseCollection(object):
 
         :rtype: Collection
         """
-        if isinstance(self.items, dict):
-            items = {}
+        items = []
 
-            for key, value in self.items.items():
-                if key in keys:
-                    items[key] = value
-        else:
-            items = []
-
-            for key, value in enumerate(self.items):
-                if key in keys:
-                    items.append(value)
+        for key, value in enumerate(self.items):
+            if key in keys:
+                items.append(value)
 
         return self.__class__(items)
 
@@ -337,8 +314,7 @@ class BaseCollection(object):
 
         :rtype: Collection
         """
-        if not isinstance(self.items, dict):
-            keys = reversed(sorted(keys))
+        keys = reversed(sorted(keys))
 
         for key in keys:
             del self[key]
@@ -357,12 +333,6 @@ class BaseCollection(object):
 
         :rtype: mixed
         """
-        if isinstance(self.items, dict):
-            if key in self:
-                return self[key]
-
-            return value(default)
-
         try:
             return self.items[key]
         except IndexError:
@@ -518,9 +488,6 @@ class BaseCollection(object):
 
         :rtype: Collection
         """
-        if isinstance(self.items, dict):
-            return self
-
         self.items.insert(0, value)
 
         return self
@@ -534,9 +501,6 @@ class BaseCollection(object):
 
         :rtype: Collection
         """
-        if isinstance(self.items, dict):
-            return self
-
         self.items.append(value)
 
         return self
@@ -620,9 +584,6 @@ class BaseCollection(object):
 
         :rtype: Collection
         """
-        if isinstance(self.items, dict):
-            return self
-
         return self.__class__(list(reversed(self.items)))
 
     def shift(self):
@@ -713,10 +674,7 @@ class BaseCollection(object):
 
         :rtype: Collection
         """
-        if not isinstance(self.items, dict):
-            return self
-
-        return self.__class__(list(self.items.values()))
+        return self
 
     def keys(self):
         """
@@ -724,10 +682,7 @@ class BaseCollection(object):
 
         :rtype: Collection
         """
-        if not isinstance(self.items, dict):
-            return self
-
-        return self.__class__(list(self.items.keys()))
+        return self
 
     def zip(self, *items):
         """
@@ -748,7 +703,7 @@ class BaseCollection(object):
         Merge the collection with the given items.
 
         :param items: The items to merge
-        :type items: list or dict or Collection
+        :type items: list or Collection
 
         :rtype: Collection
         """
@@ -848,6 +803,18 @@ class BaseCollection(object):
 
     def __delitem__(self, key):
         del self.items[key]
+
+    def __eq__(self, other):
+        if isinstance(other, BaseCollection):
+            other = other.items
+
+        return other == self.items
+
+    def __ne__(self, other):
+        if isinstance(other, BaseCollection):
+            other = other.items
+
+        return other != self.items
 
     def _set_items(self, items):
         self._items = items

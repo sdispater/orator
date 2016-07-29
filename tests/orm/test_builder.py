@@ -215,7 +215,7 @@ class BuilderTestCase(OratorTestCase):
 
     def test_chunk(self):
         builder = Builder(self.get_mock_query_builder())
-        results = [['foo1', 'foo2'], ['foo3'], []]
+        results = [Collection(['foo1', 'foo2']), Collection(['foo3']), Collection([])]
         builder.for_page = mock.MagicMock(return_value=builder)
         builder.get = mock.MagicMock(side_effect=results)
 
@@ -246,11 +246,11 @@ class BuilderTestCase(OratorTestCase):
 
     def test_get_models_hydrates_models(self):
         builder = Builder(self.get_mock_query_builder())
-        records = [{
+        records = Collection([{
             'name': 'john', 'age': 26
         }, {
             'name': 'jane', 'age': 28
-        }]
+        }])
 
         builder.get_query().get = mock.MagicMock(return_value=records)
         model = self.get_mock_model()

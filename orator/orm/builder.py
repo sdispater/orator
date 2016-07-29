@@ -235,7 +235,7 @@ class Builder(object):
         page = 1
         results = self.for_page(page, count).get()
 
-        while results:
+        while not results.is_empty():
             yield results
 
             page += 1
@@ -257,19 +257,19 @@ class Builder(object):
         """
         results = self.to_base().lists(column, key)
 
-        if self._model.has_get_mutator(column):
-            if isinstance(results, dict):
-                for key, value in results.items():
-                    fill = {column: value}
+        if not self._model.has_get_mutator(column):
+            return results
 
-                    results[key] = self._model.new_from_builder(fill).column
-            else:
-                for i, value in enumerate(results):
-                    fill = {column: value}
+        if isinstance(results, dict):
+            for key, value in results.items():
+                fill = {column: value}
 
-                    results[i] = self._model.new_from_builder(fill).column
+                results[key] = self._model.new_from_builder(fill).column
+        else:
+            for i, value in enumerate(results):
+                fill = {column: value}
 
-        return results
+                results[i] = self._model.new_from_builder(fill).column
 
     def paginate(self, per_page=None, current_page=None, columns=None):
         """
@@ -436,7 +436,7 @@ class Builder(object):
         :return: A list of models
         :rtype: orator.orm.collection.Collection
         """
-        results = self.apply_scopes().get_query().get(columns)
+        results = self.apply_scopes().get_query().get(columns).all()
 
         connection = self._model.get_connection_name()
 
