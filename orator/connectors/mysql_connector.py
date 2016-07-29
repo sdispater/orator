@@ -37,7 +37,10 @@ from ..utils.qmarker import qmark, denullify
 class Record(dict):
 
     def __getattr__(self, item):
-        return self[item]
+        try:
+            return self[item]
+        except KeyError:
+            raise AttributeError(item)
 
 
 class BaseDictCursor(cursor_class):

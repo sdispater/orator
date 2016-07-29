@@ -63,7 +63,10 @@ class DictCursor(BaseDictCursor):
 class DictRow(row_class):
 
     def __getattr__(self, item):
-        return self[item]
+        try:
+            return self[item]
+        except KeyError:
+            raise AttributeError(item)
 
 
 class PostgresConnector(Connector):
