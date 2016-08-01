@@ -13,6 +13,8 @@ class PostgresSchemaGrammar(SchemaGrammar):
     _serials = ['big_integer', 'integer',
                 'medium_integer', 'small_integer', 'tiny_integer']
 
+    marker = '%s'
+
     def compile_rename_column(self, blueprint, command, connection):
         """
         Compile a rename column command.
@@ -207,3 +209,19 @@ class PostgresSchemaGrammar(SchemaGrammar):
             return ' PRIMARY KEY'
 
         return ''
+
+    def _get_dbal_column_type(self, type_):
+        """
+        Get the dbal column type.
+
+        :param type_: The fluent type
+        :type type_: str
+
+        :rtype: str
+        """
+        type_ = type_.lower()
+
+        if type_ == 'enum':
+            return 'string'
+
+        return super(PostgresSchemaGrammar, self)._get_dbal_column_type(type_)

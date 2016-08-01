@@ -16,6 +16,8 @@ class MySQLSchemaGrammar(SchemaGrammar):
     _serials = ['big_integer', 'integer',
                 'medium_integer', 'small_integer', 'tiny_integer']
 
+    marker = '%s'
+
     def compile_table_exists(self):
         """
         Compile the query to determine if a table exists

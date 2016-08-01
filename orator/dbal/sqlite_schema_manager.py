@@ -45,6 +45,8 @@ class SQLiteSchemaManager(SchemaManager):
 
         if db_type in ['char']:
             fixed = True
+        elif db_type in ['varchar']:
+            length = length or 255
         elif db_type in ['float', 'double', 'real', 'decimal', 'numeric']:
             if 'length' in table_column:
                 if ',' not in table_column['length']:

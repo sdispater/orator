@@ -280,3 +280,19 @@ class SQLiteSchemaGrammar(SchemaGrammar):
             return ' PRIMARY KEY AUTOINCREMENT'
 
         return ''
+
+    def _get_dbal_column_type(self, type_):
+        """
+        Get the dbal column type.
+
+        :param type_: The fluent type
+        :type type_: str
+
+        :rtype: str
+        """
+        type_ = type_.lower()
+
+        if type_ == 'enum':
+            return 'string'
+
+        return super(SQLiteSchemaGrammar, self)._get_dbal_column_type(type_)
