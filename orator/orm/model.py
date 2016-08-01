@@ -328,6 +328,7 @@ class Model(object):
 
         model = self.__class__(**attributes)
 
+        model.set_connection(self.get_connection_name())
         model.set_exists(exists)
 
         return model
@@ -669,7 +670,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         if not local_key:
             local_key = self.get_key_name()
@@ -720,7 +721,7 @@ class Model(object):
         if relation in self._relations:
             return self._relations[name]
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
@@ -772,7 +773,7 @@ class Model(object):
         if foreign_key is None:
             foreign_key = '%s_id' % inflection.underscore(relation)
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         query = instance.new_query()
 
@@ -828,6 +829,7 @@ class Model(object):
         klass = self.get_actual_class_for_morph(getattr(self, type_column))
 
         instance = klass()
+        instance.set_connection(self.get_connection_name())
 
         rel = MorphTo(instance.new_query(),
                       self, id_column,
@@ -886,7 +888,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         if not local_key:
             local_key = self.get_key_name()
@@ -938,7 +940,7 @@ class Model(object):
         if name in self._relations:
             return self._relations[name]
 
-        through = self._get_related(through)()
+        through = self._get_related(through, True)
 
         if not first_key:
             first_key = self.get_foreign_key()
@@ -990,7 +992,7 @@ class Model(object):
         if relation in self._relations:
             return self._relations[relation]
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
@@ -1045,7 +1047,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         if not other_key:
             other_key = instance.get_foreign_key()
@@ -1106,7 +1108,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = name + '_id'
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         if not other_key:
             other_key = instance.get_foreign_key()
@@ -1162,7 +1164,7 @@ class Model(object):
 
         return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation)
 
-    def _get_related(self, related):
+    def _get_related(self, related, as_instance=False):
         """
         Get the related class.
 
@@ -1172,11 +1174,23 @@ class Model(object):
         :rtype: Model class
         """
         if not isinstance(related, basestring) and issubclass(related, Model):
+            if as_instance:
+                instance = related()
+                instance.set_connection(self.get_connection_name())
+
+                return instance
+
             return related
 
         related_class = self.__class__._register.get(related)
 
         if related_class:
+            if as_instance:
+                instance = related_class()
+                instance.set_connection(self.get_connection_name())
+
+                return instance
+
             return related_class
 
         raise RelatedClassNotFound(related)

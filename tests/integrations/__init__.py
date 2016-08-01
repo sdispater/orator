@@ -7,6 +7,7 @@ from orator import Model, Collection, DatabaseManager
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope, accessor
 from orator.orm.relations import BelongsToMany
 from orator.exceptions.orm import ModelNotFound
+from orator.exceptions.query import QueryException
 
 
 class IntegrationTestCase(object):
@@ -21,7 +22,15 @@ class IntegrationTestCase(object):
 
     @classmethod
     def get_connection_resolver(cls):
-        return DatabaseManager(cls.get_manager_config())
+        # Adding another connection to test connection switching
+        config = cls.get_manager_config()
+
+        config['test'] = {
+            'driver': 'sqlite',
+            'database': ':memory:'
+        }
+
+        return DatabaseManager(config)
 
     @classmethod
     def tearDownClass(cls):
@@ -32,40 +41,12 @@ class IntegrationTestCase(object):
         return self.grammar().get_marker()
 
     def setUp(self):
-        self.schema().drop_if_exists('test_users')
-        self.schema().drop_if_exists('test_friends')
-        self.schema().drop_if_exists('test_posts')
-        self.schema().drop_if_exists('test_photos')
-
-        with self.schema().create('test_users') as table:
-            table.increments('id')
-            table.string('email').unique()
-            table.timestamps(use_current=True)
-
-        with self.schema().create('test_friends') as table:
-            table.increments('id')
-            table.integer('user_id')
-            table.integer('friend_id')
-            table.boolean('is_close').default(False)
-
-        with self.schema().create('test_posts') as table:
-            table.increments('id')
-            table.integer('user_id')
-            table.string('name')
-            table.timestamps(use_current=True)
-
-        with self.schema().create('test_photos') as table:
-            table.increments('id')
-            table.morphs('imageable')
-            table.string('name')
-            table.json('metadata').nullable()
-            table.timestamps(use_current=True)
+        self.migrate()
+        self.migrate('test')
 
     def tearDown(self):
-        self.schema().drop_if_exists('test_users')
-        self.schema().drop_if_exists('test_friends')
-        self.schema().drop_if_exists('test_posts')
-        self.schema().drop_if_exists('test_photos')
+        self.revert()
+        self.revert('test')
 
     def test_basic_model_retrieval(self):
         OratorTestUser.create(email='john@doe.com')
@@ -407,14 +388,62 @@ class IntegrationTestCase(object):
         self.assertEqual(1, users[0].id)
         self.assertEqual(1, users[0]['id'])
 
+    def test_connection_switching(self):
+        OratorTestUser.create(id=1, email='john@doe.com')
+
+        self.assertIsNone(OratorTestUser.on('test').first())
+        self.assertIsNotNone(OratorTestUser.first())
+
+        OratorTestUser.on('test').insert(id=1, email='jane@doe.com')
+        user = OratorTestUser.on('test').first()
+        connection = user.get_connection()
+        post = user.posts().create(name='Test')
+        self.assertEqual(connection, post.get_connection())
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
-    def connection(self):
-        return Model.get_connection_resolver().connection()
+    def connection(self, connection=None):
+        return Model.get_connection_resolver().connection(connection)
 
-    def schema(self):
-        return self.connection().get_schema_builder()
+    def schema(self, connection=None):
+        return self.connection(connection).get_schema_builder()
+
+    def migrate(self, connection=None):
+        self.schema(connection).drop_if_exists('test_users')
+        self.schema(connection).drop_if_exists('test_friends')
+        self.schema(connection).drop_if_exists('test_posts')
+        self.schema(connection).drop_if_exists('test_photos')
+
+        with self.schema(connection).create('test_users') as table:
+            table.increments('id')
+            table.string('email').unique()
+            table.timestamps(use_current=True)
+
+        with self.schema(connection).create('test_friends') as table:
+            table.increments('id')
+            table.integer('user_id')
+            table.integer('friend_id')
+            table.boolean('is_close').default(False)
+
+        with self.schema(connection).create('test_posts') as table:
+            table.increments('id')
+            table.integer('user_id')
+            table.string('name')
+            table.timestamps(use_current=True)
+
+        with self.schema(connection).create('test_photos') as table:
+            table.increments('id')
+            table.morphs('imageable')
+            table.string('name')
+            table.json('metadata').nullable()
+            table.timestamps(use_current=True)
+
+    def revert(self, connection=None):
+        self.schema(connection).drop_if_exists('test_users')
+        self.schema(connection).drop_if_exists('test_friends')
+        self.schema(connection).drop_if_exists('test_posts')
+        self.schema(connection).drop_if_exists('test_photos')
 
     def get_marker(self):
         return '?'
