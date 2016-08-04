@@ -618,7 +618,7 @@ class OrmModelTestCase(OratorTestCase):
 
         self.assertEqual('bar', model.get_connection())
 
-    def test_to_dict(self):
+    def test_serialize(self):
         model = OrmModelStub()
         model.name = 'foo'
         model.age = None
@@ -629,7 +629,7 @@ class OrmModelTestCase(OratorTestCase):
         model.set_relation('group', None)
         model.set_relation('multi', Collection())
 
-        d = model.to_dict()
+        d = model.serialize()
 
         self.assertIsInstance(d, dict)
         self.assertEqual('foo', d['name'])

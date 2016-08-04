@@ -52,7 +52,7 @@ else:
                 return mod
 
 
-from .helpers import value, data_get, mkdir_p
+from .helpers import mkdir_p, value
 
 
 class Null(object):

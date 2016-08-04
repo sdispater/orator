@@ -51,12 +51,7 @@ if with_extensions:
 if hasattr(sys, 'pypy_version_info'):
     with_extensions = False
 
-extensions = (
-    ('orator.support._collection', ('orator/support/_collection.pyx',
-                                    'orator/support/_collection.c')),
-    ('orator.utils._helpers', ('orator/utils/_helpers.pyx',
-                               'orator/utils/_helpers.c')),
-)
+extensions = ()
 
 ext_modules = None
 if with_extensions is True or with_extensions is None:
@@ -103,6 +98,7 @@ setup_kwargs = dict(
     install_requires=[
         'simplejson',
         'pendulum',
+        'backpack',
         'inflection',
         'six',
         'cleo>=0.4.1',

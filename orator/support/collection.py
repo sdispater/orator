@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from .base_collection import BaseCollection
-
-try:
-    from ._collection import Collection as ExtCollection
-except ImportError:
-    class ExtCollection:
-        pass
+from backpack import Collection as BaseCollection
 
 
-class Collection(ExtCollection, BaseCollection):
+class Collection(BaseCollection):
 
     pass

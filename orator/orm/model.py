@@ -2242,7 +2242,9 @@ class Model(object):
                 continue
 
             relation = None
-            if hasattr(value, 'to_dict'):
+            if hasattr(value, 'serialize'):
+                relation = value.serialize()
+            elif hasattr(value, 'to_dict'):
                 relation = value.to_dict()
             elif value is None:
                 relation = value
