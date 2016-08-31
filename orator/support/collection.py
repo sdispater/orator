@@ -396,7 +396,7 @@ class Collection(object):
 
         try:
             return self.items[key]
-        except IndexError:
+        except (IndexError, TypeError):
             return value(default)
 
     def implode(self, value, glue=''):
