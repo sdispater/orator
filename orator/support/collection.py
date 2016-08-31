@@ -393,10 +393,21 @@ class Collection(object):
                 return self[key]
 
             return value(default)
+            
+        if isinstance(self.items, list):
+            results = []
+            for item in self.items:
+                try:
+                    if hasattr(item, key):
+                        results.append(eval('item.{}'.format(key)))
+                except TypeError:
+                    break
+            if results:
+                return results
 
         try:
             return self.items[key]
-        except IndexError:
+        except (IndexError, TypeError):
             return value(default)
 
     def implode(self, value, glue=''):
