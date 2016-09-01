@@ -399,7 +399,7 @@ class Collection(object):
             for item in self.items:
                 try:
                     if hasattr(item, key):
-                        results.append(eval('item.{}'.format(key)))
+                        results.append(getattr(item, key))
                 except TypeError:
                     break
             if results:
