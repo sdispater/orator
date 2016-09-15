@@ -8,10 +8,6 @@ python:
   - "2.7"
   - "3.5"
 
-env:
-  - ORATOR_EXTENSIONS=true
-  - ORATOR_EXTENSIONS=false
-
 addons:
   postgresql: '9.4'
 
