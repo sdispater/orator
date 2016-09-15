@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from distutils.core import setup
 
+
+here = os.path.abspath(os.path.dirname(__file__))
 
 def get_version():
-    basedir = os.path.dirname(__file__)
-    with open(os.path.join(basedir, 'orator/version.py')) as f:
+    with open(os.path.join(here, 'orator/version.py')) as f:
         variables = {}
         exec(f.read(), variables)
 
@@ -16,10 +18,12 @@ def get_version():
 
     raise RuntimeError('No version info found.')
 
-
 __version__ = get_version()
 
-setup(
+with open(os.path.join(here, 'requirements.txt')) as f:
+    requirements = f.readlines()
+
+setup_kwargs = dict(
     name='orator',
     license='MIT',
     version=__version__,
@@ -33,19 +37,8 @@ setup(
     url='https://github.com/sdispater/orator',
     download_url='https://github.com/sdispater/orator/archive/%s.tar.gz' % __version__,
     packages=find_packages(exclude=['tests']),
-    install_requires=[
-        'simplejson',
-        'arrow',
-        'inflection',
-        'six',
-        'cleo>=0.4.1',
-        'blinker',
-        'lazy-object-proxy',
-        'fake-factory',
-        'wrapt',
-        'pyaml'
-    ],
-    tests_require=['pytest', 'mock', 'flexmock==0.9.7'],
+    install_requires=requirements,
+    tests_require=['pytest', 'mock', 'flexmock==0.9.7', 'mysqlclient', 'psycopg2'],
     test_suite='nose.collector',
     classifiers=[
         'Intended Audience :: Developers',
@@ -54,3 +47,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 )
+
+setup(**setup_kwargs)

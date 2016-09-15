@@ -368,6 +368,21 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
 
         self.assertEqual(2, len(statements))
         expected = [
+            'ALTER TABLE "users" ADD COLUMN "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL',
+            'ALTER TABLE "users" ADD COLUMN "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL'
+        ]
+        self.assertEqual(
+            expected,
+            statements
+        )
+
+    def test_adding_timestamps_not_current(self):
+        blueprint = Blueprint('users')
+        blueprint.timestamps(use_current=False)
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(2, len(statements))
+        expected = [
             'ALTER TABLE "users" ADD COLUMN "created_at" DATETIME NOT NULL',
             'ALTER TABLE "users" ADD COLUMN "updated_at" DATETIME NOT NULL'
         ]

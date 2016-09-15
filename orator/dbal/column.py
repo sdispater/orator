@@ -18,6 +18,7 @@ class Column(AbstractAsset):
         self._notnull = True
         self._default = None
         self._autoincrement = False
+        self._extra = {}
         self._platform_options = {}
 
         self.set_options(options or {})
@@ -93,11 +94,23 @@ class Column(AbstractAsset):
     def set_type(self, type):
         self._type = type
 
+    def set_extra(self, extra, key=None):
+        if key:
+            self._extra[key] = extra
+        else:
+            self._extra = extra
+
     def get_name(self):
         return self._name
 
     def get_type(self):
         return self._type
+
+    def get_extra(self, name=None):
+        if name is not None:
+            return self._extra[name]
+
+        return self._extra
 
     def get_autoincrement(self):
         return self._autoincrement
@@ -119,7 +132,8 @@ class Column(AbstractAsset):
             'scale': self._scale,
             'fixed': self._fixed,
             'unsigned': self._unsigned,
-            'autoincrement': self._autoincrement
+            'autoincrement': self._autoincrement,
+            'extra': self._extra
         }
 
         d.update(self._platform_options)

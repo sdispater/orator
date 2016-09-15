@@ -133,6 +133,3 @@ class SQLiteQueryGrammar(QueryGrammar):
         return 'strftime(\'%s\', %s) %s %s'\
                % (type, self.wrap(where['column']),
                   where['operator'], value)
-
-    def get_marker(self):
-        return '?'

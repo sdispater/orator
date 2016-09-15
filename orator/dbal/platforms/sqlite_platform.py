@@ -45,7 +45,7 @@ class SQLitePlatform(Platform):
         'real': 'float',
         'decimal': 'decimal',
         'numeric': 'decimal',
-        'blob': 'blob'
+        'blob': 'blob',
     }
 
     def get_list_table_columns_sql(self, table):

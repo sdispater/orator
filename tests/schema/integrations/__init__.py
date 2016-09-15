@@ -44,7 +44,7 @@ class IntegrationTestCase(object):
                 table.increments('id')
                 table.integer('user_id', unsigned=True)
                 table.string('name').unique()
-                table.string('status').default('draft').nullable()
+                table.enum('status', ['draft', 'published']).default('draft').nullable()
                 table.string('default').default(0)
                 table.string('tag').nullable().default('tag')
                 table.timestamps(use_current=True)

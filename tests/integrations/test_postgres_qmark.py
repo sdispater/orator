@@ -6,7 +6,7 @@ from .. import OratorTestCase
 from . import IntegrationTestCase
 
 
-class PostgresIntegrationTestCase(IntegrationTestCase, OratorTestCase):
+class PostgresQmarkIntegrationTestCase(IntegrationTestCase, OratorTestCase):
 
     @classmethod
     def get_manager_config(cls):
@@ -27,9 +27,10 @@ class PostgresIntegrationTestCase(IntegrationTestCase, OratorTestCase):
                 'driver': 'pgsql',
                 'database': database,
                 'user': user,
-                'password': password
+                'password': password,
+                'use_qmark': True
             }
         }
 
     def get_marker(self):
-        return '%s'
+        return '?'

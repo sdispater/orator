@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import simplejson as json
-import arrow
+import pendulum
 import inflection
 import inspect
 import uuid
@@ -328,6 +328,7 @@ class Model(object):
 
         model = self.__class__(**attributes)
 
+        model.set_connection(self.get_connection_name())
         model.set_exists(exists)
 
         return model
@@ -669,7 +670,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         if not local_key:
             local_key = self.get_key_name()
@@ -720,7 +721,7 @@ class Model(object):
         if relation in self._relations:
             return self._relations[name]
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
@@ -772,7 +773,7 @@ class Model(object):
         if foreign_key is None:
             foreign_key = '%s_id' % inflection.underscore(relation)
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         query = instance.new_query()
 
@@ -828,6 +829,7 @@ class Model(object):
         klass = self.get_actual_class_for_morph(getattr(self, type_column))
 
         instance = klass()
+        instance.set_connection(self.get_connection_name())
 
         rel = MorphTo(instance.new_query(),
                       self, id_column,
@@ -886,7 +888,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         if not local_key:
             local_key = self.get_key_name()
@@ -938,7 +940,7 @@ class Model(object):
         if name in self._relations:
             return self._relations[name]
 
-        through = self._get_related(through)()
+        through = self._get_related(through, True)
 
         if not first_key:
             first_key = self.get_foreign_key()
@@ -990,7 +992,7 @@ class Model(object):
         if relation in self._relations:
             return self._relations[relation]
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
@@ -1045,7 +1047,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = self.get_foreign_key()
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         if not other_key:
             other_key = instance.get_foreign_key()
@@ -1106,7 +1108,7 @@ class Model(object):
         if not foreign_key:
             foreign_key = name + '_id'
 
-        instance = self._get_related(related)()
+        instance = self._get_related(related, True)
 
         if not other_key:
             other_key = instance.get_foreign_key()
@@ -1162,7 +1164,7 @@ class Model(object):
 
         return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation)
 
-    def _get_related(self, related):
+    def _get_related(self, related, as_instance=False):
         """
         Get the related class.
 
@@ -1172,11 +1174,23 @@ class Model(object):
         :rtype: Model class
         """
         if not isinstance(related, basestring) and issubclass(related, Model):
+            if as_instance:
+                instance = related()
+                instance.set_connection(self.get_connection_name())
+
+                return instance
+
             return related
 
         related_class = self.__class__._register.get(related)
 
         if related_class:
+            if as_instance:
+                instance = related_class()
+                instance.set_connection(self.get_connection_name())
+
+                return instance
+
             return related_class
 
         raise RelatedClassNotFound(related)
@@ -1745,9 +1759,9 @@ class Model(object):
         """
         Get a fresh timestamp for the model.
 
-        :return: arrow.Arrow
+        :return: pendulum.Pendulum
         """
-        return arrow.get().naive
+        return pendulum.utcnow()
 
     def new_query(self):
         """
@@ -1933,7 +1947,7 @@ class Model(object):
         Get the name for polymorphic relations.
         """
         if not cls.__morph_name__:
-            return inflection.tableize(cls.__name__)
+            return cls._register.inverse[cls]
 
         return cls.__morph_name__
 
@@ -2165,14 +2179,13 @@ class Model(object):
         :rtype: dict
         """
         attributes = self._get_dictable_attributes()
+        mutated_attributes = self._get_mutated_attributes()
 
         for key in self.get_dates():
-            if not key in attributes:
+            if not key in attributes or key in mutated_attributes:
                 continue
 
             attributes[key] = self._format_date(attributes[key])
-
-        mutated_attributes = self._get_mutated_attributes()
 
         for key in mutated_attributes:
             if key not in attributes:
@@ -2229,7 +2242,9 @@ class Model(object):
                 continue
 
             relation = None
-            if hasattr(value, 'to_dict'):
+            if hasattr(value, 'serialize'):
+                relation = value.serialize()
+            elif hasattr(value, 'to_dict'):
                 relation = value.to_dict()
             elif value is None:
                 relation = value
@@ -2351,6 +2366,9 @@ class Model(object):
         if hasattr(value, 'to_dict'):
             return value.to_dict()
 
+        if key in self.get_dates():
+            return self._format_date(value)
+
         return value
 
     def _has_cast(self, key):
@@ -2451,18 +2469,24 @@ class Model(object):
 
         :rtype: datetime.datetime
         """
-        if isinstance(value, arrow.Arrow):
-            return value.naive
+        if isinstance(value, pendulum.Pendulum):
+            return value
 
-        return arrow.get(value).naive
+        return pendulum.instance(value)
 
     def as_datetime(self, value):
         """
         Return a timestamp as a datetime.
 
-        :rtype: arrow.Arrow
+        :rtype: pendulum.Pendulum
         """
-        return arrow.get(value)
+        if isinstance(value, basestring):
+            return pendulum.parse(value)
+
+        if isinstance(value, (int, float)):
+            return pendulum.from_timestamp(value)
+
+        return pendulum.instance(value)
 
     def get_date_format(self):
         """
@@ -2477,7 +2501,7 @@ class Model(object):
         Format a date or timestamp.
 
         :param date: The date or timestamp
-        :type date: datetime.datetime or datetime.date or arrow.Arrow
+        :type date: datetime.datetime or datetime.date or pendulum.Pendulum
 
         :rtype: str
         """
@@ -2488,14 +2512,12 @@ class Model(object):
 
         if format == 'iso':
             if isinstance(date, basestring):
-                return arrow.get(date).isoformat()
+                return pendulum.parse(date).isoformat()
 
             return date.isoformat()
         else:
-            if isinstance(date, arrow.Arrow):
-                return date.format(format)
-            elif isinstance(date, basestring):
-                return arrow.get(date).format(format)
+            if isinstance(date, basestring):
+                return pendulum.parse(date).format(format)
 
             return date.strftime(format)
 

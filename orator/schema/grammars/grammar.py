@@ -341,5 +341,13 @@ class SchemaGrammar(Grammar):
 
         return value
 
-    def platform_version(self):
-        return self._connection.server_version
+    def platform_version(self, parts=2):
+        return self._connection.server_version[:parts]
+
+    def platform(self):
+        """
+        Returns the dbal database platform.
+
+        :rtype: orator.dbal.platforms.platform.Platform
+        """
+        return self._connection.get_database_platform()

@@ -115,7 +115,7 @@ class MigratorTestCase(OratorTestCase):
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
-        connection.should_receive('pretend').replace_with(lambda callback: callback(None))
+        connection.should_receive('get_logged_queries').twice().and_return([])
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
         migrator = flexmock(
@@ -140,10 +140,10 @@ class MigratorTestCase(OratorTestCase):
         migrator.get_repository().should_receive('get_ran').once().and_return(['1_foo'])
         migrator.get_repository().should_receive('get_next_batch_number').once().and_return(1)
         bar_mock = flexmock(MigrationStub())
-        bar_mock.should_receive('get_connection').once().and_return(None)
+        bar_mock.should_receive('get_connection').once().and_return(connection)
         bar_mock.should_receive('up').once()
         baz_mock = flexmock(MigrationStub())
-        baz_mock.should_receive('get_connection').once().and_return(None)
+        baz_mock.should_receive('get_connection').once().and_return(connection)
         baz_mock.should_receive('up').once()
         migrator.should_receive('_resolve').with_args(os.getcwd(), '2_bar').once().and_return(bar_mock)
         migrator.should_receive('_resolve').with_args(os.getcwd(), '3_baz').once().and_return(baz_mock)
@@ -265,7 +265,7 @@ class MigratorTestCase(OratorTestCase):
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
-        connection.should_receive('pretend').replace_with(lambda callback: callback(None))
+        connection.should_receive('get_logged_queries').twice().and_return([])
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
         migrator = flexmock(
@@ -280,21 +280,24 @@ class MigratorTestCase(OratorTestCase):
             )
         )
 
-        foo_migration = MigrationStub('foo')
-        bar_migration = MigrationStub('bar')
+        foo_migration = flexmock(MigrationStub('foo'))
+        foo_migration.should_receive('get_connection').and_return(connection)
+        bar_migration = flexmock(MigrationStub('bar'))
+        bar_migration.should_receive('get_connection').and_return(connection)
         migrator.get_repository().should_receive('get_last').once().and_return([
             foo_migration,
             bar_migration
         ])
 
-        bar_mock = flexmock(MigrationStub())
-        bar_mock.should_receive('down').once()
-        foo_mock = flexmock(MigrationStub())
-        foo_mock.should_receive('down').once()
-        migrator.should_receive('_resolve').with_args(os.getcwd(), 'bar').once().and_return(bar_mock)
-        migrator.should_receive('_resolve').with_args(os.getcwd(), 'foo').once().and_return(foo_mock)
+        migrator.should_receive('_resolve').with_args(os.getcwd(), 'bar').once().and_return(bar_migration)
+        migrator.should_receive('_resolve').with_args(os.getcwd(), 'foo').once().and_return(foo_migration)
 
         migrator.rollback(os.getcwd(), True)
+
+        self.assertTrue(foo_migration.downed)
+        self.assertFalse(foo_migration.upped)
+        self.assertTrue(foo_migration.downed)
+        self.assertFalse(foo_migration.upped)
 
     def test_nothing_is_rolled_back_when_nothing_in_repository(self):
         resolver = flexmock(DatabaseManager)
@@ -321,12 +324,14 @@ class MigrationStub(Migration):
 
     def __init__(self, migration=None):
         self.migration = migration
+        self.upped = False
+        self.downed = False
 
     def up(self):
-        pass
+        self.upped = True
 
     def down(self):
-        pass
+        self.downed = True
 
     def __getitem__(self, item):
         return self.migration

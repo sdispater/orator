@@ -1,5 +1,6 @@
 simplejson
-arrow
+pendulum
+backpack
 inflection
 six
 cleo>=0.4.1
@@ -8,3 +9,4 @@ lazy-object-proxy
 fake-factory
 wrapt
 pyaml
+pygments

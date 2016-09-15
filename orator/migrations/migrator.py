@@ -4,7 +4,10 @@ import os
 import glob
 import inflection
 import logging
+from pygments import highlight
+from pygments.lexers.sql import SqlLexer
 from ..utils import decode, load_module
+from ..utils.command_formatter import CommandFormatter
 
 
 class MigratorHandler(logging.NullHandler):
@@ -118,6 +121,32 @@ class Migrator(object):
 
         return len(migrations)
 
+    def reset(self, path, pretend=False):
+        """
+        Rolls all of the currently applied migrations back.
+
+        :param path: The path
+        :type path: str
+
+        :param pretend: Whether we execute the migrations as dry-run
+        :type pretend: bool
+
+        :rtype: count
+        """
+        self._notes = []
+
+        migrations = sorted(self._repository.get_ran(), reverse=True)
+
+        count = len(migrations)
+
+        if count == 0:
+            self._note('<info>Nothing to rollback.</info>')
+        else:
+            for migration in migrations:
+                self._run_down(path, {'migration': migration}, pretend)
+
+        return count
+
     def _run_down(self, path, migration, pretend=False):
         """
         Run "down" a migration instance.
@@ -168,10 +197,24 @@ class Migrator(object):
         :param method: The method to execute
         :type method: str
         """
+        self._note('')
         for query in self._get_queries(migration, method):
             name = migration.__class__.__name__
+            bindings = None
 
-            self._note('<info>%s:</info> <comment>%s</comment>' % (name, query))
+            if isinstance(query, tuple):
+                query, bindings = query
+
+            query = highlight(
+                query,
+                SqlLexer(),
+                CommandFormatter()
+            ).strip()
+
+            if bindings:
+                query = (query, bindings)
+
+            self._note('[<info>%s</info>] %s' % (name, query))
 
     def _get_queries(self, migration, method):
         """
@@ -186,22 +229,12 @@ class Migrator(object):
         :rtype: list
         """
         connection = migration.get_connection()
+        db = connection
 
-        db = self.resolve_connection(connection)
+        with db.pretend():
+            getattr(migration, method)()
 
-        logger = logging.getLogger('orator.connection.queries')
-        level = logger.level
-        logger.setLevel(logging.DEBUG)
-        handler = MigratorHandler()
-        handler.setLevel(logging.DEBUG)
-        logger.addHandler(handler)
-
-        db.pretend(lambda _: getattr(migration, method)())
-
-        logger.removeHandler(handler)
-        logger.setLevel(level)
-
-        return handler.queries
+        return db.get_logged_queries()
 
     def _resolve(self, path, migration_file):
         """

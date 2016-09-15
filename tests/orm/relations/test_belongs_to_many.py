@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import arrow
+import pendulum
 from flexmock import flexmock, flexmock_teardown
 from ... import OratorTestCase
 from ...utils import MockConnection
@@ -175,7 +175,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         relation = self._get_relation().with_timestamps()
         query = flexmock()
         query.should_receive('from_').once().with_args('user_role').and_return(query)
-        now = arrow.get().naive
+        now = pendulum.now()
         query.should_receive('insert').once().with_args(
             [
                 {'user_id': 1, 'role_id': 2, 'foo': 'bar', 'created_at': now, 'updated_at': now}
@@ -194,7 +194,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         relation = self._get_relation().with_pivot('created_at')
         query = flexmock()
         query.should_receive('from_').once().with_args('user_role').and_return(query)
-        now = arrow.get().naive
+        now = pendulum.now()
         query.should_receive('insert').once().with_args(
             [
                 {'user_id': 1, 'role_id': 2, 'foo': 'bar', 'created_at': now}
@@ -213,7 +213,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         relation = self._get_relation().with_pivot('updated_at')
         query = flexmock()
         query.should_receive('from_').once().with_args('user_role').and_return(query)
-        now = arrow.get().naive
+        now = pendulum.now()
         query.should_receive('insert').once().with_args(
             [
                 {'user_id': 1, 'role_id': 2, 'foo': 'bar', 'updated_at': now}
@@ -381,7 +381,7 @@ class OrmBelongsToTestCase(OratorTestCase):
             mock_query_builder = flexmock()
             relation.get_query().should_receive('get_query').and_return(mock_query_builder)
             mock_query_builder.should_receive('new_query').once().and_return(query)
-            query.should_receive('lists').once().with_args('role_id').and_return([1, list_[0], list_[1]])
+            query.should_receive('lists').once().with_args('role_id').and_return(Collection([1, list_[0], list_[1]]))
             relation.should_receive('attach').once().with_args(list_[2], {}, False)
             relation.should_receive('detach').once().with_args([1])
             relation.get_related().should_receive('touches').and_return(False)
@@ -405,7 +405,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         mock_query_builder = flexmock()
         relation.get_query().should_receive('get_query').and_return(mock_query_builder)
         mock_query_builder.should_receive('new_query').once().and_return(query)
-        query.should_receive('lists').once().with_args('role_id').and_return([1, 2, 3])
+        query.should_receive('lists').once().with_args('role_id').and_return(Collection([1, 2, 3]))
         relation.should_receive('attach').once().with_args(4, {'foo': 'bar'}, False)
         relation.should_receive('update_existing_pivot').once().with_args(3, {'bar': 'baz'}, False).and_return(True)
         relation.should_receive('detach').once().with_args([1])
@@ -431,7 +431,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         mock_query_builder = flexmock()
         relation.get_query().should_receive('get_query').and_return(mock_query_builder)
         mock_query_builder.should_receive('new_query').once().and_return(query)
-        query.should_receive('lists').once().with_args('role_id').and_return([1, 2, 3])
+        query.should_receive('lists').once().with_args('role_id').and_return(Collection([1, 2, 3]))
         relation.should_receive('attach').once().with_args(4, {'foo': 'bar'}, False)
         relation.should_receive('update_existing_pivot').once().with_args(3, {'bar': 'baz'}, False).and_return(False)
         relation.should_receive('detach').once().with_args([1])
@@ -451,12 +451,12 @@ class OrmBelongsToTestCase(OratorTestCase):
     def test_touch_method_syncs_timestamps(self):
         relation = self._get_relation()
         relation.get_related().should_receive('get_updated_at_column').and_return('updated_at')
-        now = arrow.get().naive
+        now = pendulum.now()
         relation.get_related().should_receive('fresh_timestamp').and_return(now)
         relation.get_related().should_receive('get_qualified_key_name').and_return('table.id')
         relation.get_query().get_query().should_receive('select').once().with_args('table.id')\
             .and_return(relation.get_query().get_query())
-        relation.get_query().should_receive('lists').once().and_return([1, 2, 3])
+        relation.get_query().should_receive('lists').once().and_return(Collection([1, 2, 3]))
         query = flexmock()
         relation.get_related().should_receive('new_query').once().and_return(query)
         query.should_receive('where_in').once().with_args('id', [1, 2, 3]).and_return(query)
@@ -483,7 +483,7 @@ class OrmBelongsToTestCase(OratorTestCase):
         mock_query_builder = flexmock()
         relation.get_query().should_receive('get_query').and_return(mock_query_builder)
         mock_query_builder.should_receive('new_query').once().and_return(query)
-        query.should_receive('lists').once().with_args('role_id').and_return([1, 2, 3])
+        query.should_receive('lists').once().with_args('role_id').and_return(Collection([1, 2, 3]))
 
         collection = flexmock(Collection())
         collection.should_receive('model_keys').once().and_return([1, 2, 3])
@@ -508,7 +508,7 @@ class OrmBelongsToTestCase(OratorTestCase):
 
         query.should_receive('where').once().with_args('foo', '=', 'bar', 'and').and_return(query)
 
-        query.should_receive('lists').once().with_args('role_id').and_return([1, 2, 3])
+        query.should_receive('lists').once().with_args('role_id').and_return(Collection([1, 2, 3]))
         relation.should_receive('_format_sync_list').with_args([1, 2, 3]).and_return({1: {}, 2: {}, 3: {}})
 
         relation = relation.where_pivot('foo', '=', 'bar')

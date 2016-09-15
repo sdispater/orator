@@ -12,15 +12,15 @@ class MySQLSchemaManager(SchemaManager):
 
     def _get_portable_table_column_definition(self, table_column):
         db_type = table_column['type'].lower()
-        match = re.match('(.+)\((.*)\).*', db_type)
-        if match:
-            db_type = match.group(1)
+        type_match = re.match('(.+)\((.*)\).*', db_type)
+        if type_match:
+            db_type = type_match.group(1)
 
         if 'length' in table_column:
             length = table_column['length']
         else:
-            if match and match.group(2) and ',' not in match.group(2):
-                length = int(match.group(2))
+            if type_match and type_match.group(2) and ',' not in type_match.group(2):
+                length = int(type_match.group(2))
             else:
                 length = 0
 
@@ -31,6 +31,7 @@ class MySQLSchemaManager(SchemaManager):
 
         precision = None
         scale = None
+        extra = {}
 
         type = self._platform.get_type_mapping(db_type)
 
@@ -56,6 +57,9 @@ class MySQLSchemaManager(SchemaManager):
             length = MySQLPlatform.LENGTH_LIMIT_MEDIUMBLOB
         elif db_type in ['tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'year']:
             length = None
+        elif db_type == 'enum':
+            length = None
+            extra['definition'] = '({})'.format(type_match.group(2))
 
         if length is None or length == 0:
             length = None
@@ -68,7 +72,8 @@ class MySQLSchemaManager(SchemaManager):
             'default': table_column.get('default'),
             'precision': None,
             'scale': None,
-            'autoincrement': table_column['extra'].find('auto_increment') != -1
+            'autoincrement': table_column['extra'].find('auto_increment') != -1,
+            'extra': extra,
         }
 
         if scale is not None and precision is not None:

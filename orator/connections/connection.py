@@ -11,7 +11,6 @@ from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
 from ..schema.builder import SchemaBuilder
 from ..dbal.schema_manager import SchemaManager
-from ..dbal.platforms import PLATFORMS
 from ..exceptions.query import QueryException
 
 
@@ -51,7 +50,7 @@ class Connection(ConnectionInterface):
                  builder_class=QueryBuilder, builder_default_kwargs=None):
         """
         :param connection: A dbapi connection instance
-        :type connection: mixed
+        :type connection: Connector
 
         :param database: The database name
         :type database: str
@@ -90,6 +89,7 @@ class Connection(ConnectionInterface):
         self._builder_default_kwargs = builder_default_kwargs
 
         self._logging_queries = config.get('log_queries', False)
+        self._logged_queries = []
 
         self._query_grammar = self.get_default_query_grammar()
 
@@ -120,17 +120,7 @@ class Connection(ConnectionInterface):
         return QueryProcessor()
 
     def get_database_platform(self):
-        platforms = PLATFORMS[self.name]
-
-        server_version = self.server_version
-        version = '%s.%s' % (server_version[0], server_version[1])
-
-        if version not in platforms:
-            platform = platforms['default']
-        else:
-            platform = platforms[version]
-
-        return platform()
+        return self._connection.get_database_platform()
 
     def get_schema_builder(self):
         """
@@ -297,18 +287,18 @@ class Connection(ConnectionInterface):
     def transaction_level(self):
         return self._transactions
 
-    def pretend(self, callback):
-        logging_queries = self._logging_queries
-
-        self.enable_query_log()
+    @contextmanager
+    def pretend(self):
+        self._logged_queries = []
 
         self._pretending = True
 
-        callback(self)
+        try:
+            yield self
+        except Exception:
+            self._pretending = False
 
         self._pretending = False
-
-        self._logging_queries = logging_queries
 
     def _try_again_if_caused_by_lost_connection(self, e, query, bindings, callback, *args, **kwargs):
         if self._caused_by_lost_connection(e):
@@ -353,6 +343,9 @@ class Connection(ConnectionInterface):
             self.reconnect()
 
     def log_query(self, query, bindings, time_=None):
+        if self.pretending():
+            self._logged_queries.append(self._get_cursor_query(query, bindings))
+
         if not self._logging_queries:
             return
 
@@ -379,6 +372,9 @@ class Connection(ConnectionInterface):
             return query, bindings
 
         return query, bindings
+
+    def get_logged_queries(self):
+        return self._logged_queries
 
     def get_connection(self):
         return self._connection
@@ -483,6 +479,9 @@ class Connection(ConnectionInterface):
     def get_schema_manager(self):
         return SchemaManager(self)
 
+    def get_params(self):
+        return self._connection.get_params()
+
     def set_builder_class(self, klass, default_kwargs=None):
         self._builder_class = klass
 
@@ -515,4 +514,4 @@ class Connection(ConnectionInterface):
         return self._server_version
 
     def get_server_version(self):
-        raise NotImplementedError()
+        return self._connection.get_server_version()

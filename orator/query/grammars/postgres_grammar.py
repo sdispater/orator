@@ -12,6 +12,8 @@ class PostgresQueryGrammar(QueryGrammar):
         '&', '|', '#', '<<', '>>'
     ]
 
+    marker = '%s'
+
     def _compile_lock(self, query, value):
         """
         Compile the lock into SQL
@@ -171,6 +173,3 @@ class PostgresQueryGrammar(QueryGrammar):
         return {
             'TRUNCATE %s RESTART IDENTITY' % self.wrap_table(query.from__): {}
         }
-
-    def get_marker(self):
-        return '%s'

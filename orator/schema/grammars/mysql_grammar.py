@@ -16,13 +16,18 @@ class MySQLSchemaGrammar(SchemaGrammar):
     _serials = ['big_integer', 'integer',
                 'medium_integer', 'small_integer', 'tiny_integer']
 
+    marker = '%s'
+
     def compile_table_exists(self):
         """
         Compile the query to determine if a table exists
 
         :rtype: str
         """
-        return 'SELECT * FROM information_schema.tables WHERE table_schema = %s AND table_name = %s'
+        return 'SELECT * ' \
+               'FROM information_schema.tables ' \
+               'WHERE table_schema = %(marker)s ' \
+               'AND table_name = %(marker)s' % {'marker': self.get_marker()}
 
     def compile_column_exists(self, table):
         """
@@ -176,7 +181,7 @@ class MySQLSchemaGrammar(SchemaGrammar):
         return 'ENUM(\'%s\')' % '\', \''.join(column.allowed)
 
     def _type_json(self, column):
-        if self.platform_version() >= (5, 7):
+        if self.platform().has_native_json_type():
             return 'JSON'
 
         return 'TEXT'
@@ -249,6 +254,19 @@ class MySQLSchemaGrammar(SchemaGrammar):
             return ' COMMENT "%s"' % column.comment
 
         return ''
+
+    def _get_column_change_options(self, fluent):
+        """
+        Get the column change options.
+        """
+        options = super(MySQLSchemaGrammar, self)._get_column_change_options(fluent)
+
+        if fluent.type == 'enum':
+            options['extra'] = {
+                'definition': '(\'{}\')'.format('\',\''.join(fluent.allowed))
+            }
+
+        return options
 
     def _wrap_value(self, value):
         if value == '*':

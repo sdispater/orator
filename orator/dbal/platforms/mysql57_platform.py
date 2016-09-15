@@ -39,8 +39,12 @@ class MySQL57Platform(MySQLPlatform):
         'binary': 'binary',
         'varbinary': 'binary',
         'set': 'simple_array',
+        'enum': 'enum',
         'json': 'json',
     }
 
     def get_json_type_declaration_sql(self, column):
         return 'JSON'
+
+    def has_native_json_type(self):
+        return True

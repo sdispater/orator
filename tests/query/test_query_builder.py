@@ -583,10 +583,10 @@ class QueryBuilderTestCase(OratorTestCase):
                 'WHERE "department" = ? ' \
                 'GROUP BY "category" ' \
                 'HAVING "total" > ?'
-        results = {
+        results = [{
             'category': 'rock',
             'total': 5
-        }
+        }]
         builder.get_connection().select.return_value = results
         builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results: results)
         result = builder.select('category', QueryExpression('count(*) as "total"'))\
@@ -1576,6 +1576,25 @@ class QueryBuilderTestCase(OratorTestCase):
         self.assertEqual(
             'SELECT * FROM "users"',
             builder.to_sql()
+        )
+
+    def test_merge(self):
+        b1 = self.get_builder()
+        b1.from_('test').select('foo', 'bar').where('baz', 'boom')
+
+        b2 = self.get_builder()
+        b2.where('foo', 'bar')
+
+        b1.merge(b2)
+
+        self.assertEqual(
+            'SELECT "foo", "bar" FROM "test" WHERE "baz" = ? AND "foo" = ?',
+            b1.to_sql()
+        )
+
+        self.assertEqual(
+            ['boom', 'bar'],
+            b1.get_bindings()
         )
 
     def get_mysql_builder(self):

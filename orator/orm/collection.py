@@ -9,10 +9,10 @@ class Collection(BaseCollection):
         """
         Load a set of relationships onto the collection.
         """
-        if len(self._items) > 0:
+        if len(self.items) > 0:
             query = self.first().new_query().with_(*relations)
 
-            self._items = query.eager_load_relations(self._items)
+            self._set_items(query.eager_load_relations(self.items))
 
         return self
 
@@ -22,7 +22,7 @@ class Collection(BaseCollection):
 
         :rtype: list
         """
-        results = map(lambda x: getattr(x, value), self._items)
+        results = map(lambda x: getattr(x, value), self.items)
 
         return list(results)
 
@@ -32,4 +32,4 @@ class Collection(BaseCollection):
 
         :rtype: list
         """
-        return map(lambda m: m.get_key(), self._items)
+        return map(lambda m: m.get_key(), self.items)

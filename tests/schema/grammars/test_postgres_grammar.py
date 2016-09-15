@@ -449,6 +449,21 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
 
         self.assertEqual(1, len(statements))
         expected = [
+            'ALTER TABLE "users" ADD COLUMN "created_at" TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP(0) NOT NULL, '
+            'ADD COLUMN "updated_at" TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP(0) NOT NULL'
+        ]
+        self.assertEqual(
+            expected[0],
+            statements[0]
+        )
+
+    def test_adding_timestamps_not_current(self):
+        blueprint = Blueprint('users')
+        blueprint.timestamps(use_current=False)
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        expected = [
             'ALTER TABLE "users" ADD COLUMN "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, '
             'ADD COLUMN "updated_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL'
         ]

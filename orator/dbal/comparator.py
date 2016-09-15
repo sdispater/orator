@@ -88,8 +88,8 @@ class Comparator(object):
         from_fkeys = OrderedDict([(k, v) for k, v in table1.get_foreign_keys().items()])
         to_fkeys = OrderedDict([(k, v) for k, v in table2.get_foreign_keys().items()])
 
-        for key1, constraint1 in from_fkeys.items():
-            for key2, constraint2 in to_fkeys.items():
+        for key1, constraint1 in table1.get_foreign_keys().items():
+            for key2, constraint2 in table2.get_foreign_keys().items():
                 if self.diff_foreign_key(constraint1, constraint2) is False:
                     del from_fkeys[key1]
                     del to_fkeys[key2]

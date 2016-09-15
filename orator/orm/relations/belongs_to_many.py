@@ -570,7 +570,7 @@ class BelongsToMany(Relation):
         if isinstance(ids, Collection):
             ids = ids.model_keys()
 
-        current = self._new_pivot_query().lists(self._other_key)
+        current = self._new_pivot_query().lists(self._other_key).all()
 
         records = self._format_sync_list(ids)
 
@@ -631,7 +631,7 @@ class BelongsToMany(Relation):
         if self.updated_at() in self._pivot_columns:
             attributes = self.set_timestamps_on_attach(attributes, True)
 
-        updated = self._new_pivot_statement_for_id(id).update(attributes)
+        updated = self.new_pivot_statement_for_id(id).update(attributes)
 
         if touch:
             self.touch_if_touching()

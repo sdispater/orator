@@ -6,6 +6,14 @@ class DBALException(Exception):
     pass
 
 
+class InvalidPlatformSpecified(DBALException):
+
+    def __init__(self, index_name, table_name):
+        message = 'Invalid "platform" option specified, need to give an instance of dbal.platforms.Platform'
+
+        super(InvalidPlatformSpecified, self).__init__(message)
+
+
 class SchemaException(DBALException):
 
     pass

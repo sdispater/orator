@@ -206,7 +206,7 @@ class Platform(object):
             raise DBALException('Incomplete definition. "foreign" required.')
 
         if not foreign_key.get_foreign_table_name():
-            raise DBALException('Incomplete definition. "foreign_table" resuired.')
+            raise DBALException('Incomplete definition. "foreign_table" required.')
 
         sql += '%s) REFERENCES %s (%s)'\
                % (', '.join(foreign_key.get_quoted_local_columns(self)),
@@ -669,3 +669,6 @@ class Platform(object):
 
     def supports_foreign_key_on_update(self):
         return self.supports_foreign_key_constraints()
+
+    def has_native_json_type(self):
+        return False

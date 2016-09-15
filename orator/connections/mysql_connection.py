@@ -14,14 +14,18 @@ class MySQLConnection(Connection):
     name = 'mysql'
 
     def get_default_query_grammar(self):
-        return MySQLQueryGrammar()
+        marker = None
+        if self._config.get('use_qmark'):
+            marker = '?'
+
+        return MySQLQueryGrammar(marker=marker)
 
     def get_default_post_processor(self):
         return MySQLQueryProcessor()
 
     def get_schema_builder(self):
         """
-        Retturn the underlying schema builder.
+        Return the underlying schema builder.
 
         :rtype: orator.schema.SchemaBuilder
         """
@@ -65,7 +69,3 @@ class MySQLConnection(Connection):
             return self._cursor._last_executed.decode()
 
         return self._cursor._last_executed
-
-    def get_server_version(self):
-        version = self._connection.get_server_info()
-        return tuple([int(n) for n in version.split('.')[:2]])

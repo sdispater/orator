@@ -600,7 +600,7 @@ class Blueprint(object):
         self.timestamp('created_at').nullable()
         self.timestamp('updated_at').nullable()
 
-    def timestamps(self, use_current=False):
+    def timestamps(self, use_current=True):
         """
         Create creation and update timestamps to the table.
 

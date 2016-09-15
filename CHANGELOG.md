@@ -1,6 +1,67 @@
-## 0.8.2
+# Change Log
 
-##### Fixes
+## [Unreleased]
+
+### Changed
+
+###### ORM
+
+- Removed `arrow` support for [pendulum](https://pendulum.eustace.io).
+
+###### Connection
+
+- Improved connectors.
+
+###### Schema
+
+- Makes the `use_current=True` the default for `timestamps()`.
+
+###### Query
+
+- Allow usage of qmark syntax for all backends.
+- Made `QueryBuilder` return Collections.
+- Merging queries also merges columns.
+- Made query builder results accessible by attributes.
+
+###### DBAL
+
+- Improved connectors and dbal to detect platform versions.
+
+###### Collections
+
+- Removed `Collection` code and uses [backpack](https://github.com/sdispater/backpack) package instead.
+
+### Fixed
+
+###### ORM
+
+- Fixed the update of pivots.
+- Fixed behavior for dates accessor.
+- Fixed connection not being properly set when specifying the connection with `on()`
+
+###### Commands
+
+- Made the `-P/--pretend` command option work.
+
+###### Schema
+
+- Fixed schema grammars.
+- Fixed an error when modify a table with an enum column in MySQL.
+
+###### DBAL
+
+- Fixed behavior for enum columns.
+
+
+## [0.8.2] - 2016-06-02
+
+### Changed
+
+###### Connection
+
+- Updating connectors to raise an exception when backend packages are missing.
+
+### Fixed
 
 ###### ORM
 
@@ -23,9 +84,9 @@
 - Handling missing `constraint_name` for sqlite (thanks to [ihumanable](https://github.com/ihumanable)).
 
 
-## 0.8.1
+## [0.8.1] - 2016-03-30
 
-##### Fixes
+### Fixed
 
 ###### ORM
 
@@ -46,23 +107,21 @@
 - Fixing a bug when calling `Connnection.disconnect()` after a reconnection when not using read/write connections.
 - Fixing `MySQLConnection.get_server_version()` method to be compatible with `PyMySQL` (thanks to [gdraynz](https://github.com/gdraynz)).
 
-## 0.8
 
-##### Improvements
+## [0.8] - 2016-02-08
+
+### Added
 
 ###### ORM
 
 - [#30](https://github.com/sdispater/orator/issues/30) Support for default values
-- [#29](https://github.com/sdispater/orator/issues/29) Supporting only one timetamp column on models
+- [#29](https://github.com/sdispater/orator/issues/29) Supporting only one timestamp column on models
 - [#26](https://github.com/sdispater/orator/issues/26) Adding support for extra conditions on relationships
 - Adding `@scope` decorator to define query scopes.
-- Improving global scopes
 
 ###### Schema builder
 
 - Adding support for a `use_current()` on timestamps
-- Improving dbal to support SQLite fully.
-- Improving fluents
 
 ###### Query Builder
 
@@ -72,16 +131,27 @@
 
 - Adding a `make:model` command
 
+###### Collections
+
+- Adds `flatten()` method to `Collection` class
+
+### Changed
+
+###### ORM
+
+- Improving global scopes
+
+##### Schema builder
+
+- Improving dbal to support SQLite fully.
+- Improving fluents
+
 ###### Connection
 
 - Using unicode by default for mysql and postgres.
 - Improves how queries are run in `Connection` class
 
-###### Collections
-
-- Adds `flatten()` method to `Collection` class
-
-##### Fixes
+### Fixed
 
 ###### ORM
 
@@ -109,36 +179,38 @@
 - Fixing migration stubs
 
 
-### 0.7.1
+## [0.7.1] - 2015-11-30
 
-(November 30th, 2015)
-
-##### Improvements
+### Added
 
 - [#20](https://github.com/sdispater/orator/issues/20) Collections have been improved (New methods added)
+
+### Changed
+
 - Commands have been improved
 - The `to_dict` methods on the `Model`, `Collection` classes and paginators are now deprecated. Use `serialize` instead.
 
-##### Fixes
+### Fixed
 
 * [#22](https://github.com/sdispater/orator/issues/22) Model.fill() and other methods now accept a dictionary in addition to keyword arguments.
 * MySQL charset config value was not used when connecting. This is now fixed. (Thanks to [@heavenshell](https://github.com/heavenshell))
 * [#24](https://github.com/sdispater/orator/issues/24) Dynamic properties called the wrong methods when accessing the related items.
 
 
-### 0.7
+## [0.7] - 2015-11-10
 
-(November 10th, 2015)
+### Added
 
-##### Improvements
-
-- [#15](https://github.com/sdispater/orator/issues/9) Execute migrations inside a transaction.
 - [#13](https://github.com/sdispater/orator/issues/9) Support database seeding and model factories.
 - [#9](https://github.com/sdispater/orator/issues/9) Support for SQLite foreign keys.
 - Relationships decorators.
+
+### Changed
+
+- [#15](https://github.com/sdispater/orator/issues/9) Execute migrations inside a transaction.
 - Morph relationships now using a name (default being the table name) rather than a class name.
 
-##### Fixes
+### Fixed
 
 - [#14](https://github.com/sdispater/orator/issues/14) Changing columns with SchemaBuilder does not work with some types.
 - [#16](https://github.com/sdispater/orator/issues/16) The last page of LengthAwarePaginator is not calculated properly in Python 2.7.
@@ -146,33 +218,27 @@
 - Fix dynamic properties for eagerloaded relationships.
 
 
-### 0.6.4
+## [0.6.4] - 2015-07-07
 
-(July 7th, 2015)
-
-##### Fixes
+### Fixed
 
 - [#11](https://github.com/sdispater/orator/issues/11) Paginator.resolve_current_page() raises and error on Python 2.7.
 
 
-### 0.6.3
+## [0.6.3] - 2015-06-30
 
-(June 30th, 2015)
-
-##### Improvements
+### Changed
 
 - [#10](https://github.com/sdispater/orator/issues/10) Remove hard dependencies in commands.
 
-##### Fixes
+### Fixed
 
 - [#8](https://github.com/sdispater/orator/issues/8) Reconnection on lost connection does not properly work.
 
 
-### 0.6.2
+## [0.6.2] - 2015-06-09
 
-(June 9nd, 2015)
-
-##### Fixes
+##### Fixed
 
 - Fixes a bug when results rather than the relation was returned
 - Starting a new query from a BelongsToMany relation does not maintain pivot columns.
@@ -180,54 +246,71 @@
 - Model.fresh() method raises an error for models retrieved from relations.
 
 
-### 0.6.1
+## [0.6.1] - 2015-06-02
 
-(June 2nd, 2015)
+### Changed
 
-- Fixes a lot of problems that broke relations behavior in 0.6.
 - Adds raw() method to orm builder passthru.
 
-### 0.6
+### Fixed
 
-(May 31th, 2015)
+- Fixes a lot of problems that broke relations behavior in 0.6.
+
+
+## [0.6] - 2015-05-31
+
+### Added
 
 - Adds pagination support
 - Adds model events support
 - Implements Model.load() method
 - Adds to_json() method to collections
+
+### Changed
+
 - Makes to_json() methods consistent.
-- Fixes how relations are retrieved from strings
-- Fixes classes lookup in morph_to() method
-- Fixes mutators not being called when initiating models
 - Improves models attributes lookup
 - Removes DynamicProperty class. Relations are dynamic themselves.
 
-### 0.5
+### Fixed
 
-(May 24th, 2015)
+- Fixes how relations are retrieved from strings
+- Fixes classes lookup in morph_to() method
+- Fixes mutators not being called when initiating models
+
+
+## [0.5] - 2015-05-24
+
+### Added
 
 - Adds database migrations
 - Adds mutators and accessors
+
+### Fixed
+
 - Fix BelongsToMany.save_many() default joinings value
 
-### 0.4
 
-(April 28th, 2015)
+## [0.4] - 2015-04-28
+
+### Added
 
 - Adds Schema Builder
 - Adds scopes support
 - Adds support for related name in relationships declaration
 
-### 0.3.1
 
-(April 19th, 2015)
+## [0.3.1] - 2015-04-19
+
+### Fixed
 
 - Fix MySQLdb compatibiity issues
 - Fix wrong default key value for Builder.lists() method
 
-### 0.3
 
-(April 3th, 2015)
+## [0.3] - 2015-04-03
+
+### Added
 
 - Query logging
 - Polymorphic relations
@@ -236,17 +319,38 @@
 - Adds support for multi-threaded applications by default
 
 
-### 0.2
+## [0.2] - 2015-03-31
 
-(March 31th, 2015)
+### Added
 
 - Adds actual ORM with relationships and eager loading
 - Adds chunk support for QueryBuilder
+
+### Fixed
+
 - Properly close connections when using reconnect() and disconnect() methods
 
 
-### 0.1
+## [0.1] - 2015-03-18
 
-(March 18th, 2015)
+Initial release
 
-- Initial release
+
+
+[Unreleased]: https://github.com/sdispater/orator/compare/0.8.2...HEAD
+[0.8.2]: https://github.com/sdispater/orator/releases/tag/0.8.2
+[0.8.1]: https://github.com/sdispater/orator/releases/tag/0.8.1
+[0.8]: https://github.com/sdispater/orator/releases/tag/0.8
+[0.7]: https://github.com/sdispater/orator/releases/tag/0.7
+[0.7.1]: https://github.com/sdispater/orator/releases/tag/0.7.1
+[0.6.4]: https://github.com/sdispater/orator/releases/tag/0.6.4
+[0.6.3]: https://github.com/sdispater/orator/releases/tag/0.6.3
+[0.6.2]: https://github.com/sdispater/orator/releases/tag/0.6.2
+[0.6.1]: https://github.com/sdispater/orator/releases/tag/0.6.1
+[0.6]: https://github.com/sdispater/orator/releases/tag/0.6
+[0.5]: https://github.com/sdispater/orator/releases/tag/0.5
+[0.4]: https://github.com/sdispater/orator/releases/tag/0.4
+[0.3.1]: https://github.com/sdispater/orator/releases/tag/0.3.1
+[0.3]: https://github.com/sdispater/orator/releases/tag/0.3
+[0.2]: https://github.com/sdispater/orator/releases/tag/0.3
+[0.1]: https://github.com/sdispater/orator/releases/tag/0.3
