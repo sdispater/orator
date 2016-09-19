@@ -356,13 +356,7 @@ you may use the ``to_dict`` method:
     user = User.with_('roles').first()
 
     return user.to_dict()
-
-Note that entire collections of models can also be converted to dictionaries:
-
-.. code-block:: python
-
-    return User.all().to_dict()
-
+   
 
 Converting a model to JSON
 --------------------------
