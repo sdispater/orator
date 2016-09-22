@@ -3,4 +3,3 @@ pytest
 pytest-mock
 flexmock==0.9.7
 psycopg2
-mysqlclient
