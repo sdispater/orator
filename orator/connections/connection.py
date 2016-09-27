@@ -91,6 +91,11 @@ class Connection(ConnectionInterface):
         self._logging_queries = config.get('log_queries', False)
         self._logged_queries = []
 
+        # Setting the marker based on config
+        self._marker = None
+        if self._config.get('use_qmark'):
+            self._marker = '?'
+
         self._query_grammar = self.get_default_query_grammar()
 
         self._schema_grammar = None
@@ -481,6 +486,9 @@ class Connection(ConnectionInterface):
 
     def get_params(self):
         return self._connection.get_params()
+
+    def get_marker(self):
+        return self._marker
 
     def set_builder_class(self, klass, default_kwargs=None):
         self._builder_class = klass
