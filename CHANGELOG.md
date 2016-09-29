@@ -1,5 +1,17 @@
 # Change Log
 
+## [0.9.1] - 2016-09-29
+
+### Changed
+
+- Improves migrate command output when pretending.
+
+### Fixed
+
+- Fixes errors when using PyMySQL.
+- Fixes `use_qmark` information not being passed to schema grammars.
+
+
 ## [0.9.0] - 2016-09-15
 
 ### Changed
@@ -337,6 +349,7 @@ Initial release
 
 
 
+[0.9.1]: https://github.com/sdispater/orator/releases/0.9.1
 [0.9.0]: https://github.com/sdispater/orator/releases/0.9.0
 [0.8.2]: https://github.com/sdispater/orator/releases/tag/0.8.2
 [0.8.1]: https://github.com/sdispater/orator/releases/tag/0.8.1
