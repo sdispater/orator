@@ -68,6 +68,9 @@ class Connection(ConnectionInterface):
 
         self._database = database
 
+        if table_prefix is None:
+            table_prefix = ''
+
         self._table_prefix = table_prefix
 
         if config is None:
