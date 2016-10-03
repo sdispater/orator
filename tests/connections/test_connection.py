@@ -65,6 +65,11 @@ class ConnectionTestCase(OratorTestCase):
 
         connection.select('SELECT * FROM "users"')
 
+    def test_prefix_set_to_none(self):
+        connection = Connection(None, 'database', None)
+        self.assertIsNotNone(connection.get_table_prefix())
+        self.assertEqual('', connection.get_table_prefix())
+
 
 class ConnectionThreadLocalTest(OratorTestCase):
 
