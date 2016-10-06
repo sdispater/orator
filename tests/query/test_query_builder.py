@@ -683,6 +683,15 @@ class QueryBuilderTestCase(OratorTestCase):
         )
         self.assertEqual([1, 'foo'], builder.get_bindings())
 
+    def test_multiple_wheres_in_list(self):
+        builder = self.get_builder()
+        builder.select('*').from_('users').where([['name', '=', 'bar'], ['age', '=', '25']])
+        self.assertEqual(
+            'SELECT * FROM "users" WHERE "name" = ? AND "age" = ?',
+            builder.to_sql()
+        )
+        self.assertEqual(['bar', 25], builder.get_bindings())
+
     def test_nested_wheres(self):
         builder = self.get_builder()
         builder.select('*').from_('users').where('email', '=', 'foo').or_where(

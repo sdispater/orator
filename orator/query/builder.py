@@ -353,6 +353,15 @@ class QueryBuilder(object):
         if isinstance(column, QueryBuilder):
             return self.where_nested(column, boolean)
 
+        if isinstance(column, list):
+            nested = self.new_query()
+            for condition in column:
+                if isinstance(condition, list) and len(condition) == 3:
+                    nested.where(condition[0], condition[1], condition[2])
+                else:
+                    raise ArgumentError("Invalid inputs in the list")
+            return self.where_nested(nested, boolean)
+
         if value is None:
             if not isinstance(operator, Null):
                 value = operator
