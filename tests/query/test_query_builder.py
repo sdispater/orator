@@ -687,7 +687,7 @@ class QueryBuilderTestCase(OratorTestCase):
         builder = self.get_builder()
         builder.select('*').from_('users').where([['name', '=', 'bar'], ['age', '=', '25']])
         self.assertEqual(
-            'SELECT * FROM "users" WHERE "name" = ? AND "age" = ?',
+            'SELECT * FROM "users" WHERE ("name" = ? AND "age" = ?)',
             builder.to_sql()
         )
         self.assertEqual(['bar', 25], builder.get_bindings())
