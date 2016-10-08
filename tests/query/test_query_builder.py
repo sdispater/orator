@@ -692,6 +692,21 @@ class QueryBuilderTestCase(OratorTestCase):
         )
         self.assertEqual(['bar', 25], builder.get_bindings())
 
+    def test_multiple_wheres_in_list_with_exception(self):
+        builder = self.get_builder()
+        try:
+            builder.select('*').from_('users').where([['name', 'bar'], ['age', '=', 25]])
+            self.fail('Builder has not raised Argument Error for invalid no. of values in where list')
+        except ArgumentError:
+            self.assertTrue(True)
+
+        try:
+            builder.select('*').from_('users').where(['name', 'bar'])
+            self.fail('Builder has not raised Argument Error for invalid datatype in where list')
+        except ArgumentError:
+            self.assertTrue(True)
+
+
     def test_nested_wheres(self):
         builder = self.get_builder()
         builder.select('*').from_('users').where('email', '=', 'foo').or_where(
@@ -1219,7 +1234,7 @@ class QueryBuilderTestCase(OratorTestCase):
             query, ['foo', 'bar', 1]
         )
         self.assertEqual(1, result)
-        
+
         builder = self.get_mysql_builder()
         marker = builder.get_grammar().get_marker()
         query = 'UPDATE `users` SET `email` = %s, `name` = %s WHERE `id` = %s' % (marker, marker, marker)

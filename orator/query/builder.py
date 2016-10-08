@@ -359,7 +359,7 @@ class QueryBuilder(object):
                 if isinstance(condition, list) and len(condition) == 3:
                     nested.where(condition[0], condition[1], condition[2])
                 else:
-                    raise ArgumentError("Invalid inputs in the list")
+                    raise ArgumentError('Invalid conditions in where() clause')
             return self.where_nested(nested, boolean)
 
         if value is None:
@@ -1674,5 +1674,3 @@ class QueryBuilder(object):
                                  if k != '_connection'))
 
         return new
-
-
