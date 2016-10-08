@@ -7,6 +7,7 @@ from .. import mock
 
 from ..utils import MockConnection, MockProcessor
 
+from orator.exceptions import ArgumentError
 from orator.query.grammars import (
     QueryGrammar,
     PostgresQueryGrammar,
