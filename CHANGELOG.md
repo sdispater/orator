@@ -1,5 +1,18 @@
 # Change Log
 
+
+## [Unreleased]
+
+### Changed
+
+- Adds ability to specify multiple conditions in a single `where()` (thanks to [mathankumart](https://github.com/mathankumart)).
+
+### Fixed
+
+- Fixes an error when table prefix is set to `None`.
+- Fixes column listing.
+
+
 ## [0.9.1] - 2016-09-29
 
 ### Changed
@@ -349,6 +362,7 @@ Initial release
 
 
 
+[Unreleased]: https://github.com/sdispater/orator/tree/0.9
 [0.9.1]: https://github.com/sdispater/orator/releases/0.9.1
 [0.9.0]: https://github.com/sdispater/orator/releases/0.9.0
 [0.8.2]: https://github.com/sdispater/orator/releases/tag/0.8.2
