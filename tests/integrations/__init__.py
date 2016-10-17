@@ -3,6 +3,7 @@
 import pendulum
 import simplejson as json
 from datetime import datetime, timedelta
+from backpack import collect
 from orator import Model, Collection, DatabaseManager
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope, accessor
 from orator.orm.relations import BelongsToMany
@@ -399,6 +400,20 @@ class IntegrationTestCase(object):
         connection = user.get_connection()
         post = user.posts().create(name='Test')
         self.assertEqual(connection, post.get_connection())
+
+    def test_columns_listing(self):
+        column_names = (
+            collect(self.schema().get_column_listing(OratorTestUser().get_table()))
+            .sort()
+            .all()
+        )
+
+        self.assertEqual(['created_at', 'email', 'id', 'updated_at'], column_names)
+
+    def test_has_column(self):
+        self.assertTrue(
+            self.schema().has_column(OratorTestUser().get_table(), 'email')
+        )
 
     def grammar(self):
         return self.connection().get_default_query_grammar()

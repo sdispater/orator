@@ -29,11 +29,14 @@ class MySQLSchemaGrammar(SchemaGrammar):
                'WHERE table_schema = %(marker)s ' \
                'AND table_name = %(marker)s' % {'marker': self.get_marker()}
 
-    def compile_column_exists(self, table):
+    def compile_column_exists(self):
         """
         Compile the query to determine the list of columns.
         """
-        return 'SELECT column_name FROM information_schema.columns WHERE table_name = %s' % table
+        return 'SELECT column_name ' \
+               'FROM information_schema.columns ' \
+               'WHERE table_schema = %(marker)s AND table_name = %(marker)s' \
+               % {'marker': self.get_marker()}
 
     def compile_create(self, blueprint, command, connection):
         """
