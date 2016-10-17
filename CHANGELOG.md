@@ -1,7 +1,7 @@
 # Change Log
 
 
-## [Unreleased]
+## [0.9.2] - 2016-10-17
 
 ### Changed
 
@@ -362,7 +362,7 @@ Initial release
 
 
 
-[Unreleased]: https://github.com/sdispater/orator/tree/0.9
+[0.9.2]: https://github.com/sdispater/orator/releases/0.9.2
 [0.9.1]: https://github.com/sdispater/orator/releases/0.9.1
 [0.9.0]: https://github.com/sdispater/orator/releases/0.9.0
 [0.8.2]: https://github.com/sdispater/orator/releases/tag/0.8.2
