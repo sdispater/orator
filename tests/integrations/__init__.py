@@ -415,6 +415,11 @@ class IntegrationTestCase(object):
             self.schema().has_column(OratorTestUser().get_table(), 'email')
         )
 
+    def test_table_exists(self):
+        self.assertTrue(
+            self.schema().has_table(OratorTestUser().get_table())
+        )
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 

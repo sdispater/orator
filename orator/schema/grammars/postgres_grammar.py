@@ -45,7 +45,7 @@ class PostgresSchemaGrammar(SchemaGrammar):
         """
         return 'SELECT * ' \
                'FROM information_schema.tables ' \
-               'WHERE table_name = \'%(marker)s\'' \
+               'WHERE table_name = %(marker)s' \
                % {'marker': self.get_marker()}
 
     def compile_column_exists(self, table):
