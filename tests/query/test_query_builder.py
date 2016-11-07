@@ -5,7 +5,7 @@ import re
 from .. import OratorTestCase
 from .. import mock
 
-from ..utils import MockConnection, MockProcessor
+from ..mocks import MockConnection, MockProcessor
 
 from orator.query.grammars import (
     QueryGrammar,
