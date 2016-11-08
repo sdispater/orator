@@ -2,7 +2,7 @@
 
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase, mock
-from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
+from ..mocks import MockModel, MockQueryBuilder, MockConnection, MockProcessor
 from orator.query.grammars.grammar import QueryGrammar
 from orator.query.builder import QueryBuilder
 from orator.orm.builder import Builder

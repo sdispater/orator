@@ -2,7 +2,7 @@
 
 from . import OratorTestCase
 from . import mock
-from .utils import MockConnection, MockManager
+from .mocks import MockConnection, MockManager
 
 from orator.database_manager import DatabaseManager
 

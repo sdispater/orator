@@ -7,7 +7,7 @@ import datetime
 from pendulum import Pendulum
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase, mock
-from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
+from ..mocks import MockModel, MockQueryBuilder, MockConnection, MockProcessor
 
 from orator.query.builder import QueryBuilder
 from orator.query.grammars import QueryGrammar

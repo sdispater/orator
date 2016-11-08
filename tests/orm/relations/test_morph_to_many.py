@@ -4,7 +4,7 @@
 import pendulum
 from flexmock import flexmock, flexmock_teardown
 from ... import OratorTestCase
-from ...utils import MockConnection
+from ...mocks import MockConnection
 
 from orator.query.builder import QueryBuilder
 from orator.query.grammars import QueryGrammar
