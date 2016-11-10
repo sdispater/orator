@@ -1,6 +1,13 @@
 # Change Log
 
 
+## [0.9.3] - 2016-11-10
+
+### Fixed
+
+- Fixes `compile_table_exists()` method in PostgreSQL schema grammar that could break migrations.
+
+
 ## [0.9.2] - 2016-10-17
 
 ### Changed
@@ -362,6 +369,7 @@ Initial release
 
 
 
+[0.9.3]: https://github.com/sdispater/orator/releases/0.9.3
 [0.9.2]: https://github.com/sdispater/orator/releases/0.9.2
 [0.9.1]: https://github.com/sdispater/orator/releases/0.9.1
 [0.9.0]: https://github.com/sdispater/orator/releases/0.9.0
