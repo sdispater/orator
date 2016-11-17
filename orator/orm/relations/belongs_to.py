@@ -42,7 +42,7 @@ class BelongsTo(Relation):
 
         :rtype: None
         """
-        if self._constraints:
+        if self._constraints and hasattr(self._parent, self._foreign_key):
             table = self._related.get_table()
 
             self._query.where('%s.%s' % (table, self._other_key), '=', getattr(self._parent, self._foreign_key))

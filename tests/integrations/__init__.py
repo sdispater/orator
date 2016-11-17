@@ -250,6 +250,15 @@ class IntegrationTestCase(object):
         self.assertIsInstance(posts[0].photos, Collection)
         self.assertEqual(posts[0].photos().where('name', 'Hero 2').first().name, 'Hero 2')
 
+    def test_belongs_to_associate(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        post = OratorTestPost(name='Test Post')
+
+        post.user().associate(user)
+        post.save()
+
+        self.assertEqual(1, post.user.id)
+
     def test_has_many_eagerload(self):
         user = OratorTestUser.create(id=1, email='john@doe.com')
         post1 = user.posts().create(name='First Post')
