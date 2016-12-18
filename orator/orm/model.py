@@ -1541,6 +1541,17 @@ class Model(object):
         if options.get('touch', True):
             self.touch_owners()
 
+    @property
+    def _schema_attributes(self):
+        # Filter the attributes list for those attributes which are defined as table columns.
+        # This allows a model to have computed attributes that are not stored in the table.
+        klass = self.__class__
+        if len(klass.__columns__) == 0:
+            klass._boot_columns()
+        orm_keys = set(self._attributes.keys()).intersection(set(self.__columns__))
+        attributes = dict((key, self._attributes[key]) for key in orm_keys)
+        return attributes
+
     def _perform_update(self, query, options=None):
         """
         Perform a model update operation.
@@ -1591,13 +1602,7 @@ class Model(object):
         if self.__timestamps__ and options.get('timestamps', True):
             self._update_timestamps()
 
-        # Filter the attributes list for those attributes which are defined as table columns.
-        # This allows a model to have computed attributes that are not stored in the table.
-        klass = self.__class__
-        if len(klass.__columns__) == 0:
-            klass._boot_columns()
-        orm_keys = set(self._attributes.keys()).intersection(set(self.__columns__))
-        attributes = dict((key, self._attributes[key]) for key in orm_keys)
+        attributes = self._schema_attributes
 
         if self.__incrementing__:
             self._insert_and_set_id(query, attributes)
@@ -2675,7 +2680,7 @@ class Model(object):
         """
         dirty = {}
 
-        for key, value in self._attributes.items():
+        for key, value in self._schema_attributes.items():
             if key not in self._original:
                 dirty[key] = value
             elif value != self._original[key]:
