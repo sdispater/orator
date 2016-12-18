@@ -1591,7 +1591,13 @@ class Model(object):
         if self.__timestamps__ and options.get('timestamps', True):
             self._update_timestamps()
 
-        attributes = self._attributes
+        # Filter the attributes list for those attributes which are defined as table columns.
+        # This allows a model to have computed attributes that are not stored in the table.
+        klass = self.__class__
+        if len(klass.__columns__) == 0:
+            klass._boot_columns()
+        orm_keys = set(self._attributes.keys()).intersection(set(self.__columns__))
+        attributes = dict((key, self._attributes[key]) for key in orm_keys)
 
         if self.__incrementing__:
             self._insert_and_set_id(query, attributes)
