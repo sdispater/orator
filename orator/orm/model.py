@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from ..connections.sqlite_connection import SQLiteConnection
+import re
 import simplejson as json
 import pendulum
 import inflection
@@ -134,6 +135,8 @@ class Model(object):
             attributes.update(_attributes)
 
         self.fill(**attributes)
+        if not isinstance(Model.resolve_connection(),SQLiteConnection):
+            self._class_regexp = re.compile("_{}__.*?".format(self.__class__.__name__))
 
     def _boot_if_not_booted(self):
         """
@@ -1553,14 +1556,30 @@ class Model(object):
         # This behavior is currently not supported for SQLiteConnections.
         if isinstance(Model.resolve_connection(),SQLiteConnection):            
             return self._attributes
-        
+
         orm_keys = ()
         klass = self.__class__
         if len(klass.__columns__) == 0 or klass.__connection__ is None:            
             klass._boot_columns()
         orm_keys = self.__columns__[:]  # Operate on a copy of the column names.
-        orm_keys = tuple(set(self._attributes.keys()).intersection(orm_keys))
-        attributes = dict((key, self._attributes.get(key,None)) for key in orm_keys)
+
+        # Examine the __dict__ to locate any additional properties that were defined using the @property decorator.
+        property_names = [self._class_regexp.split(v,1)[1] for v in self._attributes.keys() if (
+            self._class_regexp.match(v))]
+        property_names = set(orm_keys).intersection(set(property_names))
+        orm_property_names = tuple(property_names.intersection(orm_keys))
+        
+        # Intersect the instance attributes with known table columns.
+        attribute_keys = set(self._attributes.keys()) # Operate on a copy of the attribute keys.
+        orm_attribute_keys = tuple(attribute_keys.intersection(orm_keys))
+        
+        # Compile a dictionary of attributes.
+        attributes = dict((key, self._attributes.get(key,None)) for key in orm_attribute_keys)
+        properties = dict((key,getattr(self,key)) for key in orm_property_names)
+
+        # Update attributes to include properties.
+        attributes.update(properties)
+
         return attributes
 
     def _perform_update(self, query, options=None):
