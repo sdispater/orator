@@ -1549,10 +1549,12 @@ class Model(object):
             if len(klass.__columns__) == 0:
                 klass._boot_columns()
             orm_keys = self.__columns__
+            # Remove the 'id' key because it is a special column that is not considered an attribute.
+            if 'id' in orm_keys:
+                orm_keys.remove('id')
         except:
             pass
-        print("orm_keys: {}".format(orm_keys))
-        attributes = dict((key, self._attributes[key]) for key in orm_keys)
+        attributes = dict((key, self._attributes.get(key,None)) for key in orm_keys)
         return attributes
 
     def _perform_update(self, query, options=None):
