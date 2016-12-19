@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..connections.postgres_connection import PostgresConnection
 from ..connections.sqlite_connection import SQLiteConnection
 import simplejson as json
 import pendulum
@@ -1551,15 +1550,15 @@ class Model(object):
 
     @property
     def _schema_attributes(self):
-        # This behavior is currently only supported for PostgreSQL.
-        if not isinstance(Model.resolve_connection(),PostgresConnection):
+        # This behavior is currently not supported for SQLiteConnections.
+        if isinstance(Model.resolve_connection(),SQLiteConnection):            
             return self._attributes
         
         orm_keys = ()
         klass = self.__class__
         if len(klass.__columns__) == 0 or klass.__connection__ is None:            
             klass._boot_columns()
-        orm_keys = self.__columns__.copy()  # Operate on a copy of the column names.
+        orm_keys = self.__columns__[:]  # Operate on a copy of the column names.
         orm_keys = tuple(set(self._attributes.keys()).intersection(orm_keys))
         attributes = dict((key, self._attributes.get(key,None)) for key in orm_keys)
         return attributes
