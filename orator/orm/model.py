@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from ..connections.postgres_connection import PostgresConnection
+from ..connections.sqlite_connection import SQLiteConnection
 import simplejson as json
 import pendulum
 import inflection
@@ -169,6 +171,12 @@ class Model(object):
     def _boot_columns(cls):
         connection = cls.resolve_connection()
         columns = connection.get_schema_manager().list_table_columns(cls.__table__ or inflection.tableize(cls.__name__))
+        cls.__columns__ = list(columns.keys())
+
+    @classmethod
+    def _refresh_columns(cls):
+        connection = cls.__connection__
+        columns = connection.get_schema_manager().list_table_columns(cls.__table__)
         cls.__columns__ = list(columns.keys())
 
     @classmethod
@@ -1543,17 +1551,16 @@ class Model(object):
 
     @property
     def _schema_attributes(self):
+        # This behavior is currently only supported for PostgreSQL.
+        if not isinstance(Model.resolve_connection(),PostgresConnection):
+            return self._attributes
+        
         orm_keys = ()
-        try:
-            klass = self.__class__
-            if len(klass.__columns__) == 0:
-                klass._boot_columns()
-            orm_keys = self.__columns__
-            # Remove the 'id' key because it is a special column that is not considered an attribute.
-            if 'id' in orm_keys:
-                orm_keys.remove('id')
-        except:
-            pass
+        klass = self.__class__
+        if len(klass.__columns__) == 0 or klass.__connection__ is None:            
+            klass._boot_columns()
+        orm_keys = self.__columns__.copy()  # Operate on a copy of the column names.
+        orm_keys = tuple(set(self._attributes.keys()).intersection(orm_keys))
         attributes = dict((key, self._attributes.get(key,None)) for key in orm_keys)
         return attributes
 
@@ -2686,7 +2693,6 @@ class Model(object):
         dirty = {}
 
         attributes = self._schema_attributes
-        attributes = self._attributes if len(attributes) == 0 else attributes
         for key, value in attributes.items():
             if key not in self._original:
                 dirty[key] = value
