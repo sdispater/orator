@@ -1543,12 +1543,15 @@ class Model(object):
 
     @property
     def _schema_attributes(self):
-        # Filter the attributes list for those attributes which are defined as table columns.
-        # This allows a model to have computed attributes that are not stored in the table.
-        klass = self.__class__
-        if len(klass.__columns__) == 0:
-            klass._boot_columns()
-        orm_keys = set(self._attributes.keys()).intersection(set(self.__columns__))
+        orm_keys = ()
+        try:
+            klass = self.__class__
+            if len(klass.__columns__) == 0:
+                klass._boot_columns()
+            orm_keys = self.__columns__
+        except:
+            pass
+        print("orm_keys: {}".format(orm_keys))
         attributes = dict((key, self._attributes[key]) for key in orm_keys)
         return attributes
 
@@ -2680,7 +2683,9 @@ class Model(object):
         """
         dirty = {}
 
-        for key, value in self._schema_attributes.items():
+        attributes = self._schema_attributes
+        attributes = self._attributes if len(attributes) == 0 else attributes
+        for key, value in attributes.items():
             if key not in self._original:
                 dirty[key] = value
             elif value != self._original[key]:
