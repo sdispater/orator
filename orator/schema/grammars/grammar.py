@@ -12,7 +12,7 @@ from ..blueprint import Blueprint
 class SchemaGrammar(Grammar):
 
     def __init__(self, connection):
-        super(SchemaGrammar, self).__init__()
+        super(SchemaGrammar, self).__init__(marker=connection.get_marker())
 
         self._connection = connection
 

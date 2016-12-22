@@ -42,7 +42,7 @@ class SchemaBuilder(object):
         """
         column = column.lower()
 
-        return column in list(map(lambda x: x.lower(), self.get_colummn_listing()))
+        return column in list(map(lambda x: x.lower(), self.get_column_listing(table)))
 
     def get_column_listing(self, table):
         """

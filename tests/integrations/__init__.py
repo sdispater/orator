@@ -3,6 +3,7 @@
 import pendulum
 import simplejson as json
 from datetime import datetime, timedelta
+from backpack import collect
 from orator import Model, Collection, DatabaseManager
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope, accessor
 from orator.orm.relations import BelongsToMany
@@ -249,6 +250,15 @@ class IntegrationTestCase(object):
         self.assertIsInstance(posts[0].photos, Collection)
         self.assertEqual(posts[0].photos().where('name', 'Hero 2').first().name, 'Hero 2')
 
+    def test_belongs_to_associate(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        post = OratorTestPost(name='Test Post')
+
+        post.user().associate(user)
+        post.save()
+
+        self.assertEqual(1, post.user.id)
+
     def test_has_many_eagerload(self):
         user = OratorTestUser.create(id=1, email='john@doe.com')
         post1 = user.posts().create(name='First Post')
@@ -399,6 +409,25 @@ class IntegrationTestCase(object):
         connection = user.get_connection()
         post = user.posts().create(name='Test')
         self.assertEqual(connection, post.get_connection())
+
+    def test_columns_listing(self):
+        column_names = (
+            collect(self.schema().get_column_listing(OratorTestUser().get_table()))
+            .sort()
+            .all()
+        )
+
+        self.assertEqual(['created_at', 'email', 'id', 'updated_at'], column_names)
+
+    def test_has_column(self):
+        self.assertTrue(
+            self.schema().has_column(OratorTestUser().get_table(), 'email')
+        )
+
+    def test_table_exists(self):
+        self.assertTrue(
+            self.schema().has_table(OratorTestUser().get_table())
+        )
 
     def grammar(self):
         return self.connection().get_default_query_grammar()

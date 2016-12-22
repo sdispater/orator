@@ -43,13 +43,18 @@ class PostgresSchemaGrammar(SchemaGrammar):
 
         :rtype: str
         """
-        return 'SELECT * FROM information_schema.tables WHERE table_name = %(marker)s' % {'marker': self.get_marker()}
+        return 'SELECT * ' \
+               'FROM information_schema.tables ' \
+               'WHERE table_name = %(marker)s' \
+               % {'marker': self.get_marker()}
 
     def compile_column_exists(self, table):
         """
         Compile the query to determine the list of columns.
         """
-        return 'SELECT column_name FROM information_schema.columns WHERE table_name = %s' % table
+        return 'SELECT column_name ' \
+               'FROM information_schema.columns ' \
+               'WHERE table_name = \'%s\'' % table
 
     def compile_create(self, blueprint, command, _):
         """

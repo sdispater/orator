@@ -21,7 +21,7 @@ except ImportError as e:
 
         # Fix for understanding Pendulum object
         import pymysql.converters
-        pymysql.converters.converters[Pendulum] = pymysql.converters.escape_datetime
+        pymysql.converters.conversions[Pendulum] = pymysql.converters.escape_datetime
 
         from pymysql.cursors import DictCursor as cursor_class
         keys_fix = {}
@@ -46,11 +46,16 @@ class Record(dict):
 class BaseDictCursor(cursor_class):
 
     def _fetch_row(self, size=1):
+        # Overridden for mysqclient
         if not self._result:
             return ()
         rows = self._result.fetch_row(size, self._fetch_type)
 
         return tuple(Record(r) for r in rows)
+    
+    def _conv_row(self, row):
+        # Overridden for pymysql
+        return Record(super(BaseDictCursor, self)._conv_row(row))
 
 
 class DictCursor(BaseDictCursor):

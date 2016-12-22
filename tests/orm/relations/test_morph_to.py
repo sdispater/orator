@@ -96,7 +96,7 @@ class OrmMorphToTestCase(OratorTestCase):
 
     def test_associate_sets_foreign_key_and_type_on_model(self):
         parent = flexmock(Model())
-        parent.should_receive('get_attribute').once().with_args('foreign_key').and_return('foreign.value')
+        parent.should_receive('get_attribute').twice().with_args('foreign_key').and_return('foreign.value')
 
         relation = self._get_relation_associate(parent)
 

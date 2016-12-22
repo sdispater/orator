@@ -14,11 +14,7 @@ class PostgresConnection(Connection):
     name = 'pgsql'
 
     def get_default_query_grammar(self):
-        marker = None
-        if self._config.get('use_qmark'):
-            marker = '?'
-
-        return PostgresQueryGrammar(marker=marker)
+        return PostgresQueryGrammar(marker=self._marker)
 
     def get_default_post_processor(self):
         return PostgresQueryProcessor()

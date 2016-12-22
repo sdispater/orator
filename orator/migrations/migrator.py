@@ -198,6 +198,7 @@ class Migrator(object):
         :type method: str
         """
         self._note('')
+        names = []
         for query in self._get_queries(migration, method):
             name = migration.__class__.__name__
             bindings = None
@@ -214,7 +215,11 @@ class Migrator(object):
             if bindings:
                 query = (query, bindings)
 
-            self._note('[<info>%s</info>] %s' % (name, query))
+            if name not in names:
+                self._note('[<info>{}</info>]'.format(name))
+                names.append(name)
+
+            self._note(query)
 
     def _get_queries(self, migration, method):
         """

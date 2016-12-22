@@ -14,11 +14,7 @@ class MySQLConnection(Connection):
     name = 'mysql'
 
     def get_default_query_grammar(self):
-        marker = None
-        if self._config.get('use_qmark'):
-            marker = '?'
-
-        return MySQLQueryGrammar(marker=marker)
+        return MySQLQueryGrammar(marker=self._marker)
 
     def get_default_post_processor(self):
         return MySQLQueryProcessor()

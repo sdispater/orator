@@ -1,5 +1,37 @@
 # Change Log
 
+
+## [0.9.3] - 2016-11-10
+
+### Fixed
+
+- Fixes `compile_table_exists()` method in PostgreSQL schema grammar that could break migrations.
+
+
+## [0.9.2] - 2016-10-17
+
+### Changed
+
+- Adds ability to specify multiple conditions in a single `where()` (thanks to [mathankumart](https://github.com/mathankumart)).
+
+### Fixed
+
+- Fixes an error when table prefix is set to `None`.
+- Fixes column listing.
+
+
+## [0.9.1] - 2016-09-29
+
+### Changed
+
+- Improves migrate command output when pretending.
+
+### Fixed
+
+- Fixes errors when using PyMySQL.
+- Fixes `use_qmark` information not being passed to schema grammars.
+
+
 ## [0.9.0] - 2016-09-15
 
 ### Changed
@@ -337,6 +369,9 @@ Initial release
 
 
 
+[0.9.3]: https://github.com/sdispater/orator/releases/0.9.3
+[0.9.2]: https://github.com/sdispater/orator/releases/0.9.2
+[0.9.1]: https://github.com/sdispater/orator/releases/0.9.1
 [0.9.0]: https://github.com/sdispater/orator/releases/0.9.0
 [0.8.2]: https://github.com/sdispater/orator/releases/tag/0.8.2
 [0.8.1]: https://github.com/sdispater/orator/releases/tag/0.8.1

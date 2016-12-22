@@ -58,6 +58,6 @@ class MySQLQueryProcessor(QueryProcessor):
         :type results: dict
 
         :return: The processed results
-        :return: dict
+        :return: list
         """
-        return map(lambda x: x['column_name'], results)
+        return list(map(lambda x: x['column_name'], results))
