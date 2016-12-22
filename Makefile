@@ -5,6 +5,8 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015 Sébastien Eustace
 
+.PHONY: list clean setup setup-python setup-databases setup-psql setup-mysql drop-databases drop-mysql drop-psql extensions test tox
+
 # lists all available targets
 list:
 	@sh -c "$(MAKE) -p no_targets__ | \
@@ -17,15 +19,18 @@ no_targets__:
 # install all dependencies and setup databases
 setup: setup-python setup-databases
 
-setup-python:
-	@read -p 'Did you create and activated a dedicated virtualenv? [y/N]: '; \
-	if [[ $$REPLY = y ]]; then \
-		pip install -r tests-requirements.txt; \
-	else \
-		echo 'Aborting'; exit 1; \
-	fi
+clean: drop-databases
+	rm -rf venv
+
+venv:
+	virtualenv venv
+
+setup-python: venv
+	. venv/bin/activate; pip install -r tests-requirements.txt
 
 setup-databases: setup-psql setup-mysql
+
+drop-databases: drop-psql drop-mysql
 
 setup-psql: drop-psql
 	@echo 'Setting up PostgreSQL database `orator_test`...'
@@ -58,8 +63,8 @@ extensions:
 
 # test your application (tests in the tests/ directory)
 test:
-	@py.test tests -sq
+	@. venv/bin/activate; py.test tests -sq
 
 # run tests against all supported python versions
 tox:
-	@tox
+	. venv/bin/activate; @tox
