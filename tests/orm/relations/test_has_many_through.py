@@ -109,4 +109,4 @@ class OrmHasManyThroughTestCase(OratorTestCase):
 
 class OrmHasManyThroughModelStub(Model):
 
-    pass
+    __columns__ = ['id']

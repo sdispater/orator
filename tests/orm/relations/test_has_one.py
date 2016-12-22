@@ -124,4 +124,4 @@ class OrmHasOneTestCase(OratorTestCase):
 
 class OrmHasOneModelStub(Model):
 
-    pass
+    __columns__ = ['id']

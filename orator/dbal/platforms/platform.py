@@ -356,7 +356,7 @@ class Platform(object):
         return []
 
     def get_type_mapping(self, db_type):
-        return self.INTERNAL_TYPE_MAPPING[db_type]
+        return self.INTERNAL_TYPE_MAPPING.get(db_type)
 
     def get_reserved_keywords_list(self):
         if self._keywords:

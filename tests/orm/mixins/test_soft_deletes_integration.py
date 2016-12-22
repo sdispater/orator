@@ -92,7 +92,6 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
         self.assertEqual(0, SoftDeletesTestUser.where('email', 'john@doe.com').increment('id'))
         self.assertEqual(0, SoftDeletesTestUser.where('email', 'john@doe.com').decrement('id'))
 
-
     def test_with_trashed_returns_all_records(self):
         self.create_users()
 
@@ -216,6 +215,10 @@ class SoftDeletesTestUser(SoftDeletes, Model):
     __dates__ = ['deleted_at']
 
     __guarded__ = []
+
+    __columns__ = [
+        'deleted_at'
+    ]
 
     @has_many
     def posts(self):

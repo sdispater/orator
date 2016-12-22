@@ -164,12 +164,16 @@ class Model(object):
                 cls._mutator_cache[cls][method.attribute] = method
 
         cls._boot_mixins()
+        cls._boot_columns()
 
     @classmethod
-    def _boot_columns(cls):
-        connection = cls.resolve_connection()
-        columns = connection.get_schema_manager().list_table_columns(cls.__table__ or inflection.tableize(cls.__name__))
-        cls.__columns__ = list(columns.keys())
+    def _boot_columns(cls, force=False):
+        if not cls.__columns__ or force:
+            connection = cls.resolve_connection()
+            columns = connection.get_schema_manager().list_table_columns(
+                cls.__table__ or inflection.tableize(cls.__name__)
+            )
+            cls.__columns__ = list(columns.keys())
 
     @classmethod
     def _boot_mixins(cls):
@@ -2816,11 +2820,16 @@ class Model(object):
         return self.get_attribute(item)
 
     def __setattr__(self, key, value):
-        if key in ['_attributes', '_exists', '_relations', '_original'] or key.startswith('__'):
+        # Known attributes shortcut
+        if (key in ['_attributes', '_exists', '_relations', '_original'] or key.startswith('__')):
             return object.__setattr__(self, key, value)
 
+        # Mutators
         if self._has_set_mutator(key):
             return self.set_attribute(key, value)
+
+        if key not in self.__class__.__columns__:
+            return object.__setattr__(self, key, value)
 
         try:
             if object.__getattribute__(self, key):

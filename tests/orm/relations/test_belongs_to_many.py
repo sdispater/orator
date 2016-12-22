@@ -549,6 +549,10 @@ class OrmBelongsToManyModelStub(Model):
 
     __guarded__ = []
 
+    __columns__ = [
+        'id'
+    ]
+
 
 class OrmBelongsToManyModelPivotStub(Model):
 

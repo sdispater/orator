@@ -429,6 +429,13 @@ class IntegrationTestCase(object):
             self.schema().has_table(OratorTestUser().get_table())
         )
 
+    def test_set_non_schema_attribute(self):
+        user = OratorTestUser()
+        user.email = 'test@test.com'
+        user._protected = 'test'
+
+        user.save()
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 

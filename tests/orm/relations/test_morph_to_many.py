@@ -124,6 +124,8 @@ class OrmMorphToManyModelStub(Model):
 
     __guarded__ = []
 
+    __columns__ = ['id']
+
 
 class OrmMorphToManyModelPivotStub(Model):
 

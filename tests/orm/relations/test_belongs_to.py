@@ -69,32 +69,22 @@ class OrmBelongsToTestCase(OratorTestCase):
         self.assertEqual(2, models[1].foo.get_attribute('id'))
 
     def test_associate_sets_foreign_key_on_model(self):
-        parent = Model()
+        parent = flexmock(OrmBelongsToModelStub())
         parent.foreign_key = 'foreign.value'
-        parent.get_attribute = mock.MagicMock(return_value='foreign.value')
-        parent.set_attribute = mock.MagicMock()
-        parent.set_relation = mock.MagicMock()
+        parent.should_receive('set_attribute').once().with_args('foreign_key', 1)
         relation = self._get_relation(parent)
-        associate = flexmock(Model())
+        associate = flexmock(AnotherOrmBelongsToModelStub())
         associate.should_receive('get_attribute').once().with_args('id').and_return(1)
+        parent.should_receive('set_relation').with_args('relation', associate)
 
         relation.associate(associate)
-
-        parent.get_attribute.assert_has_calls([
-            mock.call('foreign_key'),
-            mock.call('foreign_key')
-        ])
-        parent.set_attribute.assert_has_calls([
-            mock.call('foreign_key', 1)
-        ])
-        parent.set_relation.assert_called_once_with('relation', associate)
 
     def _get_relation(self, parent=None):
         flexmock(Builder)
         query = flexmock(QueryBuilder(None, QueryGrammar(), None))
         builder = Builder(query)
         builder.should_receive('where').with_args('relation.id', '=', 'foreign.value')
-        related = flexmock(Model())
+        related = flexmock(OrmBelongsToModelStub())
         related.should_receive('new_query').and_return(builder)
         related.should_receive('get_key_name').and_return('id')
         related.should_receive('get_table').and_return('relation')
@@ -109,6 +99,11 @@ class OrmBelongsToTestCase(OratorTestCase):
 class OrmBelongsToModelStub(Model):
 
     foreign_key = 'foreign.value'
+
+    __columns__ = [
+        'id',
+        'foreign_key'
+    ]
 
 
 class AnotherOrmBelongsToModelStub(Model):

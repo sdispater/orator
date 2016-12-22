@@ -464,7 +464,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.touch_owners.called)
 
     def test_push_no_relations(self):
-        model = flexmock(Model())
+        model = flexmock(OrmModelStub())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
         builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
@@ -479,7 +479,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.exists)
 
     def test_push_empty_one_relation(self):
-        model = flexmock(Model())
+        model = flexmock(OrmModelStub())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
         builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
@@ -496,7 +496,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertIsNone(model.relation_one)
 
     def test_push_one_relation(self):
-        related1 = flexmock(Model())
+        related1 = flexmock(OrmModelStub())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
         builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'related1'}, 'id').and_return(2)
@@ -506,7 +506,7 @@ class OrmModelTestCase(OratorTestCase):
         related1.name = 'related1'
         related1.set_exists(False)
 
-        model = flexmock(Model())
+        model = flexmock(OrmModelStub())
         model.should_receive('resolve_connection').and_return(MockConnection().prepare_mock())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -527,7 +527,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(related1.exists)
 
     def test_push_empty_many_relation(self):
-        model = flexmock(Model())
+        model = flexmock(OrmModelStub())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
         builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'john'}, 'id').and_return(1)
@@ -544,7 +544,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual(0, len(model.relation_many))
 
     def test_push_many_relation(self):
-        related1 = flexmock(Model())
+        related1 = flexmock(OrmModelStub())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
         builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'related1'}, 'id').and_return(2)
@@ -554,7 +554,7 @@ class OrmModelTestCase(OratorTestCase):
         related1.name = 'related1'
         related1.set_exists(False)
 
-        related2 = flexmock(Model())
+        related2 = flexmock(OrmModelStub())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
         builder.get_query().should_receive('insert_get_id').once().with_args({'name': 'related2'}, 'id').and_return(3)
@@ -564,7 +564,7 @@ class OrmModelTestCase(OratorTestCase):
         related2.name = 'related2'
         related2.set_exists(False)
 
-        model = flexmock(Model())
+        model = flexmock(OrmModelStub())
         model.should_receive('resolve_connection').and_return(MockConnection().prepare_mock())
         query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
         builder = Builder(query)
@@ -973,6 +973,17 @@ class OrmModelStub(Model):
 
     __guarded__ = []
 
+    __columns__ = [
+        'id',
+        'name',
+        'first',
+        'last',
+        'foo',
+        'age',
+        'created_at',
+        'updated_at'
+    ]
+
     @accessor
     def list_items(self):
         return json.loads(self.get_raw_attribute('list_items'))
@@ -1091,14 +1102,37 @@ class OrmModelCastingStub(Model):
         'eighth': 'json'
     }
 
+    __columns__ = [
+        'first',
+        'second',
+        'third',
+        'fourth',
+        'fifth',
+        'sixth',
+        'seventh',
+        'eighth'
+    ]
+
 class OrmModelCreatedAt(Model):
 
     __timestamps__ = ['created_at']
+
+    __columns__ = [
+        'id',
+        'name',
+        'created_at'
+    ]
 
 
 class OrmModelUpdatedAt(Model):
 
     __timestamps__ = ['updated_at']
+
+    __columns__ = [
+        'id',
+        'name',
+        'updated_at'
+    ]
 
 
 class OrmModelDefaultAttributes(Model):

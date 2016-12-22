@@ -27,9 +27,9 @@ class OrmMorphTestCase(OratorTestCase):
         relation.get_query().should_receive('where').once()\
             .with_args('table.morph_type', relation.get_parent().__class__.__name__)
 
-        model1 = Model()
+        model1 = OrmModelStub()
         model1.id = 1
-        model2 = Model()
+        model2 = OrmModelStub()
         model2.id = 2
         relation.add_eager_constraints([model1, model2])
 
@@ -42,9 +42,9 @@ class OrmMorphTestCase(OratorTestCase):
         relation.get_query().should_receive('where').once()\
             .with_args('table.morph_type', relation.get_parent().__class__.__name__)
 
-        model1 = Model()
+        model1 = OrmModelStub()
         model1.id = 1
-        model2 = Model()
+        model2 = OrmModelStub()
         model2.id = 2
         relation.add_eager_constraints([model1, model2])
 
@@ -189,3 +189,8 @@ class OrmMorphTestCase(OratorTestCase):
         builder.should_receive('where').once().with_args('table.morph_type', parent.__class__.__name__)
 
         return MorphOne(builder, parent, 'table.morph_type', 'table.morph_id', 'id')
+
+
+class OrmModelStub(Model):
+
+    __columns__ = ['id']
