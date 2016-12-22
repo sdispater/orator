@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [0.9.0] - 2016-09-15
 
 ### Changed
 
@@ -337,7 +337,7 @@ Initial release
 
 
 
-[Unreleased]: https://github.com/sdispater/orator/compare/0.8.2...HEAD
+[0.9.0]: https://github.com/sdispater/orator/releases/0.9.0
 [0.8.2]: https://github.com/sdispater/orator/releases/tag/0.8.2
 [0.8.1]: https://github.com/sdispater/orator/releases/tag/0.8.1
 [0.8]: https://github.com/sdispater/orator/releases/tag/0.8
