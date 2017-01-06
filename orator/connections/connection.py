@@ -321,7 +321,14 @@ class Connection(ConnectionInterface):
 
         for s in ['server has gone away',
                   'no connection to the server',
-                  'Lost Connection']:
+                  'Lost Connection',
+                  'is dead or not enabled',
+                  'Error while sending',
+                  'decryption failed or bad record mac',
+                  'server closed the connection unexpectedly',
+                  'SSL connection has been closed unexpectedly',
+                  'Error writing data to the connection',
+                  'Resource deadlock avoided',]:
             if s in message:
                 return True
 
