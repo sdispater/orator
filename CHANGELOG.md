@@ -1,6 +1,15 @@
 # Change Log
 
 
+## [0.9.4] - 2017-01-12
+
+### Fixed
+
+- Fixes `BelongsTo.associate()` for non saved models.
+- Fixes reconnection for PostgreSQL.
+- Fixes dependencies (changed `fake-factory` to `Faker`) (thanks to [acristoffers](https://github.com/acristoffers))
+
+
 ## [0.9.3] - 2016-11-10
 
 ### Fixed
@@ -369,6 +378,7 @@ Initial release
 
 
 
+[0.9.4]: https://github.com/sdispater/orator/releases/0.9.4
 [0.9.3]: https://github.com/sdispater/orator/releases/0.9.3
 [0.9.2]: https://github.com/sdispater/orator/releases/0.9.2
 [0.9.1]: https://github.com/sdispater/orator/releases/0.9.1
