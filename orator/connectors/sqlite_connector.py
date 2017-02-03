@@ -64,6 +64,14 @@ class SQLiteConnector(Connector):
     def get_api(self):
         return sqlite3
 
+    @property
+    def isolation_level(self):
+        return self._connection.isolation_level
+
+    @isolation_level.setter
+    def isolation_level(self, value):
+        self._connection.isolation_level = value
+
     def get_dbal_platform(self):
         return SQLitePlatform()
 
