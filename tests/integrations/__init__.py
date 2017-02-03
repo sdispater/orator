@@ -431,8 +431,6 @@ class IntegrationTestCase(object):
 
     def test_transaction(self):
         count = self.connection().table('test_users').count()
-        print(self.connection()._connection)
-        print(OratorTestUser().get_connection()._connection)
 
         with self.connection().transaction():
             OratorTestUser.create(id=1, email='jane@doe.com')
