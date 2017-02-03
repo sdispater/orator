@@ -1,5 +1,11 @@
 # Change Log
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed transactions not working for PostgreSQL and SQLite.
+
 
 ## [0.9.4] - 2017-01-12
 
@@ -377,7 +383,7 @@
 Initial release
 
 
-
+[Unreleased]: https://github.com/sdispater/pendulum/compare/0.9.4...0.9
 [0.9.4]: https://github.com/sdispater/orator/releases/0.9.4
 [0.9.3]: https://github.com/sdispater/orator/releases/0.9.3
 [0.9.2]: https://github.com/sdispater/orator/releases/0.9.2

@@ -429,6 +429,17 @@ class IntegrationTestCase(object):
             self.schema().has_table(OratorTestUser().get_table())
         )
 
+    def test_transaction(self):
+        count = self.connection().table('test_users').count()
+        print(self.connection()._connection)
+        print(OratorTestUser().get_connection()._connection)
+
+        with self.connection().transaction():
+            OratorTestUser.create(id=1, email='jane@doe.com')
+            self.connection().rollback()
+
+        self.assertEqual(count, self.connection().table('test_users').count())
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 

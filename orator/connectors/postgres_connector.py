@@ -101,6 +101,14 @@ class PostgresConnector(Connector):
     def get_api(self):
         return psycopg2
 
+    @property
+    def autocommit(self):
+        return self._connection.autocommit
+
+    @autocommit.setter
+    def autocommit(self, value):
+        self._connection.autocommit = value
+
     def get_dbal_platform(self):
         return PostgresPlatform()
 
