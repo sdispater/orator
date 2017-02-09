@@ -35,9 +35,11 @@ class MigrateMakeCommand(BaseCommand):
         if path is None:
             path = self._get_migration_path()
 
-        self._write_migration(creator, name, table, create, path)
+        migration_name = self._write_migration(
+            creator, name, table, create, path)
 
-        self.info('<info>Migration created successfully</info>')
+        self.info(
+            '<info>Migration %s created successfully</info>' % migration_name)
 
     def _write_migration(self, creator, name, table, create, path):
         """
