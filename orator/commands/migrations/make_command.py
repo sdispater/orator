@@ -36,10 +36,12 @@ class MigrateMakeCommand(BaseCommand):
             path = self._get_migration_path()
 
         migration_name = self._write_migration(
-            creator, name, table, create, path)
+            creator, name, table, create, path
+        )
 
-        self.info(
-            '<info>Migration %s created successfully</info>' % migration_name)
+        self.line(
+            '<info>Created migration:</info> {}'.format(migration_name)
+        )
 
     def _write_migration(self, creator, name, table, create, path):
         """
