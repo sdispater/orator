@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changes
+
+- `make:migration` now shows the name of the created migration file. (Thanks to [denislins](https://github.com/denislins))
+
 ### Fixed
 
 - Fixed transactions not working for PostgreSQL and SQLite.
