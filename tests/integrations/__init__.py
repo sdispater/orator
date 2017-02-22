@@ -232,9 +232,13 @@ class IntegrationTestCase(object):
         self.assertIn('pivot', related_friend.to_dict())
         self.assertEqual(1, related_friend.pivot.user_id)
         self.assertEqual(3, related_friend.pivot.friend_id)
-        self.assertTrue(hasattr(related_friend.pivot, 'id'))
+        self.assertTrue(hasattr(related_friend.pivot, 'is_close'))
 
-        self.assertIsInstance(user.friends().with_pivot('id'), BelongsToMany)
+        self.assertIsInstance(user.friends().with_pivot('is_close'), BelongsToMany)
+
+        self.assertEqual(2, user.friends().get().count())
+        user.friends().sync([friend.id])
+        self.assertEqual(1, user.friends().get().count())
 
     def test_belongs_to_morph_many_eagerload(self):
         user = OratorTestUser.create(id=1, email='john@doe.com')
@@ -492,7 +496,7 @@ class OratorTestUser(Model):
     __table__ = 'test_users'
     __guarded__ = []
 
-    @belongs_to_many('test_friends', 'user_id', 'friend_id', with_pivot=['id', 'is_close'])
+    @belongs_to_many('test_friends', 'user_id', 'friend_id', with_pivot=['is_close'])
     def friends(self):
         return OratorTestUser
 
