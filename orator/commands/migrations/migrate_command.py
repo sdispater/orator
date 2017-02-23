@@ -15,9 +15,12 @@ class MigrateCommand(BaseCommand):
         {--seed-path= : The path of seeds files to be executed.
                         Defaults to <comment>./seeders</comment>.}
         {--P|pretend : Dump the SQL queries that would be run.}
+        {--f|force : Run the command without user prompts.}
     """
 
     def handle(self):
+        self.input.set_interactive(not self.option('force'))
+
         confirm = self.confirm(
             '<question>Are you sure you want to proceed with the migration?</question> ',
             False

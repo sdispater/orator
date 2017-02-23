@@ -10,7 +10,7 @@ class OratorCommandTestCase(OratorTestCase):
     def tearDown(self):
         flexmock_teardown()
 
-    def run_command(self, command, options=None, input_stream=None):
+    def run_command(self, command, options=None):
         """
         Run the command.
 
@@ -25,13 +25,7 @@ class OratorCommandTestCase(OratorTestCase):
         application = Application()
         application.add(command)
 
-        if input_stream:
-            dialog = command.get_helper('question')
-            dialog.__class__.input_stream = input_stream
-
         command_tester = CommandTester(command)
         command_tester.execute(options)
 
         return command_tester
-
-

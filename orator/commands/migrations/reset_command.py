@@ -12,12 +12,15 @@ class ResetCommand(BaseCommand):
         {--d|database= : The database connection to use.}
         {--p|path= : The path of migrations files to be executed.}
         {--P|pretend : Dump the SQL queries that would be run.}
+        {--f|force : Run the command without user prompts.}
     """
 
     def handle(self):
         """
         Executes the command.
         """
+        self.input.set_interactive(not self.option('force'))
+
         confirm = self.confirm(
             '<question>Are you sure you want to reset all of the migrations?</question> ',
             False
