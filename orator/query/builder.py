@@ -1251,6 +1251,9 @@ class QueryBuilder(object):
         :return: The count
         :rtype: int
         """
+        if not columns and self.distinct_:
+            columns = self.columns
+        
         if not columns:
             columns = ['*']
 
