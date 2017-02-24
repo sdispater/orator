@@ -2473,7 +2473,7 @@ class Model(object):
         if isinstance(value, pendulum.Pendulum):
             return value
 
-        if isinstance(value, datetime.date):
+        if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
             return pendulum.date.instance(value)
 
         return pendulum.instance(value)
@@ -2490,7 +2490,7 @@ class Model(object):
         if isinstance(value, (int, float)):
             return pendulum.from_timestamp(value)
 
-        if isinstance(value, datetime.date):
+        if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
             return pendulum.date.instance(value)
 
         return pendulum.instance(value)
