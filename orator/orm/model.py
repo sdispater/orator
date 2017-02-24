@@ -5,6 +5,7 @@ import pendulum
 import inflection
 import inspect
 import uuid
+import datetime
 from warnings import warn
 from six import add_metaclass
 from collections import OrderedDict
@@ -2472,19 +2473,25 @@ class Model(object):
         if isinstance(value, pendulum.Pendulum):
             return value
 
+        if isinstance(value, datetime.date):
+            return pendulum.date.instance(value)
+
         return pendulum.instance(value)
 
     def as_datetime(self, value):
         """
         Return a timestamp as a datetime.
 
-        :rtype: pendulum.Pendulum
+        :rtype: pendulum.Pendulum or pendulum.Date
         """
         if isinstance(value, basestring):
             return pendulum.parse(value)
 
         if isinstance(value, (int, float)):
             return pendulum.from_timestamp(value)
+
+        if isinstance(value, datetime.date):
+            return pendulum.date.instance(value)
 
         return pendulum.instance(value)
 

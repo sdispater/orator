@@ -2,7 +2,7 @@
 
 import pendulum
 import simplejson as json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from backpack import collect
 from orator import Model, Collection, DatabaseManager
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope, accessor
@@ -442,6 +442,14 @@ class IntegrationTestCase(object):
 
         self.assertEqual(count, self.connection().table('test_users').count())
 
+    def test_date(self):
+        user = OratorTestUser.create(id=1, email='john@doe.com')
+        photo1 = user.photos().create(name='Photo 1', taken_on=pendulum.date.today())
+        photo2 = user.photos().create(name='Photo 2')
+
+        self.assertIsInstance(OratorTestPhoto.find(photo1.id).taken_on, date)
+        self.assertIsNone(OratorTestPhoto.find(photo2.id).taken_on)
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
@@ -479,6 +487,7 @@ class IntegrationTestCase(object):
             table.morphs('imageable')
             table.string('name')
             table.json('metadata').nullable()
+            table.date('taken_on').nullable()
             table.timestamps(use_current=True)
 
     def revert(self, connection=None):
@@ -539,6 +548,8 @@ class OratorTestPhoto(Model):
     __casts__ = {
         'metadata': 'json'
     }
+
+    __dates__ = ['taken_on']
 
     @morph_to
     def imageable(self):
