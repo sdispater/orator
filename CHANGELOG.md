@@ -1,8 +1,15 @@
 # Change Log
 
+[Unreleased]
+
+### Changed
+
+- Adds support for `DATE` types in models.
+
+
 ## [0.9.5] - 2017-02-11
 
-### Changes
+### Changed
 
 - `make:migration` now shows the name of the created migration file. (Thanks to [denislins](https://github.com/denislins))
 
