@@ -1074,6 +1074,32 @@ class QueryBuilderTestCase(OratorTestCase):
         builder.get_processor().process_select.assert_called_once_with(builder, results)
         self.assertEqual(1, result)
 
+    def test_distinct_count_with_column(self):
+        builder = self.get_builder()
+        query = 'SELECT COUNT(DISTINCT "id") AS aggregate FROM "users"'
+        results = [{'aggregate': 1}]
+        builder.get_connection().select.return_value = results
+        builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results)
+        result = builder.from_('users').distinct().count('id')
+        builder.get_connection().select.assert_called_once_with(
+            query, [], True
+        )
+        builder.get_processor().process_select.assert_called_once_with(builder, results)
+        self.assertEqual(1, result)
+
+    def test_distinct_count_with_select(self):
+        builder = self.get_builder()
+        query = 'SELECT COUNT(DISTINCT "id") AS aggregate FROM "users"'
+        results = [{'aggregate': 1}]
+        builder.get_connection().select.return_value = results
+        builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results)
+        result = builder.from_('users').distinct().select('id').count()
+        builder.get_connection().select.assert_called_once_with(
+            query, [], True
+        )
+        builder.get_processor().process_select.assert_called_once_with(builder, results)
+        self.assertEqual(1, result)
+
     def test_aggregate_reset_followed_by_get(self):
         builder = self.get_builder()
         query = 'SELECT COUNT(*) AS aggregate FROM "users"'
