@@ -9,7 +9,7 @@ try:
     # Fix for understanding Pendulum object
     import MySQLdb.converters
     MySQLdb.converters.conversions[Pendulum] = MySQLdb.converters.DateTime2literal
-    MySQLdb.converters.conversions[Date] = MySQLdb.converters.Thing2literal
+    MySQLdb.converters.conversions[Date] = MySQLdb.converters.Thing2Literal
 
     from MySQLdb.cursors import DictCursor as cursor_class
     keys_fix = {
