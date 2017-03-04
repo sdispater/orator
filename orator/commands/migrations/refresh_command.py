@@ -12,7 +12,7 @@ class RefreshCommand(BaseCommand):
         {--p|path= : The path of migrations files to be executed.}
         {--s|seed : Indicates if the seed task should be re-run.}
         {--seed-path= : The path of seeds files to be executed.
-                        Defaults to <comment>./seeders</comment>.}
+                        Defaults to <comment>./seeds</comment>.}
         {--seeder=database_seeder : The name of the root seeder.}
     """
 
