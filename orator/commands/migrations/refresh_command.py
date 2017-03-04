@@ -50,7 +50,7 @@ class RefreshCommand(BaseCommand):
             self._run_seeder(database)
 
     def _needs_seeding(self):
-        return self.option('seed') or self.option('seeder')
+        return self.option('seed')
 
     def _run_seeder(self, database):
         options = [
