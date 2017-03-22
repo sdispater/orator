@@ -14,23 +14,22 @@ class RefreshCommand(BaseCommand):
         {--seed-path= : The path of seeds files to be executed.
                         Defaults to <comment>./seeds</comment>.}
         {--seeder=database_seeder : The name of the root seeder.}
+        {--f|force : Force the operation to run.}
     """
 
     def handle(self):
         """
         Executes the command.
         """
-        confirm = self.confirm(
-            '<question>Are you sure you want to refresh the database?</question> ',
-            False
-        )
-        if not confirm:
+        if not self.confirm_to_proceed(
+            '<question>Are you sure you want to refresh the database?:</question> '
+        ):
             return
 
         database = self.option('database')
 
         options = [
-            ('-n', True)
+            ('--force', True)
         ]
 
         if self.option('path'):
@@ -55,7 +54,7 @@ class RefreshCommand(BaseCommand):
     def _run_seeder(self, database):
         options = [
             ('--seeder', self.option('seeder')),
-            ('-n', True)
+            ('--force', True)
         ]
 
         if database:
