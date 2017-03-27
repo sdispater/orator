@@ -200,6 +200,30 @@ class Connection(ConnectionInterface):
 
         return cursor.fetchall()
 
+    def select_many(self, size, query, bindings=None, use_read_connection=True, abort=False):
+        if self.pretending():
+            yield []
+        else:
+            bindings = self.prepare_bindings(bindings)
+            cursor = self._get_cursor_for_select(use_read_connection)
+
+            try:
+                cursor.execute(query, bindings)
+            except Exception as e:
+                if self._caused_by_lost_connection(e) and not abort:
+                    self.reconnect()
+
+                    for results in self.select_many(size, query, bindings, use_read_connection, True):
+                        yield results
+                else:
+                    raise
+            else:
+                results = cursor.fetchmany(size)
+                while results:
+                    yield results
+
+                    results = cursor.fetchmany(size)
+
     def _get_cursor_for_select(self, use_read_connection=True):
         if use_read_connection:
             self._cursor = self.get_read_connection().cursor()

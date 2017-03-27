@@ -450,6 +450,34 @@ class IntegrationTestCase(object):
         self.assertIsInstance(OratorTestPhoto.find(photo1.id).taken_on, date)
         self.assertIsNone(OratorTestPhoto.find(photo2.id).taken_on)
 
+    def test_chunk_update_builder(self):
+        for i in range(20):
+            self.connection().table('test_users').insert(id=i + 1, email='john{}@doe.com'.format(i))
+
+        count = 0
+        for users in self.connection().table('test_users').where('id', '<', 50).chunk(10):
+            for user in users:
+                count += 1
+
+                if count == 10:
+                    self.connection().table('test_users').where('id', user.id).update(id=60)
+
+        self.assertEqual(count, 20)
+
+    def test_chunk_update_model(self):
+        for i in range(20):
+            OratorTestUser.create(id=i + 1, email='john{}@doe.com'.format(i))
+
+        count = 0
+        for users in OratorTestUser.where('id', '<', 50).chunk(10):
+            for user in users:
+                count += 1
+
+                if count == 10:
+                    OratorTestUser.where('id', user.id).update(id=60)
+
+        self.assertEqual(count, 20)
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 

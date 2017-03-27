@@ -1157,15 +1157,13 @@ class QueryBuilder(object):
         :return: The current chunk
         :rtype: list
         """
-        page = 1
-        results = self.for_page(page, count).get()
-
-        while not results.is_empty():
-            yield results
-
-            page += 1
-
-            results = self.for_page(page, count).get()
+        for chunk in self._connection.select_many(
+            count,
+            self.to_sql(),
+            self.get_bindings(),
+            not self._use_write_connection
+        ):
+            yield chunk
 
     def lists(self, column, key=None):
         """
