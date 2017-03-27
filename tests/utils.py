@@ -25,6 +25,7 @@ class MockConnection(ConnectionInterface):
         self.update = mock.MagicMock()
         self.delete = mock.MagicMock()
         self.statement = mock.MagicMock()
+        self.select_many = mock.MagicMock()
 
         return self
 

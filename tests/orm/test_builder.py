@@ -214,10 +214,19 @@ class BuilderTestCase(OratorTestCase):
         self.assertIsNone(builder.pluck('name'))
 
     def test_chunk(self):
-        builder = Builder(self.get_mock_query_builder())
-        results = [Collection(['foo1', 'foo2']), Collection(['foo3']), Collection([])]
-        builder.for_page = mock.MagicMock(return_value=builder)
-        builder.get = mock.MagicMock(side_effect=results)
+        query_builder = self.get_mock_query_builder()
+        query_results = [['foo1', 'foo2'], ['foo3']]
+        query_builder.chunk = mock.MagicMock(return_value=query_results)
+
+        builder = Builder(query_builder)
+        model = self.get_mock_model()
+        builder.set_model(model)
+
+        results = [Collection(['foo1', 'foo2']), Collection(['foo3'])]
+
+        model.hydrate = mock.MagicMock(return_value=[])
+        model.new_collection = mock.MagicMock(side_effect=results)
+        model.get_connection_name = mock.MagicMock(return_value='foo')
 
         i = 0
         for result in builder.chunk(2):
@@ -225,10 +234,18 @@ class BuilderTestCase(OratorTestCase):
 
             i += 1
 
-        builder.for_page.assert_has_calls([
-            mock.call(1, 2),
-            mock.call(2, 2),
-            mock.call(3, 2)
+        self.assertEqual(i, 2)
+
+        query_builder.chunk.assert_has_calls([
+            mock.call(2)
+        ])
+        model.hydrate.assert_has_calls([
+            mock.call(['foo1', 'foo2'], 'foo'),
+            mock.call(['foo3'], 'foo')
+        ])
+        model.new_collection.assert_has_calls([
+            mock.call([]),
+            mock.call([])
         ])
 
     # TODO: lists with get mutators

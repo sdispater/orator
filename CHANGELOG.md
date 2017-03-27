@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Improves implementation of the `chunk` method.
 - Adds support for `DATE` types in models.
 
 
