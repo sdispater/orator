@@ -34,6 +34,9 @@ class BelongsTo(Relation):
         """
         Get the results of the relationship.
         """
+        if self._query is None:
+            return None
+
         return self._query.first()
 
     def add_constraints(self):
@@ -42,10 +45,14 @@ class BelongsTo(Relation):
 
         :rtype: None
         """
-        if self._constraints and hasattr(self._parent, self._foreign_key):
-            table = self._related.get_table()
+        if self._constraints:
+            foreign_key = getattr(self._parent, self._foreign_key, None)
+            if foreign_key is None:
+                self._query = None
+            else:
+                table = self._related.get_table()
 
-            self._query.where('%s.%s' % (table, self._other_key), '=', getattr(self._parent, self._foreign_key))
+                self._query.where('{}.{}'.format(table, self._other_key), '=', foreign_key)
 
     def get_relation_count_query(self, query, parent):
         """
