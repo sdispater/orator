@@ -263,6 +263,16 @@ class IntegrationTestCase(object):
 
         self.assertEqual(1, post.user.id)
 
+    def test_belongs_to_associate_new_instances(self):
+        comment1 = OratorTestComment.create(body='test1')
+
+        self.assertEqual(comment1.parent, None)
+
+        comment2 = OratorTestComment.create(body='test2')
+        comment2.parent().associate(comment1)
+
+        self.assertEqual(comment2.parent.id, comment1.id)
+
     def test_has_many_eagerload(self):
         user = OratorTestUser.create(id=1, email='john@doe.com')
         post1 = user.posts().create(name='First Post')
@@ -510,6 +520,12 @@ class IntegrationTestCase(object):
             table.string('name')
             table.timestamps(use_current=True)
 
+        with self.schema(connection).create('test_comments') as table:
+            table.increments('id')
+            table.integer('parent_id').nullable()
+            table.text('body')
+            table.timestamps(use_current=True)
+
         with self.schema(connection).create('test_photos') as table:
             table.increments('id')
             table.morphs('imageable')
@@ -522,6 +538,7 @@ class IntegrationTestCase(object):
         self.schema(connection).drop_if_exists('test_users')
         self.schema(connection).drop_if_exists('test_friends')
         self.schema(connection).drop_if_exists('test_posts')
+        self.schema(connection).drop_if_exists('test_comments')
         self.schema(connection).drop_if_exists('test_photos')
 
     def get_marker(self):
@@ -566,6 +583,20 @@ class OratorTestPost(Model):
     @morph_many('imageable')
     def photos(self):
         return OratorTestPhoto.order_by('name')
+
+
+class OratorTestComment(Model):
+
+    __table__ = 'test_comments'
+    __guarded__ = []
+
+    @belongs_to('parent_id')
+    def parent(self):
+        return OratorTestComment
+
+    @has_many('parent_id')
+    def children(self):
+        return OratorTestComment
 
 
 class OratorTestPhoto(Model):
