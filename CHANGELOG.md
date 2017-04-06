@@ -6,6 +6,7 @@
 
 - Improves implementation of the `chunk` method.
 - Adds support for `DATE` types in models.
+- Adds support for fractional seconds for the `TIMESTAMP` type in MySQL 5.6.4+.
 
 
 ## [0.9.5] - 2017-02-11
