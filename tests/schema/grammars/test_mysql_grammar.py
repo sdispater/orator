@@ -495,10 +495,10 @@ class MySQLSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
-    def test_adding_timestamp(self):
+    def test_adding_timestamp_mysql_lt_564(self):
         blueprint = Blueprint('users')
         blueprint.timestamp('foo')
-        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 0, '')))
 
         self.assertEqual(1, len(statements))
         self.assertEqual(
@@ -506,10 +506,21 @@ class MySQLSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
-    def test_adding_timestamp_with_current(self):
+    def test_adding_timestamp_mysql_gte_564(self):
+        blueprint = Blueprint('users')
+        blueprint.timestamp('foo')
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 4, '')))
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE `users` ADD `foo` TIMESTAMP(6) NOT NULL',
+            statements[0]
+        )
+
+    def test_adding_timestamp_with_current_mysql_lt_564(self):
         blueprint = Blueprint('users')
         blueprint.timestamp('foo').use_current()
-        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 0, '')))
 
         self.assertEqual(1, len(statements))
         self.assertEqual(
@@ -517,10 +528,21 @@ class MySQLSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
-    def test_adding_timestamps(self):
+    def test_adding_timestamp_with_current_mysql_gte_564(self):
+        blueprint = Blueprint('users')
+        blueprint.timestamp('foo').use_current()
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 4, '')))
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE `users` ADD `foo` TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL',
+            statements[0]
+        )
+
+    def test_adding_timestamps_mysql_lt_564(self):
         blueprint = Blueprint('users')
         blueprint.timestamps()
-        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 0, '')))
 
         self.assertEqual(1, len(statements))
         expected = [
@@ -532,15 +554,45 @@ class MySQLSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
-    def test_adding_timestamps_not_current(self):
+    def test_adding_timestamps_mysql_gte_564(self):
+        blueprint = Blueprint('users')
+        blueprint.timestamps()
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 4, '')))
+
+        self.assertEqual(1, len(statements))
+        expected = [
+            'ALTER TABLE `users` ADD `created_at` TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL, '
+            'ADD `updated_at` TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL'
+        ]
+        self.assertEqual(
+            expected[0],
+            statements[0]
+        )
+
+    def test_adding_timestamps_not_current_mysql_lt_564(self):
         blueprint = Blueprint('users')
         blueprint.timestamps(use_current=False)
-        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 0, '')))
 
         self.assertEqual(1, len(statements))
         expected = [
             'ALTER TABLE `users` ADD `created_at` TIMESTAMP NOT NULL, '
             'ADD `updated_at` TIMESTAMP NOT NULL'
+        ]
+        self.assertEqual(
+            expected[0],
+            statements[0]
+        )
+
+    def test_adding_timestamps_not_current_mysql_gte_564(self):
+        blueprint = Blueprint('users')
+        blueprint.timestamps(use_current=False)
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar((5, 6, 4, '')))
+
+        self.assertEqual(1, len(statements))
+        expected = [
+            'ALTER TABLE `users` ADD `created_at` TIMESTAMP(6) NOT NULL, '
+            'ADD `updated_at` TIMESTAMP(6) NOT NULL'
         ]
         self.assertEqual(
             expected[0],

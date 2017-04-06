@@ -199,13 +199,23 @@ class MySQLSchemaGrammar(SchemaGrammar):
         return 'TIME'
 
     def _type_timestamp(self, column):
-        if column.use_current:
-            if self.platform_version() >= (5, 6):
-                return 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
-            else:
-                return 'TIMESTAMP DEFAULT 0'
+        platform_version = self.platform_version(3)
+        column_type = 'TIMESTAMP'
 
-        return 'TIMESTAMP'
+        if platform_version >= (5, 6, 0):
+            if platform_version >= (5, 6, 4):
+                # Versions 5.6.4+ support fractional seconds
+                column_type = 'TIMESTAMP(6)'
+                current = 'CURRENT_TIMESTAMP(6)'
+            else:
+                current = 'CURRENT_TIMESTAMP'
+        else:
+            current = '0'
+
+        if column.use_current:
+            return '{} DEFAULT {}'.format(column_type, current)
+
+        return column_type
 
     def _type_binary(self, column):
         return 'BLOB'
