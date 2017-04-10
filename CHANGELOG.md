@@ -8,6 +8,10 @@
 - Adds support for `DATE` types in models.
 - Adds support for fractional seconds for the `TIMESTAMP` type in MySQL 5.6.4+.
 
+### Fixed
+
+- Fixes timezone offset errors when inserting datetime aware objects into PostgreSQL.
+
 
 ## [0.9.5] - 2017-02-11
 
