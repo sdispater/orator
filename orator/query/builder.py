@@ -2,8 +2,11 @@
 
 import re
 import copy
+import datetime
+
 from itertools import chain
 from collections import OrderedDict
+
 from .expression import QueryExpression
 from .join_clause import JoinClause
 from ..pagination import Paginator, LengthAwarePaginator
@@ -1561,7 +1564,14 @@ class QueryBuilder(object):
         return self._connection.raw(value)
 
     def get_bindings(self):
-        return list(chain(*self._bindings.values()))
+        bindings = []
+        for value in chain(*self._bindings.values()):
+            if isinstance(value, datetime.date):
+                value = value.strftime(self._grammar.get_date_format())
+
+            bindings.append(value)
+
+        return bindings
 
     def get_raw_bindings(self):
         return self._bindings

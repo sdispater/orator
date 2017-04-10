@@ -335,7 +335,7 @@ class IntegrationTestCase(object):
         self.assertEqual('bar', photo.metadata['foo'])
 
     def test_local_scopes(self):
-        yesterday = created_at=datetime.utcnow() - timedelta(days=1)
+        yesterday = datetime.utcnow() - timedelta(days=1)
         john = OratorTestUser.create(id=1, email='john@doe.com', created_at=yesterday, updated_at=yesterday)
         jane = OratorTestUser.create(id=2, email='jane@doe.com')
 
@@ -488,6 +488,12 @@ class IntegrationTestCase(object):
 
         self.assertEqual(count, 20)
 
+    def test_timestamp_with_timezone(self):
+        user = OratorTestUser.create(email='john@doe.com')
+        fresh_user = OratorTestUser.find(user.id)
+
+        self.assertEqual(user.created_at, fresh_user.created_at)
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
@@ -568,7 +574,7 @@ class OratorTestUser(Model):
 
     @scope
     def older_than(self, query, **kwargs):
-        query.where('updated_at', '<', (pendulum.utcnow() - timedelta(**kwargs))._datetime)
+        query.where('updated_at', '<', pendulum.utcnow().subtract(**kwargs))
 
 
 class OratorTestPost(Model):
@@ -616,4 +622,4 @@ class OratorTestPhoto(Model):
 
     @accessor
     def created_at(self):
-        return pendulum.instance(self._attributes['created_at']).to('Europe/Paris')
+        return pendulum.instance(self._attributes['created_at']).in_tz('Europe/Paris')

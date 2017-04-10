@@ -2466,17 +2466,24 @@ class Model(object):
 
     def from_datetime(self, value):
         """
-        Convert datetime to a datetime object
+        Convert datetime to a storable string.
+        
+        :param value: The datetime value
+        :type value: pendulum.Pendulum or datetime.date or datetime.datetime
 
-        :rtype: datetime.datetime
+        :rtype: str
         """
+        date_format = self.get_connection().get_query_grammar().get_date_format()
+
         if isinstance(value, pendulum.Pendulum):
-            return value
+            return value.format(date_format)
 
         if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
-            return pendulum.date.instance(value)
+            value = pendulum.date.instance(value)
 
-        return pendulum.instance(value)
+            return value.format(date_format)
+
+        return pendulum.instance(value).format(date_format)
 
     def as_datetime(self, value):
         """

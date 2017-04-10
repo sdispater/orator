@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import re
-
 try:
     import psycopg2
     import psycopg2.extras
