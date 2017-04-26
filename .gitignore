@@ -19,6 +19,8 @@ nosetests.xml
 .DS_Store
 .idea/*
 
+/setup.py
+/requirements.txt
 /test.py
 /test_*.py
 app.py
@@ -34,3 +36,4 @@ profile.html
 benchmark.py
 results.json
 *.so
+/poetry.lock

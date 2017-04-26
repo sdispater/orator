@@ -1,0 +1,57 @@
+[package]
+name = "orator"
+version = "0.9.5"
+description = "The Orator ORM provides a simple yet beautiful ActiveRecord implementation."
+
+license = "MIT"
+
+authors = [
+    "Sébastien Eustace <sebastien@eustace.io>"
+]
+
+readme = 'README.rst'
+
+repository = "https://github.com/sdispater/orator"
+homepage = "https://orator-orm.com/"
+
+keywords = ['database', 'orm']
+
+include = ['orator/**/*', 'LICENSE']
+
+python = ["~2.7", "^3.5"]
+
+
+[dependencies]
+backpack = "^0.1"
+blinker = "^1.4"
+cleo = "^0.5"
+inflection = "^0.3"
+Faker = "^0.7"
+lazy-object-proxy = "^1.2"
+pendulum = "^1.2"
+pyaml = "^16.12"
+Pygments = "^2.2"
+simplejson = "^3.10"
+six = "^1.10"
+wrapt = "^1.10"
+
+# Extras
+psycopg2 = { version = "^2.7", optional = true }
+PyMySQL = { version = "^0.7", optional = true }
+mysqlclient = { version = "^1.3", optional = true }
+
+
+[dev-dependencies]
+flexmock = "0.9.7"
+pytest = "^3.0"
+pytest-mock = "^1.6"
+
+
+[features]
+mysql = ["mysqlclient"]
+mysql-python = ["PyMySQL"]
+pgsql = ["psycopg2"]
+
+
+[scripts]
+orator = 'orator.commands.application:application.run'
