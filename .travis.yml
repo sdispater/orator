@@ -23,9 +23,10 @@ before_install:
 
 install:
   - pip install pip -U
+  - pip install setuptools -U
   - pip install pypoet
-  - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then poet install --features "pgsql mysql-python" -v; fi
-  - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then poet install --features "pgsql mysql" -v; fi
+  - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then poet install --features "pgsql mysql-python" --no-progress; fi
+  - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then poet install --features "pgsql mysql" --no-progress; fi
 
 script: py.test tests/
 
