@@ -22,9 +22,10 @@ before_install:
   - sudo apt-get install -qq mysql-server-5.6 mysql-client-5.6 mysql-client-core-5.6
 
 install:
-  - pip install -r tests-requirements.txt -U
-  - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then pip install pymysql; fi
-  - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then pip install mysqlclient; fi
+  - pip install pip -U
+  - pip install pypoet
+  - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then poet install --features "pgsql mysql-python" -v; fi
+  - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then poet install --features "pgsql mysql" -v; fi
 
 script: py.test tests/
 
