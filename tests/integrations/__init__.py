@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import os
 import logging
 import pendulum
 import simplejson as json
 
-from io import StringIO
+from io import StringIO, BytesIO
 from datetime import datetime, timedelta, date
 from backpack import collect
 from orator import Model, Collection, DatabaseManager
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope, accessor
 from orator.orm.relations import BelongsToMany
 from orator.exceptions.orm import ModelNotFound
+from orator.utils import PY2
 
 
 logger = logging.getLogger('orator.connection.queries')
@@ -34,7 +36,8 @@ class LoggedQueriesFormatter(logging.Formatter):
 
 
 formatter = LoggedQueriesFormatter()
-handler = logging.StreamHandler(StringIO())
+handler = logging.StreamHandler(open(os.devnull, 'w'))
+
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
@@ -193,15 +196,15 @@ class IntegrationTestCase(object):
         comment = post.comments().create(body='Text')
         comment2 = post.comments().create(body='Text 2')
         comment.children().save(comment2)
-        user = OratorTestUser.with_('posts.comments.children').where('email', 'john@doe.com').first()
+        user = OratorTestUser.with_('posts.comments.children.parent').where('email', 'john@doe.com').first()
 
         self.assertEqual('First Post', user.posts.first().name)
         self.assertEqual('Text', user.posts.first().comments.first().body)
-        self.assertEqual('Text 2', user.posts.first().comments.first().children().first().body)
+        self.assertEqual('Text 2', user.posts.first().comments.first().children.first().body)
+        self.assertEqual('Text', user.posts.first().comments.first().children.first().parent.body)
 
         queries = formatter.logged_queries
-
-        self.assertEqual(9, len(queries))
+        self.assertEqual(10, len(queries))
 
         formatter.reset()
 
@@ -214,7 +217,6 @@ class IntegrationTestCase(object):
         self.assertEqual('john@doe.com', comment.parent.post.user.email)
 
         queries = formatter.logged_queries
-
         self.assertEqual(6, len(queries))
 
     def test_basic_morph_many_relationship(self):
