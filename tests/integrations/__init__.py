@@ -1,14 +1,42 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import pendulum
 import simplejson as json
+
+from io import StringIO
 from datetime import datetime, timedelta, date
 from backpack import collect
 from orator import Model, Collection, DatabaseManager
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope, accessor
 from orator.orm.relations import BelongsToMany
 from orator.exceptions.orm import ModelNotFound
-from orator.exceptions.query import QueryException
+
+
+logger = logging.getLogger('orator.connection.queries')
+logger.setLevel(logging.DEBUG)
+
+
+class LoggedQueriesFormatter(logging.Formatter):
+
+    def __init__(self, fmt=None, datefmt=None, style='%'):
+        super(LoggedQueriesFormatter, self).__init__()
+
+        self.logged_queries = []
+
+    def format(self, record):
+        self.logged_queries.append(record.query)
+
+        return super(LoggedQueriesFormatter, self).format(record)
+
+    def reset(self):
+        self.logged_queries = []
+
+
+formatter = LoggedQueriesFormatter()
+handler = logging.StreamHandler(StringIO())
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 class IntegrationTestCase(object):
@@ -31,7 +59,10 @@ class IntegrationTestCase(object):
             'database': ':memory:'
         }
 
-        return DatabaseManager(config)
+        db = DatabaseManager(config)
+        db.connection().enable_query_log()
+
+        return db
 
     @classmethod
     def tearDownClass(cls):
@@ -44,6 +75,8 @@ class IntegrationTestCase(object):
     def setUp(self):
         self.migrate()
         self.migrate('test')
+
+        formatter.reset()
 
     def tearDown(self):
         self.revert()
@@ -156,13 +189,33 @@ class IntegrationTestCase(object):
 
     def test_basic_has_many_eager_loading(self):
         user = OratorTestUser.create(id=1, email='john@doe.com')
-        user.posts().create(name='First Post')
-        user = OratorTestUser.with_('posts').where('email', 'john@doe.com').first()
+        post = user.posts().create(name='First Post')
+        comment = post.comments().create(body='Text')
+        comment2 = post.comments().create(body='Text 2')
+        comment.children().save(comment2)
+        user = OratorTestUser.with_('posts.comments.children').where('email', 'john@doe.com').first()
 
         self.assertEqual('First Post', user.posts.first().name)
+        self.assertEqual('Text', user.posts.first().comments.first().body)
+        self.assertEqual('Text 2', user.posts.first().comments.first().children().first().body)
+
+        queries = formatter.logged_queries
+
+        self.assertEqual(9, len(queries))
+
+        formatter.reset()
 
         post = OratorTestPost.with_('user').where('name', 'First Post').get()
         self.assertEqual('john@doe.com', post.first().user.email)
+
+        comment = OratorTestComment.with_('parent.post.user').where('body', 'Text 2').first()
+        self.assertEqual('Text', comment.parent.body)
+        self.assertEqual('First Post', comment.parent.post.name)
+        self.assertEqual('john@doe.com', comment.parent.post.user.email)
+
+        queries = formatter.logged_queries
+
+        self.assertEqual(6, len(queries))
 
     def test_basic_morph_many_relationship(self):
         user = OratorTestUser.create(email='john@doe.com')
@@ -195,11 +248,13 @@ class IntegrationTestCase(object):
 
     def test_multi_insert_with_different_values(self):
         date = pendulum.utcnow()._datetime
+        user1 = OratorTestUser.create(email='john@doe.com')
+        user2 = OratorTestUser.create(email='jane@doe.com')
         result = OratorTestPost.insert([
             {
-                'user_id': 1, 'name': 'Post', 'created_at': date, 'updated_at': date
+                'user_id': user1.id, 'name': 'Post', 'created_at': date, 'updated_at': date
             }, {
-                'user_id': 2, 'name': 'Post', 'created_at': date, 'updated_at': date
+                'user_id': user2.id, 'name': 'Post', 'created_at': date, 'updated_at': date
             }
         ])
 
@@ -208,11 +263,12 @@ class IntegrationTestCase(object):
 
     def test_multi_insert_with_same_values(self):
         date = pendulum.utcnow()._datetime
+        user1 = OratorTestUser.create(email='john@doe.com')
         result = OratorTestPost.insert([
             {
-                'user_id': 1, 'name': 'Post', 'created_at': date, 'updated_at': date
+                'user_id': user1.id, 'name': 'Post', 'created_at': date, 'updated_at': date
             }, {
-                'user_id': 1, 'name': 'Post', 'created_at': date, 'updated_at': date
+                'user_id': user1.id, 'name': 'Post', 'created_at': date, 'updated_at': date
             }
         ])
 
@@ -264,11 +320,13 @@ class IntegrationTestCase(object):
         self.assertEqual(1, post.user.id)
 
     def test_belongs_to_associate_new_instances(self):
-        comment1 = OratorTestComment.create(body='test1')
+        user = OratorTestUser.create(email='john@doe.com')
+        post = user.posts().create(name='First Post')
+        comment1 = OratorTestComment.create(body='test1', post_id=post.id)
 
         self.assertEqual(comment1.parent, None)
 
-        comment2 = OratorTestComment.create(body='test2')
+        comment2 = OratorTestComment.create(body='test2', post_id=post.id)
         comment2.parent().associate(comment1)
 
         self.assertEqual(comment2.parent.id, comment1.id)
@@ -516,21 +574,30 @@ class IntegrationTestCase(object):
 
         with self.schema(connection).create('test_friends') as table:
             table.increments('id')
-            table.integer('user_id')
-            table.integer('friend_id')
+            table.integer('user_id').unsigned()
+            table.integer('friend_id').unsigned()
             table.boolean('is_close').default(False)
+
+            table.foreign('user_id').references('id').on('test_users').on_delete('cascade')
+            table.foreign('friend_id').references('id').on('test_users').on_delete('cascade')
 
         with self.schema(connection).create('test_posts') as table:
             table.increments('id')
-            table.integer('user_id')
+            table.integer('user_id').unsigned()
             table.string('name')
             table.timestamps(use_current=True)
 
+            table.foreign('user_id').references('id').on('test_users').on_delete('cascade')
+
         with self.schema(connection).create('test_comments') as table:
             table.increments('id')
-            table.integer('parent_id').nullable()
+            table.integer('post_id').unsigned()
+            table.integer('parent_id').unsigned().nullable()
             table.text('body')
             table.timestamps(use_current=True)
+
+            table.foreign('post_id').references('id').on('test_posts').on_delete('cascade')
+            table.foreign('parent_id').references('id').on('test_comments').on_delete('cascade')
 
         with self.schema(connection).create('test_photos') as table:
             table.increments('id')
@@ -541,11 +608,11 @@ class IntegrationTestCase(object):
             table.timestamps(use_current=True)
 
     def revert(self, connection=None):
-        self.schema(connection).drop_if_exists('test_users')
-        self.schema(connection).drop_if_exists('test_friends')
-        self.schema(connection).drop_if_exists('test_posts')
-        self.schema(connection).drop_if_exists('test_comments')
         self.schema(connection).drop_if_exists('test_photos')
+        self.schema(connection).drop_if_exists('test_comments')
+        self.schema(connection).drop_if_exists('test_posts')
+        self.schema(connection).drop_if_exists('test_friends')
+        self.schema(connection).drop_if_exists('test_users')
 
     def get_marker(self):
         return '?'
@@ -586,6 +653,10 @@ class OratorTestPost(Model):
     def user(self):
         return OratorTestUser
 
+    @has_many('post_id')
+    def comments(self):
+        return OratorTestComment
+
     @morph_many('imageable')
     def photos(self):
         return OratorTestPhoto.order_by('name')
@@ -595,6 +666,10 @@ class OratorTestComment(Model):
 
     __table__ = 'test_comments'
     __guarded__ = []
+
+    @belongs_to('post_id')
+    def post(self):
+        return OratorTestPost
 
     @belongs_to('parent_id')
     def parent(self):
