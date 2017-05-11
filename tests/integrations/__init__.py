@@ -549,10 +549,12 @@ class IntegrationTestCase(object):
         self.assertEqual(count, 20)
 
     def test_timestamp_with_timezone(self):
-        user = OratorTestUser.create(email='john@doe.com')
+        now = pendulum.utcnow()
+        user = OratorTestUser.create(email='john@doe.com', created_at=now)
         fresh_user = OratorTestUser.find(user.id)
 
         self.assertEqual(user.created_at, fresh_user.created_at)
+        self.assertEqual(now, fresh_user.created_at)
 
     def grammar(self):
         return self.connection().get_default_query_grammar()
