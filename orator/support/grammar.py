@@ -79,7 +79,7 @@ class Grammar(object):
         return isinstance(value, QueryExpression)
 
     def get_date_format(self):
-        return '%Y-%m-%d %H:%M:%S'
+        return '%Y-%m-%d %H:%M:%S.%u'
 
     def get_table_prefix(self):
         return self._table_prefix
