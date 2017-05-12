@@ -119,7 +119,6 @@ class Command(BaseCommand):
                 config = yaml.load(fd)
         elif ext in ['.py']:
             config = {}
-
             with open(path) as fh:
                 exec(fh.read(), {}, config)
         elif ext in ['.json']:
