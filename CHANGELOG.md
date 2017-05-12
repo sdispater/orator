@@ -12,6 +12,7 @@
 ### Fixed
 
 - Fixes timezone offset errors when inserting datetime aware objects into PostgreSQL.
+- Fixes a bug occurring when using `__touches__` with an optional relationship.
 
 
 ## [0.9.5] - 2017-02-11

@@ -402,7 +402,8 @@ class Builder(object):
 
         column = self._model.get_updated_at_column()
 
-        values.update({column: self._model.fresh_timestamp()})
+        if 'updated_at' not in values:
+            values.update({column: self._model.fresh_timestamp_string()})
 
         return values
 
