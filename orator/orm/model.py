@@ -1628,9 +1628,9 @@ class Model(object):
         for relation in self.__touches__:
             if hasattr(self, relation):
                 _relation = getattr(self, relation)
-                _relation().touch()
 
-                if _relation is not None:
+                if _relation:
+                    _relation().touch()
                     _relation.touch_owners()
 
     def touches(self, relation):
@@ -1763,6 +1763,14 @@ class Model(object):
         :return: pendulum.Pendulum
         """
         return pendulum.utcnow()
+
+    def fresh_timestamp_string(self):
+        """
+        Get a fresh timestamp string for the model.
+
+        :return: str
+        """
+        return self.from_datetime(self.fresh_timestamp())
 
     def new_query(self):
         """

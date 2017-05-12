@@ -556,6 +556,28 @@ class IntegrationTestCase(object):
         self.assertEqual(user.created_at, fresh_user.created_at)
         self.assertEqual(now, fresh_user.created_at)
 
+    def test_touches(self):
+        user = OratorTestUser.create(email='john@doe.com')
+        post = user.posts().create(name='Post')
+        comment1 = post.comments().create(body='Comment 1')
+        comment2 = post.comments().create(body='Comment 2')
+        comment3 = post.comments().create(body='Comment 3')
+        comment4 = comment3.children().create(body='Comment 4', post_id=post.id)
+
+        comment1_updated_at = comment1.updated_at
+        comment2_updated_at = comment2.updated_at
+        comment3_updated_at = comment3.updated_at
+        comment4_updated_at = comment4.updated_at
+
+        comment4.body = 'Comment 4 updated'
+        comment4.save()
+
+        self.assertTrue(comment4.updated_at > comment4_updated_at)
+        self.assertEqual(comment4.updated_at, OratorTestComment.find(comment4.id).updated_at)
+        self.assertTrue(comment3_updated_at < OratorTestComment.find(comment3.id).updated_at)
+        self.assertEqual(comment1_updated_at, OratorTestComment.find(comment1.id).updated_at)
+        self.assertEqual(comment2_updated_at, OratorTestComment.find(comment2.id).updated_at)
+
     def grammar(self):
         return self.connection().get_default_query_grammar()
 
@@ -667,6 +689,8 @@ class OratorTestPost(Model):
 
 
 class OratorTestComment(Model):
+
+    __touches__ = ['parent']
 
     __table__ = 'test_comments'
     __guarded__ = []

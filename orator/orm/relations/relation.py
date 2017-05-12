@@ -93,7 +93,8 @@ class Relation(object):
         if attributes is None:
             attributes = {}
 
-        return self._query.update(attributes)
+        if self._query is not None:
+            return self._query.update(attributes)
 
     def get_relation_count_query(self, query, parent):
         """
