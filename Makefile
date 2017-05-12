@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 # This file is part of orator
 # https://github.com/sdispater/orator
 

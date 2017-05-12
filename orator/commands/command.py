@@ -77,7 +77,7 @@ class Command(BaseCommand):
         """
         current_path = os.path.relpath(os.getcwd())
 
-        accepted_files = ['orator.yml', 'orator.py', 'config.py', 'db.py']
+        accepted_files = ['orator.yml', 'orator.py', 'config.py', 'db.py', 'config.json', 'db.json']
         for accepted_file in accepted_files:
             config_file = os.path.join(current_path, accepted_file)
             if os.path.exists(config_file):
@@ -122,6 +122,9 @@ class Command(BaseCommand):
 
             with open(path) as fh:
                 exec(fh.read(), {}, config)
+        elif ext in ['.json']:
+            with open(path) as fj:
+                config = json.load(fj)
         else:
             raise RuntimeError('Config file [%s] is not supported.' % path)
 
