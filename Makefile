@@ -21,24 +21,29 @@ setup: setup-python setup-databases
 setup-python:
 	@read -p 'Did you create and activated a dedicated virtualenv? [y/N]: '; \
 	if [[ $$REPLY = y ]]; then \
-		pip install -r tests-requirements.txt; \
+		pip install --user -r tests-requirements.txt; \
 	else \
-		echo 'Aborting'; exit 1; \
+		echo 'Virtual env not installed. Installing for the local user...'; \
+		pip install --user virtualenv; \
+		virtualenv .; \
+		echo 'Virtual env installed and configured!'; \
+		echo 'Calling setup again, just wait and enjoy :)'; \
+		exit 0 && make setup; \
 	fi
 
 setup-databases: setup-psql setup-mysql
 
 setup-psql: drop-psql
 	@echo 'Setting up PostgreSQL database `orator_test`...'
-	psql -c 'CREATE DATABASE orator_test;' -U postgres
-	psql -c "CREATE ROLE orator PASSWORD 'orator';" -U postgres
-	psql -c 'ALTER ROLE orator LOGIN;' -U postgres
-	psql -c 'GRANT ALL PRIVILEGES ON DATABASE orator_test TO orator;' -U postgres
+	psql -c 'CREATE DATABASE orator_test;' -U postgres -h localhost
+	psql -c "CREATE ROLE orator PASSWORD 'orator';" -U postgres -h localhost
+	psql -c 'ALTER ROLE orator LOGIN;' -U postgres -h localhost
+	psql -c 'GRANT ALL PRIVILEGES ON DATABASE orator_test TO orator;' -U postgres -h localhost
 
 drop-psql:
 	@type -p psql > /dev/null || { echo 'Install and setup PostgreSQL'; exit 1; }
-	@-psql -c 'DROP DATABASE orator_test;' -U postgres > /dev/null 2>&1
-	@-psql -c 'DROP ROLE orator;' -U postgres > /dev/null 2>&1
+	@-psql -c 'DROP DATABASE orator_test;' -U postgres -h localhost > /dev/null 2>&1
+	@-psql -c 'DROP ROLE orator;' -U postgres -h localhost > /dev/null 2>&1
 
 setup-mysql: drop-mysql
 	@echo 'Setting up MySQL database `orator_test`...'

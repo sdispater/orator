@@ -1,0 +1,5 @@
+pypoet
+pytest
+flexmock
+mysqlclient
+psycopg2
