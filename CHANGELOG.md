@@ -13,6 +13,7 @@
 
 - Fixes timezone offset errors when inserting datetime aware objects into PostgreSQL.
 - Fixes a bug occurring when using `__touches__` with an optional relationship.
+- Fixes collections serialization when using the query builder
 
 
 ## [0.9.5] - 2017-02-11
