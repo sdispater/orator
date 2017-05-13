@@ -18,6 +18,7 @@ except ImportError:
 from ..dbal.platforms import PostgresPlatform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
+from ..utils.helpers import serialize
 
 
 class BaseDictConnection(connection_class):
@@ -65,6 +66,13 @@ class DictRow(row_class):
             return self[item]
         except KeyError:
             raise AttributeError(item)
+
+    def serialize(self):
+        serialized = {}
+        for column, index in self._index.items():
+            serialized[column] = list.__getitem__(self, index)
+
+        return serialize(serialized)
 
 
 class PostgresConnector(Connector):

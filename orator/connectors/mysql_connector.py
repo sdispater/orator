@@ -34,6 +34,7 @@ except ImportError as e:
 from ..dbal.platforms import MySQLPlatform, MySQL57Platform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
+from ..utils.helpers import serialize
 
 
 class Record(dict):
@@ -43,6 +44,9 @@ class Record(dict):
             return self[item]
         except KeyError:
             raise AttributeError(item)
+
+    def serialize(self):
+        return serialize(self)
 
 
 class BaseDictCursor(cursor_class):

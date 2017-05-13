@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import os
+import json
 import logging
 import pendulum
 import simplejson as json
 
-from io import StringIO, BytesIO
 from datetime import datetime, timedelta, date
 from backpack import collect
 from orator import Model, Collection, DatabaseManager
 from orator.orm import morph_to, has_one, has_many, belongs_to_many, morph_many, belongs_to, scope, accessor
 from orator.orm.relations import BelongsToMany
 from orator.exceptions.orm import ModelNotFound
-from orator.utils import PY2
 
 
 logger = logging.getLogger('orator.connection.queries')
@@ -471,6 +470,14 @@ class IntegrationTestCase(object):
         self.assertEqual('john@doe.com', users[0]['email'])
         self.assertEqual(1, users[0].id)
         self.assertEqual(1, users[0]['id'])
+
+    def test_query_builder_results_serialization(self):
+        OratorTestUser.create(id=1, email='john@doe.com')
+        users = self.connection().table('test_users').get()
+
+        serialized = json.loads(users.to_json())[0]
+        self.assertEqual(1, serialized['id'])
+        self.assertEqual('john@doe.com', serialized['email'])
 
     def test_connection_switching(self):
         OratorTestUser.create(id=1, email='john@doe.com')
