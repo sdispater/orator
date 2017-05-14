@@ -23,7 +23,7 @@ before_install:
 
 install:
   - pip install pip -U
-  - pip install setuptools -U
+  - pip install setuptools -U # Needed for Python 2.7
   - pip install pypoet
   - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then poet install --features "pgsql mysql-python" --no-progress; fi
   - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then poet install --features "pgsql mysql" --no-progress; fi
