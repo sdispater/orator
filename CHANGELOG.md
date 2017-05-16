@@ -1,19 +1,22 @@
 # Change Log
 
-## [Unreleased]
+## [0.9.6] - 2017-05-16
+
+### Added
+
+- Added support for `DATE` types in models.
+- Added support for fractional seconds for the `TIMESTAMP` type in MySQL 5.6.4+.
+- Added support for fractional seconds for the `TIMESTAMP` and `TIME` types in PostreSQL.
 
 ### Changed
 
-- Improves implementation of the `chunk` method.
-- Adds support for `DATE` types in models.
-- Adds support for fractional seconds for the `TIMESTAMP` type in MySQL 5.6.4+.
-- Adds support for fractional seconds for the `TIMESTAMP` and `TIME` types in PostreSQL.
+- Improved implementation of the `chunk` method.
 
 ### Fixed
 
-- Fixes timezone offset errors when inserting datetime aware objects into PostgreSQL.
-- Fixes a bug occurring when using `__touches__` with an optional relationship.
-- Fixes collections serialization when using the query builder
+- Fixed timezone offset errors when inserting datetime aware objects into PostgreSQL.
+- Fixed a bug occurring when using `__touches__` with an optional relationship.
+- Fixed collections serialization when using the query builder
 
 
 ## [0.9.5] - 2017-02-11
@@ -403,7 +406,8 @@
 Initial release
 
 
-[Unreleased]: https://github.com/sdispater/orator/compare/0.9.5...0.9
+[Unreleased]: https://github.com/sdispater/orator/compare/0.9.6...0.9
+[0.9.6]: https://github.com/sdispater/orator/releases/0.9.6
 [0.9.5]: https://github.com/sdispater/orator/releases/0.9.5
 [0.9.4]: https://github.com/sdispater/orator/releases/0.9.4
 [0.9.3]: https://github.com/sdispater/orator/releases/0.9.3
