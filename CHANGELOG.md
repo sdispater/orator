@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.9.7] - 2017-05-17
+
+### Fixed
+
+- Fixed `orator` command no longer working
+
+
 ## [0.9.6] - 2017-05-16
 
 ### Added
@@ -406,7 +413,8 @@
 Initial release
 
 
-[Unreleased]: https://github.com/sdispater/orator/compare/0.9.6...0.9
+[Unreleased]: https://github.com/sdispater/orator/compare/0.9.7...0.9
+[0.9.7]: https://github.com/sdispater/orator/releases/0.9.7
 [0.9.6]: https://github.com/sdispater/orator/releases/0.9.6
 [0.9.5]: https://github.com/sdispater/orator/releases/0.9.5
 [0.9.4]: https://github.com/sdispater/orator/releases/0.9.4
