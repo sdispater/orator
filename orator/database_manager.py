@@ -165,7 +165,7 @@ class BaseDatabaseManager(ConnectionResolverInterface):
         if len(self._config) == 1:
             return list(self._config.keys())[0]
 
-        return self._config['default']
+        return 'default'
 
     def set_default_connection(self, name):
         if name is not None:
