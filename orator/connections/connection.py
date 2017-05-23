@@ -344,6 +344,7 @@ class Connection(ConnectionInterface):
         message = str(e)
 
         for s in ['server has gone away',
+                  'connection already closed',
                   'no connection to the server',
                   'Lost Connection',
                   'is dead or not enabled',
