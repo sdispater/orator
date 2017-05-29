@@ -11,8 +11,8 @@ class DatabaseMigrationRepository(object):
         :type table: str
         """
         self._resolver = resolver
-        self._table = table
         self._connection = None
+        self._table = self.get_connection().get_table_prefix() + table
 
     def get_ran(self):
         """
