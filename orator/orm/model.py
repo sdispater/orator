@@ -1133,7 +1133,7 @@ class Model(object):
 
         return rel
 
-    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None, relation=None):
+    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None, relation=None, _wrapped=False):
         """
         Define a polymorphic many-to-many relationship.
 
@@ -1163,7 +1163,7 @@ class Model(object):
         if not other_key:
             other_key = name + '_id'
 
-        return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation)
+        return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation, _wrapped)
 
     def _get_related(self, related, as_instance=False):
         """
