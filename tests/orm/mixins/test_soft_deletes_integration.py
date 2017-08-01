@@ -206,6 +206,17 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
         self.assertEqual(1, len(users.get()))
         self.assertEqual(["jane@doe.com"], users.order_by("id").lists("email"))
 
+    def test_where_exists_on_soft_delete_model(self):
+        self.create_users()
+
+        users = SoftDeletesTestUser.where_exists(
+            SoftDeletesTestUser.where('email', 'jane@doe.com')
+        )
+
+        self.assertEqual(1, len(users.get()))
+        self.assertEqual(['jane@doe.com'], users.order_by('id').lists('email'))
+
+
     def create_users(self):
         john = SoftDeletesTestUser.create(email="john@doe.com")
         jane = SoftDeletesTestUser.create(email="jane@doe.com")
