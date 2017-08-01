@@ -6,7 +6,7 @@ six
 cleo>=0.4.1
 blinker
 lazy-object-proxy
-fake-factory
+faker
 wrapt
 pyaml
 pygments
