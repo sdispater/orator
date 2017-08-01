@@ -1263,7 +1263,7 @@ class QueryBuilder(object):
         """
         if not columns and self.distinct_:
             columns = self.columns
-        
+
         if not columns:
             columns = ['*']
 
@@ -1685,3 +1685,6 @@ class QueryBuilder(object):
                                  if k != '_connection'))
 
         return new
+
+    def __deepcopy__(self, memo):
+        return self.__copy__()
