@@ -1666,4 +1666,7 @@ class QueryBuilder(object):
 
         return new
 
+    def __deepcopy__(self, memo):
+        return self.__copy__()
+
 
