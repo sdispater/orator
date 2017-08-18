@@ -32,4 +32,4 @@ class Collection(BaseCollection):
 
         :rtype: list
         """
-        return map(lambda m: m.get_key(), self.items)
+        return list(map(lambda m: m.get_key(), self.items))
