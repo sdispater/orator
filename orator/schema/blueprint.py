@@ -558,7 +558,7 @@ class Blueprint(object):
         """
         return self._add_column('date', column)
 
-    def datetime(self, column):
+    def datetime(self, column, with_time_zone=False):
         """
         Create a new datetime column on the table.
 
@@ -567,9 +567,9 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('datetime', column)
+        return self._add_column('datetime', column, with_time_zone=with_time_zone)
 
-    def time(self, column):
+    def time(self, column, with_time_zone=False):
         """
         Create a new time column on the table.
 
@@ -578,9 +578,9 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('time', column)
+        return self._add_column('time', column, with_time_zone=with_time_zone)
 
-    def timestamp(self, column):
+    def timestamp(self, column, with_time_zone=False):
         """
         Create a new timestamp column on the table.
 
@@ -589,7 +589,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('timestamp', column)
+        return self._add_column('timestamp', column, with_time_zone=with_time_zone)
 
     def nullable_timestamps(self):
         """
@@ -600,26 +600,26 @@ class Blueprint(object):
         self.timestamp('created_at').nullable()
         self.timestamp('updated_at').nullable()
 
-    def timestamps(self, use_current=True):
+    def timestamps(self, use_current=True, with_time_zone=False):
         """
         Create creation and update timestamps to the table.
 
         :rtype: Fluent
         """
         if use_current:
-            self.timestamp('created_at').use_current()
-            self.timestamp('updated_at').use_current()
+            self.timestamp('created_at', with_time_zone=with_time_zone).use_current()
+            self.timestamp('updated_at', with_time_zone=with_time_zone).use_current()
         else:
-            self.timestamp('created_at')
-            self.timestamp('updated_at')
+            self.timestamp('created_at', with_time_zone=with_time_zone)
+            self.timestamp('updated_at', with_time_zone=with_time_zone)
 
-    def soft_deletes(self):
+    def soft_deletes(self, with_time_zone=False):
         """
         Add a "deleted at" timestamp to the table.
 
         :rtype: Fluent
         """
-        return self.timestamp('deleted_at').nullable()
+        return self.timestamp('deleted_at', with_time_zone=with_time_zone).nullable()
 
     def binary(self, column):
         """
