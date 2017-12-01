@@ -533,6 +533,9 @@ class SQLitePlatform(Platform):
         else:
             return 'VARCHAR(%s)' % length if length else 'TEXT'
 
+    def get_float_type_declaration_sql(self, column):
+        return 'REAL'
+
     def get_blob_type_declaration_sql(self, column):
         return 'BLOB'
 
