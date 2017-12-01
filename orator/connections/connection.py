@@ -353,7 +353,7 @@ class Connection(ConnectionInterface):
                   'SSL connection has been closed unexpectedly',
                   'Error writing data to the connection',
                   'Resource deadlock avoided',]:
-            if s in message:
+            if s.upper() in message.upper():
                 return True
 
         return False
