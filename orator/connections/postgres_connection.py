@@ -37,7 +37,8 @@ class PostgresConnection(Connection):
         return True
 
     def begin_transaction(self):
-        self._connection.autocommit = False
+        if self._connection.autocommit:
+            self._connection.autocommit = False
 
         super(PostgresConnection, self).begin_transaction()
 
