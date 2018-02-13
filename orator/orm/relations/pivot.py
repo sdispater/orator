@@ -38,6 +38,10 @@ class Pivot(Model):
 
         self.__timestamps__ = self.has_timestamps_attributes()
 
+    @classmethod
+    def boot_pivot(cls, klass):
+        pass
+
     def _set_keys_for_save_query(self, query):
         """
         Set the keys for a save update query.
