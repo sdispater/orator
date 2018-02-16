@@ -341,18 +341,18 @@ class Connection(ConnectionInterface):
         raise QueryException(query, bindings, e)
 
     def _caused_by_lost_connection(self, e):
-        message = str(e)
+        message = str(e).lower()
 
         for s in ['server has gone away',
                   'no connection to the server',
-                  'Lost Connection',
+                  'lost connection',
                   'is dead or not enabled',
-                  'Error while sending',
+                  'error while sending',
                   'decryption failed or bad record mac',
                   'server closed the connection unexpectedly',
-                  'SSL connection has been closed unexpectedly',
-                  'Error writing data to the connection',
-                  'Resource deadlock avoided',]:
+                  'ssl connection has been closed unexpectedly',
+                  'error writing data to the connection',
+                  'resource deadlock avoided',]:
             if s in message:
                 return True
 
