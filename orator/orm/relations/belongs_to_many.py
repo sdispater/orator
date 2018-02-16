@@ -17,11 +17,12 @@ class BelongsToMany(Relation):
     _other_key = None
     _foreign_key = None
     _relation_name = None
+    _table_model = None
 
     _pivot_columns = []
     _pivot_wheres = []
 
-    def __init__(self, query, parent, table, foreign_key, other_key, relation_name=None):
+    def __init__(self, query, parent, table, foreign_key, other_key, relation_name=None, table_model=None):
         """
         :param query: A Builder instance
         :type query: Builder
@@ -40,11 +41,15 @@ class BelongsToMany(Relation):
 
         :param relation_name: The relation name
         :type relation_name: str
+
+        :param table_model: The table Model instance (used for scopes)
+        :type table_model: Model
         """
         self._table = table
         self._other_key = other_key
         self._foreign_key = foreign_key
         self._relation_name = relation_name
+        self._table_model = table_model
 
         self._pivot_columns = []
         self._pivot_wheres = []
@@ -142,6 +147,13 @@ class BelongsToMany(Relation):
             columns = []
 
         select = self._get_select_columns(columns)
+
+
+        if self._table_model is not None:
+            # Apply the scopes from the table model if we have one
+            # example SoftDeletingScope where restriction
+            pivot_query = self._table_model.new_query().apply_scopes()
+            self.merge_query(pivot_query)
 
         models = self._query.add_select(*select).get_models()
 
