@@ -6,7 +6,7 @@ from .belongs_to_many import BelongsToMany
 class MorphToMany(BelongsToMany):
 
     def __init__(self, query, parent, name, table,
-                 foreign_key, other_key, relation_name=None, inverse=False):
+                 foreign_key, other_key, relation_name=None, inverse=False, table_model=None):
         """
         :param query: A Builder instance
         :type query: elquent.orm.Builder
@@ -27,6 +27,9 @@ class MorphToMany(BelongsToMany):
         :type relation_name: str
 
         :type inverse: bool
+
+        :param table_model: The table Model instance (used for scopes)
+        :type table_model: Model
         """
         self._name = name
         self._inverse = inverse
@@ -35,7 +38,7 @@ class MorphToMany(BelongsToMany):
 
         super(MorphToMany, self).__init__(
                 query, parent, table,
-                foreign_key, other_key, relation_name
+                foreign_key, other_key, relation_name, table_model
         )
 
     def _set_where(self):
@@ -113,7 +116,7 @@ class MorphToMany(BelongsToMany):
         return self._morph_name
 
     def _new_instance(self, model):
-        return MorphToMany(
+        relation =  MorphToMany(
             self.new_query(),
             model,
             self._name,
@@ -121,5 +124,10 @@ class MorphToMany(BelongsToMany):
             self._foreign_key,
             self._other_key,
             self._relation_name,
-            self._inverse
+            self._inverse,
+            self._table_model
         )
+
+        relation.with_pivot(*self._pivot_columns)
+
+        return relation
