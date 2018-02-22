@@ -116,7 +116,7 @@ class SoftDeletingScope(Scope):
         :param builder: The query builder
         :type builder: orator.orm.builder.Builder
         """
-        builder.remove_global_scope(self)
+        builder.without_global_scope(self)
 
         return builder
 
