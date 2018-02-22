@@ -824,6 +824,9 @@ class Model(object):
         if not hasattr(self, type_column):
             return MorphTo(self.new_query(), self, id_column, None, type_column, name)
 
+        if getattr(self, type_column) is None:
+            return MorphTo(self.new_query(), self, id_column, None, type_column, name)
+
         # If we are not eager loading the relationship we will essentially treat this
         # as a belongs-to style relationship since morph-to extends that class and
         # we will pass in the appropriate values so that it behaves as expected.
