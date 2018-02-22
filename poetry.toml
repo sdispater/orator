@@ -1,6 +1,6 @@
 [package]
 name = "orator"
-version = "0.9.11"
+version = "0.9.11.1"
 description = "The Orator ORM provides a simple yet beautiful ActiveRecord implementation."
 
 license = "MIT"
