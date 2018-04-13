@@ -1630,7 +1630,7 @@ class Model(object):
                 _relation = getattr(self, relation)
 
                 if _relation:
-                    _relation().touch()
+                    _relation.touch()
                     _relation.touch_owners()
 
     def touches(self, relation):
