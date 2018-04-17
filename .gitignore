@@ -36,4 +36,4 @@ profile.html
 benchmark.py
 results.json
 *.so
-/poetry.lock
+pyproject.lock
