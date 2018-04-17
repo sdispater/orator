@@ -9,6 +9,11 @@ env:
   - MYSQL_PACKAGE=pymysql
   - MYSQL_PACKAGE=mysqlclient
 
+cache:
+  pip: true
+  directories:
+    - $HOME/.cache/pypoetry
+
 services:
   - mysql
 
