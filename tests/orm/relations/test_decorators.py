@@ -120,17 +120,11 @@ class DecoratorsTestCase(OratorTestCase):
             'SELECT * FROM "test_photos" WHERE "test_photos"."imageable_id" = ? AND "test_photos"."imageable_type" = ?',
             post.photos().to_sql()
         )
-    
-        def test_has_many_returns_distinct(self):
-            self.create()
-
-            user = OratorTestUser.find(1).posts().order_by('user_id').distinct()
             
-            self.assertEqual(
-                'SELECT DISTINCT * FROM "test_posts" WHERE "deleted_at" IS NULL AND "test_posts"."user_id" = ? ORDER BY "user_id" ASC',
-                user.to_sql()
-            )
-
+        self.assertEqual(
+            'SELECT DISTINCT * FROM "test_posts" WHERE "deleted_at" IS NULL AND "test_posts"."user_id" = ? ORDER BY "user_id" ASC',
+            user.posts().order_by('user_id').distinct().to_sql()
+        )
 
     def create(self):
         user = OratorTestUser.create(id=1, email='john@doe.com')
