@@ -1617,6 +1617,7 @@ class QueryBuilder(object):
         self.groups += query.groups
         self.havings += query.havings
         self.orders += query.orders
+        self.distinct_ = query.distinct_
 
         if self.columns:
             self.columns = Collection(self.columns).unique().all()
