@@ -64,6 +64,10 @@ class ConnectionTestCase(OratorTestCase):
         cursor.should_receive('execute').and_raise(Exception('error'))
 
         connection.select('SELECT * FROM "users"')
+    
+    def test_lost_connection_returns_true_with_capitalized_error(self):
+        connection = Connection(None, 'database')
+        self.assertTrue(connection._caused_by_lost_connection('Lost Connection'))
 
     def test_prefix_set_to_none(self):
         connection = Connection(None, 'database', None)
