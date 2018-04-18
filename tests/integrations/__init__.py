@@ -398,7 +398,7 @@ class IntegrationTestCase(object):
         john = OratorTestUser.create(id=1, email='john@doe.com', created_at=yesterday, updated_at=yesterday)
         jane = OratorTestUser.create(id=2, email='jane@doe.com')
 
-        result = OratorTestUser.older_than(minutes=30).get()
+        result = OratorTestUser.older_than(minutes=30).get()       
         self.assertEqual(1, len(result))
         self.assertEqual('john@doe.com', result.first().email)
 

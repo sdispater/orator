@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from ..connections.sqlite_connection import SQLiteConnection
+import re
 import simplejson as json
 import pendulum
 import inflection
@@ -134,6 +136,8 @@ class Model(object):
             attributes.update(_attributes)
 
         self.fill(**attributes)
+        if not isinstance(Model.resolve_connection(),SQLiteConnection):
+            self._class_regexp = re.compile("_{}__.*?".format(self.__class__.__name__))
 
     def _boot_if_not_booted(self):
         """
@@ -170,6 +174,12 @@ class Model(object):
     def _boot_columns(cls):
         connection = cls.resolve_connection()
         columns = connection.get_schema_manager().list_table_columns(cls.__table__ or inflection.tableize(cls.__name__))
+        cls.__columns__ = list(columns.keys())
+
+    @classmethod
+    def _refresh_columns(cls):
+        connection = cls.__connection__
+        columns = connection.get_schema_manager().list_table_columns(cls.__table__)
         cls.__columns__ = list(columns.keys())
 
     @classmethod
@@ -1542,6 +1552,37 @@ class Model(object):
         if options.get('touch', True):
             self.touch_owners()
 
+    @property
+    def _schema_attributes(self):
+        # This behavior is currently not supported for SQLiteConnections.
+        if isinstance(Model.resolve_connection(),SQLiteConnection):            
+            return self._attributes
+
+        orm_keys = ()
+        klass = self.__class__
+        if len(klass.__columns__) == 0 or klass.__connection__ is None:            
+            klass._boot_columns()
+        orm_keys = self.__columns__[:]  # Operate on a copy of the column names.
+
+        # Examine the __dict__ to locate any additional properties that were defined using the @property decorator.
+        property_names = [self._class_regexp.split(v,1)[1] for v in self._attributes.keys() if (
+            self._class_regexp.match(v))]
+        property_names = set(orm_keys).intersection(set(property_names))
+        orm_property_names = tuple(property_names.intersection(orm_keys))
+        
+        # Intersect the instance attributes with known table columns.
+        attribute_keys = set(self._attributes.keys()) # Operate on a copy of the attribute keys.
+        orm_attribute_keys = tuple(attribute_keys.intersection(orm_keys))
+        
+        # Compile a dictionary of attributes.
+        attributes = dict((key, self._attributes.get(key,None)) for key in orm_attribute_keys)
+        properties = dict((key,getattr(self,key)) for key in orm_property_names)
+
+        # Update attributes to include properties.
+        attributes.update(properties)
+
+        return attributes
+
     def _perform_update(self, query, options=None):
         """
         Perform a model update operation.
@@ -1592,7 +1633,7 @@ class Model(object):
         if self.__timestamps__ and options.get('timestamps', True):
             self._update_timestamps()
 
-        attributes = self._attributes
+        attributes = self._schema_attributes
 
         if self.__incrementing__:
             self._insert_and_set_id(query, attributes)
@@ -2691,7 +2732,8 @@ class Model(object):
         """
         dirty = {}
 
-        for key, value in self._attributes.items():
+        attributes = self._schema_attributes
+        for key, value in attributes.items():
             if key not in self._original:
                 dirty[key] = value
             elif value != self._original[key]:
