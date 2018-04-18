@@ -122,14 +122,14 @@ class DecoratorsTestCase(OratorTestCase):
         )
     
         def test_has_many_returns_distinct(self):
-        self.create()
+            self.create()
 
-        user = OratorTestUser.find(1).posts().order_by('user_id').distinct()
-        
-        self.assertEqual(
-            'SELECT DISTINCT * FROM "test_posts" WHERE "deleted_at" IS NULL AND "test_posts"."user_id" = ? ORDER BY "user_id" ASC',
-            user.to_sql()
-        )
+            user = OratorTestUser.find(1).posts().order_by('user_id').distinct()
+            
+            self.assertEqual(
+                'SELECT DISTINCT * FROM "test_posts" WHERE "deleted_at" IS NULL AND "test_posts"."user_id" = ? ORDER BY "user_id" ASC',
+                user.to_sql()
+            )
 
 
     def create(self):
