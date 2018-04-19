@@ -409,6 +409,16 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
+        blueprint = Blueprint('users')
+        blueprint.datetime('foo', with_time_zone=True).with_time_zone()
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE "users" ADD COLUMN "foo" TIMESTAMP(0) WITH TIME ZONE NOT NULL',
+            statements[0]
+        )
+
     def test_adding_time(self):
         blueprint = Blueprint('users')
         blueprint.time('foo')
@@ -417,6 +427,16 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(
             'ALTER TABLE "users" ADD COLUMN "foo" TIME(0) WITHOUT TIME ZONE NOT NULL',
+            statements[0]
+        )
+
+        blueprint = Blueprint('users')
+        blueprint.time('foo', with_time_zone=True)
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE "users" ADD COLUMN "foo" TIME(0) WITH TIME ZONE NOT NULL',
             statements[0]
         )
 
@@ -431,6 +451,16 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
+        blueprint = Blueprint('users')
+        blueprint.timestamp('foo', with_time_zone=True)
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE "users" ADD COLUMN "foo" TIMESTAMP(0) WITH TIME ZONE NOT NULL',
+            statements[0]
+        )
+
     def test_adding_timestamp_with_current(self):
         blueprint = Blueprint('users')
         blueprint.timestamp('foo').use_current()
@@ -439,6 +469,17 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(
             'ALTER TABLE "users" ADD COLUMN "foo" TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP(0) NOT NULL',
+            statements[0]
+        )
+
+        blueprint = Blueprint('users')
+        blueprint.timestamp('foo', with_time_zone=True).use_current()
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE "users" ADD COLUMN "foo" TIMESTAMP(0) WITH TIME ZONE '
+            'DEFAULT CURRENT_TIMESTAMP(0) NOT NULL',
             statements[0]
         )
 
@@ -457,6 +498,21 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
             statements[0]
         )
 
+        blueprint = Blueprint('users')
+        blueprint.timestamps(with_time_zone=True)
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        expected = [
+            'ALTER TABLE "users" ADD COLUMN "created_at" TIMESTAMP(0) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0) NOT NULL, '
+            'ADD COLUMN "updated_at" TIMESTAMP(0) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0) NOT NULL'
+        ]
+
+        self.assertEqual(
+            expected[0],
+            statements[0]
+        )
+
     def test_adding_timestamps_not_current(self):
         blueprint = Blueprint('users')
         blueprint.timestamps(use_current=False)
@@ -466,6 +522,20 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
         expected = [
             'ALTER TABLE "users" ADD COLUMN "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, '
             'ADD COLUMN "updated_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL'
+        ]
+        self.assertEqual(
+            expected[0],
+            statements[0]
+        )
+
+        blueprint = Blueprint('users')
+        blueprint.timestamps(use_current=False, with_time_zone=True)
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        expected = [
+            'ALTER TABLE "users" ADD COLUMN "created_at" TIMESTAMP(0) WITH TIME ZONE NOT NULL, '
+            'ADD COLUMN "updated_at" TIMESTAMP(0) WITH TIME ZONE NOT NULL'
         ]
         self.assertEqual(
             expected[0],
