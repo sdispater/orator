@@ -549,6 +549,7 @@ class Connection(ConnectionInterface):
         return self
 
     def __enter__(self):
+        self._reconnect_if_missing_connection()
         self.begin_transaction()
 
         return self
