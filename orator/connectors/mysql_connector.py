@@ -35,6 +35,7 @@ from ..dbal.platforms import MySQLPlatform, MySQL57Platform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
 from ..utils.helpers import serialize
+import sqlalchemy.pool as pool
 
 
 class Record(dict):
@@ -113,7 +114,7 @@ class MySQLConnector(Connector):
         return BaseDictCursor
 
     def get_api(self):
-        return mysql
+        return pool.manage(mysql, use_threadlocal=True)
 
     def get_server_version(self):
         version = self._connection.get_server_info()
