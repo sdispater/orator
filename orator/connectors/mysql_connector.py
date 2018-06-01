@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from pendulum import Pendulum
+from pendulum import Pendulum, Date
 
 try:
     import MySQLdb as mysql
@@ -9,6 +9,7 @@ try:
     # Fix for understanding Pendulum object
     import MySQLdb.converters
     MySQLdb.converters.conversions[Pendulum] = MySQLdb.converters.DateTime2literal
+    MySQLdb.converters.conversions[Date] = MySQLdb.converters.Thing2Literal
 
     from MySQLdb.cursors import DictCursor as cursor_class
     keys_fix = {
@@ -21,7 +22,8 @@ except ImportError as e:
 
         # Fix for understanding Pendulum object
         import pymysql.converters
-        pymysql.converters.converters[Pendulum] = pymysql.converters.escape_datetime
+        pymysql.converters.conversions[Pendulum] = pymysql.converters.escape_datetime
+        pymysql.converters.conversions[Date] = pymysql.converters.escape_date
 
         from pymysql.cursors import DictCursor as cursor_class
         keys_fix = {}
@@ -32,6 +34,7 @@ except ImportError as e:
 from ..dbal.platforms import MySQLPlatform, MySQL57Platform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
+from ..utils.helpers import serialize
 
 
 class Record(dict):
@@ -42,15 +45,23 @@ class Record(dict):
         except KeyError:
             raise AttributeError(item)
 
+    def serialize(self):
+        return serialize(self)
+
 
 class BaseDictCursor(cursor_class):
 
     def _fetch_row(self, size=1):
+        # Overridden for mysqclient
         if not self._result:
             return ()
         rows = self._result.fetch_row(size, self._fetch_type)
 
         return tuple(Record(r) for r in rows)
+    
+    def _conv_row(self, row):
+        # Overridden for pymysql
+        return Record(super(BaseDictCursor, self)._conv_row(row))
 
 
 class DictCursor(BaseDictCursor):

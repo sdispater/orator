@@ -232,15 +232,19 @@ class Builder(object):
         :return: The current chunk
         :rtype: list
         """
-        page = 1
-        results = self.for_page(page, count).get()
+        connection = self._model.get_connection_name()
+        for results in self.apply_scopes().get_query().chunk(count):
+            models = self._model.hydrate(results, connection)
 
-        while not results.is_empty():
-            yield results
+            # If we actually found models we will also eager load any relationships that
+            # have been specified as needing to be eager loaded, which will solve the
+            # n+1 query issue for the developers to avoid running a lot of queries.
+            if len(models) > 0:
+                models = self.eager_load_relations(models)
 
-            page += 1
+            collection = self._model.new_collection(models)
 
-            results = self.for_page(page, count).get()
+            yield collection
 
     def lists(self, column, key=None):
         """
@@ -398,7 +402,8 @@ class Builder(object):
 
         column = self._model.get_updated_at_column()
 
-        values.update({column: self._model.fresh_timestamp()})
+        if 'updated_at' not in values:
+            values.update({column: self._model.fresh_timestamp_string()})
 
         return values
 

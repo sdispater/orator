@@ -50,25 +50,21 @@ class Command(BaseCommand):
 
         return super(Command, self).call_silent(name, options)
 
-    def confirm(self, question, default=False, true_answer_regex='(?i)^y'):
-        """
-        Confirm a question with the user.
+    def confirm_to_proceed(self, message=None):
+        if message is None:
+            message = 'Do you really wish to run this command?: '
 
-        :param question: The question to ask
-        :type question: str
-
-        :param default: The default value
-        :type default: bool
-
-        :param true_answer_regex: A regex to match the "yes" answer
-        :type true_answer_regex: str
-
-        :rtype: bool
-        """
-        if not self.input.is_interactive():
+        if self.option('force'):
             return True
 
-        return super(Command, self).confirm(question, default=False, true_answer_regex='(?i)^y')
+        confirmed = self.confirm(message)
+
+        if not confirmed:
+            self.comment('Command Cancelled!')
+
+            return False
+
+        return True
 
     def _get_migration_path(self):
         return os.path.join(os.getcwd(), 'migrations')

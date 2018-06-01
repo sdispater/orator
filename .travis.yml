@@ -1,26 +1,33 @@
 language: python
 
-# Once mysql 5.6 is available on the container infra, this can be removed.
-sudo: required
-dist: trusty
-
 python:
   - "2.7"
   - "3.5"
+  - "3.6"
+
+env:
+  - MYSQL_PACKAGE=pymysql
+  - MYSQL_PACKAGE=mysqlclient
+
+cache:
+  pip: true
+  directories:
+    - $HOME/.cache/pypoetry
+
+services:
+  - mysql
 
 addons:
-  postgresql: '9.4'
-
-before_install:
-  # Manually install mysql 5.6 since the default is v5.5.
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq mysql-server-5.6 mysql-client-5.6 mysql-client-core-5.6
+  postgresql: '9.6'
 
 install:
-  - pip install -r tests-requirements.txt -U
+  - curl -fsS -o get-poetry.py https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py
+  - python get-poetry.py --preview
+  - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then poetry install --extras mysql-python --extras pgsql; fi
+  - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then poetry install --extras mysql --extras pgsql; fi
 
-script: py.test tests/
+script: pytest tests/
 
 before_script:
   - psql -c 'create database orator_test;' -U postgres
-  - mysql -u root -e 'create database orator_test;'
+  - mysql -e 'create database orator_test;'

@@ -15,14 +15,13 @@ class MigrateCommand(BaseCommand):
         {--seed-path= : The path of seeds files to be executed.
                         Defaults to <comment>./seeders</comment>.}
         {--P|pretend : Dump the SQL queries that would be run.}
+        {--f|force : Force the operation to run.}
     """
 
     def handle(self):
-        confirm = self.confirm(
-            '<question>Are you sure you want to proceed with the migration?</question> ',
-            False
-        )
-        if not confirm:
+        if not self.confirm_to_proceed(
+            '<question>Are you sure you want to proceed with the migration?</question> '
+        ):
             return
 
         database = self.option('database')
@@ -48,7 +47,7 @@ class MigrateCommand(BaseCommand):
         # to repopulate the database.
         if self.option('seed'):
             options = [
-                ('-n', True)
+                ('--force', self.option('force'))
             ]
 
             if database:

@@ -1,6 +1,0 @@
-include README.rst LICENSE requirements.txt test-requirements.txt
-recursive-exclude tests *
-recursive-exclude benchmark *
-recursive-exclude seeders *
-recursive-exclude seeds *
-recursive-exclude migrations *

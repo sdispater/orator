@@ -43,13 +43,18 @@ class PostgresSchemaGrammar(SchemaGrammar):
 
         :rtype: str
         """
-        return 'SELECT * FROM information_schema.tables WHERE table_name = %(marker)s' % {'marker': self.get_marker()}
+        return 'SELECT * ' \
+               'FROM information_schema.tables ' \
+               'WHERE table_name = %(marker)s' \
+               % {'marker': self.get_marker()}
 
     def compile_column_exists(self, table):
         """
         Compile the query to determine the list of columns.
         """
-        return 'SELECT column_name FROM information_schema.columns WHERE table_name = %s' % table
+        return 'SELECT column_name ' \
+               'FROM information_schema.columns ' \
+               'WHERE table_name = \'%s\'' % table
 
     def compile_create(self, blueprint, command, _):
         """
@@ -178,16 +183,16 @@ class PostgresSchemaGrammar(SchemaGrammar):
         return 'DATE'
 
     def _type_datetime(self, column):
-        return 'TIMESTAMP(0) WITHOUT TIME ZONE'
+        return 'TIMESTAMP(6) WITHOUT TIME ZONE'
 
     def _type_time(self, column):
-        return 'TIME(0) WITHOUT TIME ZONE'
+        return 'TIME(6) WITHOUT TIME ZONE'
 
     def _type_timestamp(self, column):
         if column.use_current:
-            return 'TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP(0)'
+            return 'TIMESTAMP(6) WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP(6)'
 
-        return 'TIMESTAMP(0) WITHOUT TIME ZONE'
+        return 'TIMESTAMP(6) WITHOUT TIME ZONE'
 
     def _type_binary(self, column):
         return 'BYTEA'

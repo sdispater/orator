@@ -62,4 +62,6 @@ test:
 
 # run tests against all supported python versions
 tox:
+	@poet make:setup
 	@tox
+	@rm -f setup.py

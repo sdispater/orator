@@ -18,17 +18,16 @@ class SeedCommand(BaseCommand):
         {--p|path= : The path to seeders files.
                      Defaults to <comment>./seeds</comment>.}
         {--seeder=database_seeder : The name of the root seeder.}
+        {--f|force : Force the operation to run.}
     """
 
     def handle(self):
         """
         Executes the command.
         """
-        confirm = self.confirm(
-            '<question>Are you sure you want to seed the database?</question> ',
-            False
-        )
-        if not confirm:
+        if not self.confirm_to_proceed(
+            '<question>Are you sure you want to seed the database?:</question> '
+        ):
             return
 
         self.resolver.set_default_connection(self.option('database'))

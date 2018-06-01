@@ -2,8 +2,11 @@
 
 import re
 import copy
+import datetime
+
 from itertools import chain
 from collections import OrderedDict
+
 from .expression import QueryExpression
 from .join_clause import JoinClause
 from ..pagination import Paginator, LengthAwarePaginator
@@ -352,6 +355,15 @@ class QueryBuilder(object):
 
         if isinstance(column, QueryBuilder):
             return self.where_nested(column, boolean)
+
+        if isinstance(column, list):
+            nested = self.new_query()
+            for condition in column:
+                if isinstance(condition, list) and len(condition) == 3:
+                    nested.where(condition[0], condition[1], condition[2])
+                else:
+                    raise ArgumentError('Invalid conditions in where() clause')
+            return self.where_nested(nested, boolean)
 
         if value is None:
             if not isinstance(operator, Null):
@@ -1148,15 +1160,13 @@ class QueryBuilder(object):
         :return: The current chunk
         :rtype: list
         """
-        page = 1
-        results = self.for_page(page, count).get()
-
-        while not results.is_empty():
-            yield results
-
-            page += 1
-
-            results = self.for_page(page, count).get()
+        for chunk in self._connection.select_many(
+            count,
+            self.to_sql(),
+            self.get_bindings(),
+            not self._use_write_connection
+        ):
+            yield chunk
 
     def lists(self, column, key=None):
         """
@@ -1251,6 +1261,9 @@ class QueryBuilder(object):
         :return: The count
         :rtype: int
         """
+        if not columns and self.distinct_:
+            columns = self.columns
+        
         if not columns:
             columns = ['*']
 
@@ -1551,7 +1564,14 @@ class QueryBuilder(object):
         return self._connection.raw(value)
 
     def get_bindings(self):
-        return list(chain(*self._bindings.values()))
+        bindings = []
+        for value in chain(*self._bindings.values()):
+            if isinstance(value, datetime.date):
+                value = value.strftime(self._grammar.get_date_format())
+
+            bindings.append(value)
+
+        return bindings
 
     def get_raw_bindings(self):
         return self._bindings
@@ -1597,6 +1617,7 @@ class QueryBuilder(object):
         self.groups += query.groups
         self.havings += query.havings
         self.orders += query.orders
+        self.distinct_ = query.distinct_
 
         if self.columns:
             self.columns = Collection(self.columns).unique().all()
@@ -1665,5 +1686,3 @@ class QueryBuilder(object):
                                  if k != '_connection'))
 
         return new
-
-

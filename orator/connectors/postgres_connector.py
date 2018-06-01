@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import re
-
 try:
     import psycopg2
     import psycopg2.extras
@@ -20,6 +18,7 @@ except ImportError:
 from ..dbal.platforms import PostgresPlatform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
+from ..utils.helpers import serialize
 
 
 class BaseDictConnection(connection_class):
@@ -68,6 +67,13 @@ class DictRow(row_class):
         except KeyError:
             raise AttributeError(item)
 
+    def serialize(self):
+        serialized = {}
+        for column, index in self._index.items():
+            serialized[column] = list.__getitem__(self, index)
+
+        return serialize(serialized)
+
 
 class PostgresConnector(Connector):
 
@@ -100,6 +106,14 @@ class PostgresConnector(Connector):
 
     def get_api(self):
         return psycopg2
+
+    @property
+    def autocommit(self):
+        return self._connection.autocommit
+
+    @autocommit.setter
+    def autocommit(self, value):
+        self._connection.autocommit = value
 
     def get_dbal_platform(self):
         return PostgresPlatform()

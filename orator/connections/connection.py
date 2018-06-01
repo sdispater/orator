@@ -68,6 +68,9 @@ class Connection(ConnectionInterface):
 
         self._database = database
 
+        if table_prefix is None:
+            table_prefix = ''
+
         self._table_prefix = table_prefix
 
         if config is None:
@@ -90,6 +93,11 @@ class Connection(ConnectionInterface):
 
         self._logging_queries = config.get('log_queries', False)
         self._logged_queries = []
+
+        # Setting the marker based on config
+        self._marker = None
+        if self._config.get('use_qmark'):
+            self._marker = '?'
 
         self._query_grammar = self.get_default_query_grammar()
 
@@ -191,6 +199,30 @@ class Connection(ConnectionInterface):
         cursor.execute(query, bindings)
 
         return cursor.fetchall()
+
+    def select_many(self, size, query, bindings=None, use_read_connection=True, abort=False):
+        if self.pretending():
+            yield []
+        else:
+            bindings = self.prepare_bindings(bindings)
+            cursor = self._get_cursor_for_select(use_read_connection)
+
+            try:
+                cursor.execute(query, bindings)
+            except Exception as e:
+                if self._caused_by_lost_connection(e) and not abort:
+                    self.reconnect()
+
+                    for results in self.select_many(size, query, bindings, use_read_connection, True):
+                        yield results
+                else:
+                    raise
+            else:
+                results = cursor.fetchmany(size)
+                while results:
+                    yield results
+
+                    results = cursor.fetchmany(size)
 
     def _get_cursor_for_select(self, use_read_connection=True):
         if use_read_connection:
@@ -309,11 +341,18 @@ class Connection(ConnectionInterface):
         raise QueryException(query, bindings, e)
 
     def _caused_by_lost_connection(self, e):
-        message = str(e)
+        message = str(e).lower()
 
         for s in ['server has gone away',
                   'no connection to the server',
-                  'Lost Connection']:
+                  'lost connection',
+                  'is dead or not enabled',
+                  'error while sending',
+                  'decryption failed or bad record mac',
+                  'server closed the connection unexpectedly',
+                  'ssl connection has been closed unexpectedly',
+                  'error writing data to the connection',
+                  'resource deadlock avoided',]:
             if s in message:
                 return True
 
@@ -481,6 +520,9 @@ class Connection(ConnectionInterface):
 
     def get_params(self):
         return self._connection.get_params()
+
+    def get_marker(self):
+        return self._marker
 
     def set_builder_class(self, klass, default_kwargs=None):
         self._builder_class = klass

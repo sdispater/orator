@@ -1,5 +1,82 @@
 # Change Log
 
+## [0.9.7] - 2017-05-17
+
+### Fixed
+
+- Fixed `orator` command no longer working
+
+
+## [0.9.6] - 2017-05-16
+
+### Added
+
+- Added support for `DATE` types in models.
+- Added support for fractional seconds for the `TIMESTAMP` type in MySQL 5.6.4+.
+- Added support for fractional seconds for the `TIMESTAMP` and `TIME` types in PostreSQL.
+
+### Changed
+
+- Improved implementation of the `chunk` method.
+
+### Fixed
+
+- Fixed timezone offset errors when inserting datetime aware objects into PostgreSQL.
+- Fixed a bug occurring when using `__touches__` with an optional relationship.
+- Fixed collections serialization when using the query builder
+
+
+## [0.9.5] - 2017-02-11
+
+### Changed
+
+- `make:migration` now shows the name of the created migration file. (Thanks to [denislins](https://github.com/denislins))
+
+### Fixed
+
+- Fixed transactions not working for PostgreSQL and SQLite.
+
+
+## [0.9.4] - 2017-01-12
+
+### Fixed
+
+- Fixes `BelongsTo.associate()` for non saved models.
+- Fixes reconnection for PostgreSQL.
+- Fixes dependencies (changed `fake-factory` to `Faker`) (thanks to [acristoffers](https://github.com/acristoffers))
+
+
+## [0.9.3] - 2016-11-10
+
+### Fixed
+
+- Fixes `compile_table_exists()` method in PostgreSQL schema grammar that could break migrations.
+
+
+## [0.9.2] - 2016-10-17
+
+### Changed
+
+- Adds ability to specify multiple conditions in a single `where()` (thanks to [mathankumart](https://github.com/mathankumart)).
+
+### Fixed
+
+- Fixes an error when table prefix is set to `None`.
+- Fixes column listing.
+
+
+## [0.9.1] - 2016-09-29
+
+### Changed
+
+- Improves migrate command output when pretending.
+
+### Fixed
+
+- Fixes errors when using PyMySQL.
+- Fixes `use_qmark` information not being passed to schema grammars.
+
+
 ## [0.9.0] - 2016-09-15
 
 ### Changed
@@ -336,7 +413,14 @@
 Initial release
 
 
-
+[Unreleased]: https://github.com/sdispater/orator/compare/0.9.7...0.9
+[0.9.7]: https://github.com/sdispater/orator/releases/0.9.7
+[0.9.6]: https://github.com/sdispater/orator/releases/0.9.6
+[0.9.5]: https://github.com/sdispater/orator/releases/0.9.5
+[0.9.4]: https://github.com/sdispater/orator/releases/0.9.4
+[0.9.3]: https://github.com/sdispater/orator/releases/0.9.3
+[0.9.2]: https://github.com/sdispater/orator/releases/0.9.2
+[0.9.1]: https://github.com/sdispater/orator/releases/0.9.1
 [0.9.0]: https://github.com/sdispater/orator/releases/0.9.0
 [0.8.2]: https://github.com/sdispater/orator/releases/tag/0.8.2
 [0.8.1]: https://github.com/sdispater/orator/releases/tag/0.8.1

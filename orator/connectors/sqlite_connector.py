@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pendulum import Pendulum
+from pendulum import Pendulum, Date
 
 try:
     import sqlite3
@@ -8,14 +8,16 @@ try:
     from sqlite3 import register_adapter
 
     register_adapter(Pendulum, lambda val: val.isoformat(' '))
+    register_adapter(Date, lambda val: val.isoformat())
 except ImportError:
     sqlite3 = None
 
 from ..dbal.platforms import SQLitePlatform
+from ..utils.helpers import serialize
 from .connector import Connector
 
 
-class DictCursor(object):
+class DictCursor(dict):
 
     def __init__(self, cursor, row):
         self.dict = {}
@@ -23,6 +25,8 @@ class DictCursor(object):
 
         for idx, col in enumerate(cursor.description):
             self.dict[col[0]] = row[idx]
+            
+        super(DictCursor, self).__init__(self.dict)
 
     def __getattr__(self, item):
         try:
@@ -30,17 +34,8 @@ class DictCursor(object):
         except KeyError:
             return getattr(self.cursor, item)
 
-    def __getitem__(self, item):
-        return self.dict[item]
-
-    def keys(self):
-        return self.dict.keys()
-
-    def values(self):
-        return self.dict.values()
-
-    def items(self):
-        return self.dict.items()
+    def serialize(self):
+        return serialize(self)
 
 
 class SQLiteConnector(Connector):
@@ -63,6 +58,14 @@ class SQLiteConnector(Connector):
 
     def get_api(self):
         return sqlite3
+
+    @property
+    def isolation_level(self):
+        return self._connection.isolation_level
+
+    @isolation_level.setter
+    def isolation_level(self, value):
+        self._connection.isolation_level = value
 
     def get_dbal_platform(self):
         return SQLitePlatform()

@@ -7,6 +7,7 @@ from .. import mock
 
 from ..utils import MockConnection, MockProcessor
 
+from orator.exceptions import ArgumentError
 from orator.query.grammars import (
     QueryGrammar,
     PostgresQueryGrammar,
@@ -683,6 +684,30 @@ class QueryBuilderTestCase(OratorTestCase):
         )
         self.assertEqual([1, 'foo'], builder.get_bindings())
 
+    def test_multiple_wheres_in_list(self):
+        builder = self.get_builder()
+        builder.select('*').from_('users').where([['name', '=', 'bar'], ['age', '=', 25]])
+        self.assertEqual(
+            'SELECT * FROM "users" WHERE ("name" = ? AND "age" = ?)',
+            builder.to_sql()
+        )
+        self.assertEqual(['bar', 25], builder.get_bindings())
+
+    def test_multiple_wheres_in_list_with_exception(self):
+        builder = self.get_builder()
+        try:
+            builder.select('*').from_('users').where([['name', 'bar'], ['age', '=', 25]])
+            self.fail('Builder has not raised Argument Error for invalid no. of values in where list')
+        except ArgumentError:
+            self.assertTrue(True)
+
+        try:
+            builder.select('*').from_('users').where(['name', 'bar'])
+            self.fail('Builder has not raised Argument Error for invalid datatype in where list')
+        except ArgumentError:
+            self.assertTrue(True)
+
+
     def test_nested_wheres(self):
         builder = self.get_builder()
         builder.select('*').from_('users').where('email', '=', 'foo').or_where(
@@ -1049,6 +1074,32 @@ class QueryBuilderTestCase(OratorTestCase):
         builder.get_processor().process_select.assert_called_once_with(builder, results)
         self.assertEqual(1, result)
 
+    def test_distinct_count_with_column(self):
+        builder = self.get_builder()
+        query = 'SELECT COUNT(DISTINCT "id") AS aggregate FROM "users"'
+        results = [{'aggregate': 1}]
+        builder.get_connection().select.return_value = results
+        builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results)
+        result = builder.from_('users').distinct().count('id')
+        builder.get_connection().select.assert_called_once_with(
+            query, [], True
+        )
+        builder.get_processor().process_select.assert_called_once_with(builder, results)
+        self.assertEqual(1, result)
+
+    def test_distinct_count_with_select(self):
+        builder = self.get_builder()
+        query = 'SELECT COUNT(DISTINCT "id") AS aggregate FROM "users"'
+        results = [{'aggregate': 1}]
+        builder.get_connection().select.return_value = results
+        builder.get_processor().process_select = mock.MagicMock(side_effect=lambda builder_, results_: results)
+        result = builder.from_('users').distinct().select('id').count()
+        builder.get_connection().select.assert_called_once_with(
+            query, [], True
+        )
+        builder.get_processor().process_select.assert_called_once_with(builder, results)
+        self.assertEqual(1, result)
+
     def test_aggregate_reset_followed_by_get(self):
         builder = self.get_builder()
         query = 'SELECT COUNT(*) AS aggregate FROM "users"'
@@ -1210,7 +1261,7 @@ class QueryBuilderTestCase(OratorTestCase):
             query, ['foo', 'bar', 1]
         )
         self.assertEqual(1, result)
-        
+
         builder = self.get_mysql_builder()
         marker = builder.get_grammar().get_marker()
         query = 'UPDATE `users` SET `email` = %s, `name` = %s WHERE `id` = %s' % (marker, marker, marker)

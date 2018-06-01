@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from ..utils import decode
 from ..utils import PY2
 from .connection import Connection
 from ..query.grammars.mysql_grammar import MySQLQueryGrammar
@@ -14,11 +15,7 @@ class MySQLConnection(Connection):
     name = 'mysql'
 
     def get_default_query_grammar(self):
-        marker = None
-        if self._config.get('use_qmark'):
-            marker = '?'
-
-        return MySQLQueryGrammar(marker=marker)
+        return MySQLQueryGrammar(marker=self._marker)
 
     def get_default_post_processor(self):
         return MySQLQueryProcessor()
@@ -66,6 +63,6 @@ class MySQLConnection(Connection):
             return super(MySQLConnection, self)._get_cursor_query(query, bindings)
 
         if PY2:
-            return self._cursor._last_executed.decode()
+            return decode(self._cursor._last_executed)
 
         return self._cursor._last_executed

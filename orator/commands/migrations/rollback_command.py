@@ -12,17 +12,16 @@ class RollbackCommand(BaseCommand):
         {--d|database= : The database connection to use.}
         {--p|path= : The path of migrations files to be executed.}
         {--P|pretend : Dump the SQL queries that would be run.}
+        {--f|force : Force the operation to run.}
     """
 
     def handle(self):
         """
         Executes the command.
         """
-        confirm = self.confirm(
-            '<question>Are you sure you want to rollback the last migration?</question> ',
-            True
-        )
-        if not confirm:
+        if not self.confirm_to_proceed(
+            '<question>Are you sure you want to rollback the last migration?:</question> '
+        ):
             return
 
         database = self.option('database')

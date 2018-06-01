@@ -5,6 +5,7 @@ import pendulum
 import inflection
 import inspect
 import uuid
+import datetime
 from warnings import warn
 from six import add_metaclass
 from collections import OrderedDict
@@ -1132,7 +1133,7 @@ class Model(object):
 
         return rel
 
-    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None, relation=None):
+    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None, relation=None, _wrapped=False):
         """
         Define a polymorphic many-to-many relationship.
 
@@ -1162,7 +1163,7 @@ class Model(object):
         if not other_key:
             other_key = name + '_id'
 
-        return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation)
+        return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation, _wrapped)
 
     def _get_related(self, related, as_instance=False):
         """
@@ -1627,9 +1628,9 @@ class Model(object):
         for relation in self.__touches__:
             if hasattr(self, relation):
                 _relation = getattr(self, relation)
-                _relation().touch()
 
-                if _relation is not None:
+                if _relation:
+                    _relation.touch()
                     _relation.touch_owners()
 
     def touches(self, relation):
@@ -1762,6 +1763,14 @@ class Model(object):
         :return: pendulum.Pendulum
         """
         return pendulum.utcnow()
+
+    def fresh_timestamp_string(self):
+        """
+        Get a fresh timestamp string for the model.
+
+        :return: str
+        """
+        return self.from_datetime(self.fresh_timestamp())
 
     def new_query(self):
         """
@@ -2465,26 +2474,39 @@ class Model(object):
 
     def from_datetime(self, value):
         """
-        Convert datetime to a datetime object
+        Convert datetime to a storable string.
+        
+        :param value: The datetime value
+        :type value: pendulum.Pendulum or datetime.date or datetime.datetime
 
-        :rtype: datetime.datetime
+        :rtype: str
         """
-        if isinstance(value, pendulum.Pendulum):
-            return value
+        date_format = self.get_connection().get_query_grammar().get_date_format()
 
-        return pendulum.instance(value)
+        if isinstance(value, pendulum.Pendulum):
+            return value.format(date_format)
+
+        if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
+            value = pendulum.date.instance(value)
+
+            return value.format(date_format)
+
+        return pendulum.instance(value).format(date_format)
 
     def as_datetime(self, value):
         """
         Return a timestamp as a datetime.
 
-        :rtype: pendulum.Pendulum
+        :rtype: pendulum.Pendulum or pendulum.Date
         """
         if isinstance(value, basestring):
             return pendulum.parse(value)
 
         if isinstance(value, (int, float)):
             return pendulum.from_timestamp(value)
+
+        if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
+            return pendulum.date.instance(value)
 
         return pendulum.instance(value)
 
