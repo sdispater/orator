@@ -171,7 +171,7 @@ class HasOneOrMany(Relation):
 
         :rtype: list
         """
-        return map(self.save, models)
+        return list(map(self.save, models))
 
     def find_or_new(self, id, columns=None):
         """
