@@ -148,6 +148,21 @@ class OrmHasManyTestCase(OratorTestCase):
 
         relation.add_eager_constraints([model1, model2])
 
+    def test_save_many_returns_list_of_models(self):
+        relation = self._get_relation()
+
+        model1 = flexmock()
+        model1.foo = 'foo'
+        model1.should_receive('save').once().and_return(True)
+        model1.should_receive('set_attribute').once().with_args('foreign_key', 1)
+
+        model2 = flexmock()
+        model2.foo = 'bar'
+        model2.should_receive('save').once().and_return(True)
+        model2.should_receive('set_attribute').once().with_args('foreign_key', 1)
+
+        self.assertEqual([model1, model2], relation.save_many([model1, model2]))
+
     def test_models_are_properly_matched_to_parents(self):
         relation = self._get_relation()
 
