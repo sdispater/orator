@@ -369,6 +369,7 @@ class Connection(ConnectionInterface):
             "server closed the connection unexpectedly",
             "ssl connection has been closed unexpectedly",
             "error writing data to the connection",
+            "connection timed out",
             "resource deadlock avoided",
         ]:
             if s in message:
