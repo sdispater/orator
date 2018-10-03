@@ -193,6 +193,12 @@ class SchemaGrammar(Grammar):
         if isinstance(value, bool):
             return "'%s'" % int(value)
 
+        ###
+        # Need better way to do this but for now this will do.
+        ###
+        if value == 'gen_random_uuid()':
+            return value
+
         return "'%s'" % value
 
     def _get_table_diff(self, blueprint, schema):
