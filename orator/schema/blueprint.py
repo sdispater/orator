@@ -323,6 +323,17 @@ class Blueprint(object):
         """
         return self._add_column('string', column, length=length)
 
+    def uuid(self, column, length=255):
+        """
+        Create a new uuid column on the table.
+
+        :param column: The column
+        :type column: uuid
+
+        :rtype: Fluent
+        """
+        return self._add_column('uuid', column, length=length)
+
     def text(self, column):
         """
         Create a new text column on the table.
