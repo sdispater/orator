@@ -60,4 +60,4 @@ class MySQLQueryProcessor(QueryProcessor):
         :return: The processed results
         :return: list
         """
-        return list(map(lambda x: x['column_name'], results))
+        return list(map(lambda x: x['COLUMN_NAME'], results))
