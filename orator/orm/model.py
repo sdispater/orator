@@ -2475,7 +2475,7 @@ class Model(object):
     def from_datetime(self, value):
         """
         Convert datetime to a storable string.
-        
+
         :param value: The datetime value
         :type value: pendulum.Pendulum or datetime.date or datetime.datetime
 
