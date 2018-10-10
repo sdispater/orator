@@ -19,6 +19,8 @@ nosetests.xml
 
 .DS_Store
 .idea/*
+.python-version
+.pytest_cache
 
 /setup.py
 /requirements.txt
