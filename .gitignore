@@ -40,3 +40,4 @@ benchmark.py
 results.json
 *.so
 pyproject.lock
+poetry.lock
