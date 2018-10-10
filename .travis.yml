@@ -21,8 +21,9 @@ addons:
   postgresql: '9.6'
 
 install:
-  - curl -fsS -o get-poetry.py https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py
-  - python get-poetry.py --preview
+  - curl -fsS -o get-poetry.py https://raw.githubusercontent.com/sdispater/poetry/develop/get-poetry.py
+  - python get-poetry.py --preview -y
+  - source $HOME/.poetry/env
   - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then poetry install --extras mysql-python --extras pgsql; fi
   - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then poetry install --extras mysql --extras pgsql; fi
 
