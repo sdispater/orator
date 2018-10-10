@@ -43,6 +43,7 @@ mysqlclient = { version = "^1.3", optional = true }
 flexmock = "0.9.7"
 pytest = "^3.5"
 pytest-mock = "^1.6"
+tox = "^3.5"
 
 
 [tool.poetry.extras]
@@ -53,3 +54,8 @@ pgsql = ["psycopg2"]
 
 [tool.poetry.scripts]
 orator = 'orator.commands.application:application.run'
+
+
+[build-system]
+requires = ["poetry>=0.12a3"]
+build-backend = "poetry.masonry.api"
