@@ -4,7 +4,6 @@ from .builder import SchemaBuilder
 
 
 class MySQLSchemaBuilder(SchemaBuilder):
-
     def has_table(self, table):
         """
         Determine if the given table exists.
@@ -33,6 +32,12 @@ class MySQLSchemaBuilder(SchemaBuilder):
         database = self._connection.get_database_name()
         table = self._connection.get_table_prefix() + table
 
-        results = self._connection.select(sql, [database, table])
+        results = []
+        for result in self._connection.select(sql, [database, table]):
+            new_result = {}
+            for key, value in result.items():
+                new_result[key.lower()] = value
+
+            results.append(new_result)
 
         return self._connection.get_post_processor().process_column_listing(results)
