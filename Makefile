@@ -47,7 +47,7 @@ setup-mysql: drop-mysql
 		TO 'orator'@'localhost';"
 
 drop-mysql:
-	@type -p psql > /dev/null || { echo 'Install and setup MySQL'; exit 1; }
+	@type -p mysql > /dev/null || { echo 'Install and setup MySQL'; exit 1; }
 	@-mysql -u root -e 'DROP DATABASE orator_test;' > /dev/null 2>&1
 	@-mysql -u root -e "DROP USER 'orator'@'localhost';" > /dev/null 2>&1
 
