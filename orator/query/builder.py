@@ -1139,14 +1139,20 @@ class QueryBuilder(object):
         return total
 
     def _backup_fields_for_count(self):
-        for field in ['orders', 'limit', 'offset']:
-            self._backups[field] = getattr(self, field)
+        for field, binding in [('orders', 'order'), ('limit', None), ('offset', None)]:
+            self._backups[field] = {}
+            self._backups[field]["query"] = getattr(self, field)
+            if binding is not None:
+                self._backups[field]["binding"] = self.get_raw_bindings()[binding]
+                self.set_bindings([], binding)
 
             setattr(self, field, None)
 
     def _restore_fields_for_count(self):
-        for field in ['orders', 'limit', 'offset']:
-            setattr(self, field, self._backups[field])
+        for field, binding in [('orders', 'order'), ('limit', None), ('offset', None)]:
+            setattr(self, field, self._backups[field]["query"])
+            if binding is not None and self._backups[field]["binding"] is not None:
+                self.add_binding(self._backups[field]["binding"], binding)
 
         self._backups = {}
 
