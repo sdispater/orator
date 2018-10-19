@@ -22,8 +22,6 @@ nosetests.xml
 .python-version
 .pytest_cache
 
-/setup.py
-/requirements.txt
 /test.py
 /test_*.py
 app.py
