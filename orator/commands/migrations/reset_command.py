@@ -20,20 +20,20 @@ class ResetCommand(BaseCommand):
         Executes the command.
         """
         if not self.confirm_to_proceed(
-            '<question>Are you sure you want to reset all of the migrations?:</question> '
+            "<question>Are you sure you want to reset all of the migrations?:</question> "
         ):
             return
 
-        database = self.option('database')
-        repository = DatabaseMigrationRepository(self.resolver, 'migrations')
+        database = self.option("database")
+        repository = DatabaseMigrationRepository(self.resolver, "migrations")
 
         migrator = Migrator(repository, self.resolver)
 
         self._prepare_database(migrator, database)
 
-        pretend = bool(self.option('pretend'))
+        pretend = bool(self.option("pretend"))
 
-        path = self.option('path')
+        path = self.option("path")
 
         if path is None:
             path = self._get_migration_path()

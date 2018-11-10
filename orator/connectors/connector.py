@@ -6,9 +6,7 @@ from ..exceptions.connectors import MissingPackage
 
 class Connector(object):
 
-    RESERVED_KEYWORDS = [
-        'log_queries', 'driver', 'prefix', 'name'
-    ]
+    RESERVED_KEYWORDS = ["log_queries", "driver", "prefix", "name"]
 
     SUPPORTED_PACKAGES = []
 
@@ -47,16 +45,16 @@ class Connector(object):
         return self._params
 
     def get_database(self):
-        return self._params.get('database')
+        return self._params.get("database")
 
     def get_host(self):
-        return self._params.get('host')
+        return self._params.get("host")
 
     def get_user(self):
-        return self._params.get('user')
+        return self._params.get("user")
 
     def get_password(self):
-        return self._params.get('password')
+        return self._params.get("password")
 
     def get_database_platform(self):
         if self._platform is None:

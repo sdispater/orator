@@ -5,10 +5,10 @@ from ..query.expression import QueryExpression
 
 class Grammar(object):
 
-    marker = '?'
+    marker = "?"
 
     def __init__(self, marker=None):
-        self._table_prefix = ''
+        self._table_prefix = ""
 
         if marker:
             self.marker = marker
@@ -30,18 +30,17 @@ class Grammar(object):
         # to separate out the pieces so we can wrap each of the segments
         # of the expression on it own, and then joins them
         # both back together with the "as" connector.
-        if value.lower().find(' as ') >= 0:
-            segments = value.split(' ')
+        if value.lower().find(" as ") >= 0:
+            segments = value.split(" ")
 
             if prefix_alias:
                 segments[2] = self._table_prefix + segments[2]
 
-            return '%s AS %s' % (self.wrap(segments[0]),
-                                 self._wrap_value(segments[2]))
+            return "%s AS %s" % (self.wrap(segments[0]), self._wrap_value(segments[2]))
 
         wrapped = []
 
-        segments = value.split('.')
+        segments = value.split(".")
 
         # If the value is not an aliased table expression, we'll just wrap it like
         # normal, so if there is more than one segment, we will wrap the first
@@ -52,19 +51,19 @@ class Grammar(object):
             else:
                 wrapped.append(self._wrap_value(segment))
 
-        return '.'.join(wrapped)
+        return ".".join(wrapped)
 
     def _wrap_value(self, value):
-        if value == '*':
+        if value == "*":
             return value
 
         return '"%s"' % value.replace('"', '""')
 
     def columnize(self, columns):
-        return ', '.join(map(self.wrap, columns))
+        return ", ".join(map(self.wrap, columns))
 
     def parameterize(self, values):
-        return ', '.join(map(self.parameter, values))
+        return ", ".join(map(self.parameter, values))
 
     def parameter(self, value):
         if self.is_expression(value):
@@ -79,7 +78,7 @@ class Grammar(object):
         return isinstance(value, QueryExpression)
 
     def get_date_format(self):
-        return '%Y-%m-%d %H:%M:%S.%f'
+        return "%Y-%m-%d %H:%M:%S.%f"
 
     def get_table_prefix(self):
         return self._table_prefix

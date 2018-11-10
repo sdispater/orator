@@ -15,7 +15,6 @@ from orator.query.processors import QueryProcessor
 
 
 class BuilderTestCase(OratorTestCase):
-
     def tearDown(self):
         flexmock_teardown()
 
@@ -23,30 +22,26 @@ class BuilderTestCase(OratorTestCase):
         builder = Builder(self.get_mock_query_builder())
         builder.set_model(self.get_mock_model())
         builder.get_query().where = mock.MagicMock()
-        builder.first = mock.MagicMock(return_value='baz')
+        builder.first = mock.MagicMock(return_value="baz")
 
-        result = builder.find('bar', ['column'])
+        result = builder.find("bar", ["column"])
 
-        builder.get_query().where.assert_called_once_with(
-            'foo_table.foo', '=', 'bar'
-        )
-        self.assertEqual('baz', result)
+        builder.get_query().where.assert_called_once_with("foo_table.foo", "=", "bar")
+        self.assertEqual("baz", result)
 
     def test_find_or_new_model_found(self):
         model = self.get_mock_model()
-        model.find_or_new = mock.MagicMock(return_value='baz')
+        model.find_or_new = mock.MagicMock(return_value="baz")
 
         builder = Builder(self.get_mock_query_builder())
         builder.set_model(model)
         builder.get_query().where = mock.MagicMock()
-        builder.first = mock.MagicMock(return_value='baz')
+        builder.first = mock.MagicMock(return_value="baz")
 
-        expected = model.find_or_new('bar', ['column'])
-        result = builder.find('bar', ['column'])
+        expected = model.find_or_new("bar", ["column"])
+        result = builder.find("bar", ["column"])
 
-        builder.get_query().where.assert_called_once_with(
-            'foo_table.foo', '=', 'bar'
-        )
+        builder.get_query().where.assert_called_once_with("foo_table.foo", "=", "bar")
         self.assertEqual(expected, result)
 
     def test_find_or_new_model_not_found(self):
@@ -58,12 +53,10 @@ class BuilderTestCase(OratorTestCase):
         builder.get_query().where = mock.MagicMock()
         builder.first = mock.MagicMock(return_value=None)
 
-        result = model.find_or_new('bar', ['column'])
-        find_result = builder.find('bar', ['column'])
+        result = model.find_or_new("bar", ["column"])
+        find_result = builder.find("bar", ["column"])
 
-        builder.get_query().where.assert_called_once_with(
-            'foo_table.foo', '=', 'bar'
-        )
+        builder.get_query().where.assert_called_once_with("foo_table.foo", "=", "bar")
         self.assertIsNone(find_result)
         self.assertIsInstance(result, Model)
 
@@ -75,20 +68,11 @@ class BuilderTestCase(OratorTestCase):
         builder.get_query().where = mock.MagicMock()
         builder.first = mock.MagicMock(return_value=None)
 
-        self.assertRaises(
-            ModelNotFound,
-            builder.find_or_fail,
-            'bar',
-            ['column']
-        )
+        self.assertRaises(ModelNotFound, builder.find_or_fail, "bar", ["column"])
 
-        builder.get_query().where.assert_called_once_with(
-            'foo_table.foo', '=', 'bar'
-        )
+        builder.get_query().where.assert_called_once_with("foo_table.foo", "=", "bar")
 
-        builder.first.assert_called_once_with(
-            ['column']
-        )
+        builder.first.assert_called_once_with(["column"])
 
     def test_find_or_fail_with_many_raises_model_not_found_exception(self):
         model = self.get_mock_model()
@@ -98,20 +82,11 @@ class BuilderTestCase(OratorTestCase):
         builder.get_query().where_in = mock.MagicMock()
         builder.get = mock.MagicMock(return_value=Collection([1]))
 
-        self.assertRaises(
-            ModelNotFound,
-            builder.find_or_fail,
-            [1, 2],
-            ['column']
-        )
+        self.assertRaises(ModelNotFound, builder.find_or_fail, [1, 2], ["column"])
 
-        builder.get_query().where_in.assert_called_once_with(
-            'foo_table.foo', [1, 2]
-        )
+        builder.get_query().where_in.assert_called_once_with("foo_table.foo", [1, 2])
 
-        builder.get.assert_called_once_with(
-            ['column']
-        )
+        builder.get.assert_called_once_with(["column"])
 
     def test_first_or_fail_raises_model_not_found_exception(self):
         model = self.get_mock_model()
@@ -120,15 +95,9 @@ class BuilderTestCase(OratorTestCase):
         builder.set_model(model)
         builder.first = mock.MagicMock(return_value=None)
 
-        self.assertRaises(
-            ModelNotFound,
-            builder.first_or_fail,
-            ['column']
-        )
+        self.assertRaises(ModelNotFound, builder.first_or_fail, ["column"])
 
-        builder.first.assert_called_once_with(
-            ['column']
-        )
+        builder.first.assert_called_once_with(["column"])
 
     def test_find_with_many(self):
         model = self.get_mock_model()
@@ -136,18 +105,14 @@ class BuilderTestCase(OratorTestCase):
         builder = Builder(self.get_mock_query_builder())
         builder.set_model(model)
         builder.get_query().where_in = mock.MagicMock()
-        builder.get = mock.MagicMock(return_value='baz')
+        builder.get = mock.MagicMock(return_value="baz")
 
-        result = builder.find([1, 2], ['column'])
-        self.assertEqual('baz', result)
+        result = builder.find([1, 2], ["column"])
+        self.assertEqual("baz", result)
 
-        builder.get_query().where_in.assert_called_once_with(
-            'foo_table.foo', [1, 2]
-        )
+        builder.get_query().where_in.assert_called_once_with("foo_table.foo", [1, 2])
 
-        builder.get.assert_called_once_with(
-            ['column']
-        )
+        builder.get.assert_called_once_with(["column"])
 
     def test_first(self):
         model = self.get_mock_model()
@@ -155,41 +120,41 @@ class BuilderTestCase(OratorTestCase):
         builder = Builder(self.get_mock_query_builder())
         builder.set_model(model)
         builder.take = mock.MagicMock(return_value=builder)
-        builder.get = mock.MagicMock(return_value=Collection(['bar']))
+        builder.get = mock.MagicMock(return_value=Collection(["bar"]))
 
         result = builder.first()
-        self.assertEqual('bar', result)
+        self.assertEqual("bar", result)
 
-        builder.take.assert_called_once_with(
-            1
-        )
+        builder.take.assert_called_once_with(1)
 
-        builder.get.assert_called_once_with(
-            ['*']
-        )
+        builder.get.assert_called_once_with(["*"])
 
     def test_get_loads_models_and_hydrates_eager_relations(self):
         flexmock(Builder)
         builder = Builder(self.get_mock_query_builder())
-        builder.should_receive('get_models').with_args(['foo']).and_return(['bar'])
-        builder.should_receive('eager_load_relations').with_args(['bar']).and_return(['bar', 'baz'])
+        builder.should_receive("get_models").with_args(["foo"]).and_return(["bar"])
+        builder.should_receive("eager_load_relations").with_args(["bar"]).and_return(
+            ["bar", "baz"]
+        )
         builder.set_model(self.get_mock_model())
-        builder.get_model().new_collection = mock.MagicMock(return_value=Collection(['bar', 'baz']))
+        builder.get_model().new_collection = mock.MagicMock(
+            return_value=Collection(["bar", "baz"])
+        )
 
-        results = builder.get(['foo'])
-        self.assertEqual(['bar', 'baz'], results.all())
+        results = builder.get(["foo"])
+        self.assertEqual(["bar", "baz"], results.all())
 
-        builder.get_model().new_collection.assert_called_with(['bar', 'baz'])
+        builder.get_model().new_collection.assert_called_with(["bar", "baz"])
 
     def test_get_does_not_eager_relations_when_no_results_are_returned(self):
         flexmock(Builder)
         builder = Builder(self.get_mock_query_builder())
-        builder.should_receive('get_models').with_args(['foo']).and_return(['bar'])
-        builder.should_receive('eager_load_relations').with_args(['bar']).and_return([])
+        builder.should_receive("get_models").with_args(["foo"]).and_return(["bar"])
+        builder.should_receive("eager_load_relations").with_args(["bar"]).and_return([])
         builder.set_model(self.get_mock_model())
         builder.get_model().new_collection = mock.MagicMock(return_value=Collection([]))
 
-        results = builder.get(['foo'])
+        results = builder.get(["foo"])
         self.assertEqual([], results.all())
 
         builder.get_model().new_collection.assert_called_with([])
@@ -197,36 +162,34 @@ class BuilderTestCase(OratorTestCase):
     def test_pluck_with_model_found(self):
         builder = Builder(self.get_mock_query_builder())
 
-        model = {'name': 'foo'}
+        model = {"name": "foo"}
         builder.first = mock.MagicMock(return_value=model)
 
-        self.assertEqual('foo', builder.pluck('name'))
+        self.assertEqual("foo", builder.pluck("name"))
 
-        builder.first.assert_called_once_with(
-            ['name']
-        )
+        builder.first.assert_called_once_with(["name"])
 
     def test_pluck_with_model_not_found(self):
         builder = Builder(self.get_mock_query_builder())
 
         builder.first = mock.MagicMock(return_value=None)
 
-        self.assertIsNone(builder.pluck('name'))
+        self.assertIsNone(builder.pluck("name"))
 
     def test_chunk(self):
         query_builder = self.get_mock_query_builder()
-        query_results = [['foo1', 'foo2'], ['foo3']]
+        query_results = [["foo1", "foo2"], ["foo3"]]
         query_builder.chunk = mock.MagicMock(return_value=query_results)
 
         builder = Builder(query_builder)
         model = self.get_mock_model()
         builder.set_model(model)
 
-        results = [Collection(['foo1', 'foo2']), Collection(['foo3'])]
+        results = [Collection(["foo1", "foo2"]), Collection(["foo3"])]
 
         model.hydrate = mock.MagicMock(return_value=[])
         model.new_collection = mock.MagicMock(side_effect=results)
-        model.get_connection_name = mock.MagicMock(return_value='foo')
+        model.get_connection_name = mock.MagicMock(return_value="foo")
 
         i = 0
         for result in builder.chunk(2):
@@ -236,67 +199,57 @@ class BuilderTestCase(OratorTestCase):
 
         self.assertEqual(i, 2)
 
-        query_builder.chunk.assert_has_calls([
-            mock.call(2)
-        ])
-        model.hydrate.assert_has_calls([
-            mock.call(['foo1', 'foo2'], 'foo'),
-            mock.call(['foo3'], 'foo')
-        ])
-        model.new_collection.assert_has_calls([
-            mock.call([]),
-            mock.call([])
-        ])
+        query_builder.chunk.assert_has_calls([mock.call(2)])
+        model.hydrate.assert_has_calls(
+            [mock.call(["foo1", "foo2"], "foo"), mock.call(["foo3"], "foo")]
+        )
+        model.new_collection.assert_has_calls([mock.call([]), mock.call([])])
 
     # TODO: lists with get mutators
 
     def test_lists_without_model_getters(self):
         builder = self.get_builder()
-        builder.get_query().get = mock.MagicMock(return_value=[{'name': 'bar'}, {'name': 'baz'}])
+        builder.get_query().get = mock.MagicMock(
+            return_value=[{"name": "bar"}, {"name": "baz"}]
+        )
         builder.set_model(self.get_mock_model())
         builder.get_model().has_get_mutator = mock.MagicMock(return_value=False)
 
-        result = builder.lists('name')
-        self.assertEqual(['bar', 'baz'], result)
+        result = builder.lists("name")
+        self.assertEqual(["bar", "baz"], result)
 
-        builder.get_query().get.assert_called_once_with(['name'])
+        builder.get_query().get.assert_called_once_with(["name"])
 
     def test_get_models_hydrates_models(self):
         builder = Builder(self.get_mock_query_builder())
-        records = Collection([{
-            'name': 'john', 'age': 26
-        }, {
-            'name': 'jane', 'age': 28
-        }])
+        records = Collection([{"name": "john", "age": 26}, {"name": "jane", "age": 28}])
 
         builder.get_query().get = mock.MagicMock(return_value=records)
         model = self.get_mock_model()
         builder.set_model(model)
-        model.get_connection_name = mock.MagicMock(return_value='foo_connection')
-        model.hydrate = mock.MagicMock(return_value=Collection(['hydrated']))
-        models = builder.get_models(['foo'])
+        model.get_connection_name = mock.MagicMock(return_value="foo_connection")
+        model.hydrate = mock.MagicMock(return_value=Collection(["hydrated"]))
+        models = builder.get_models(["foo"])
 
-        self.assertEqual(models.all(), ['hydrated'])
+        self.assertEqual(models.all(), ["hydrated"])
 
         model.get_table.assert_called_once_with()
         model.get_connection_name.assert_called_once_with()
-        model.hydrate.assert_called_once_with(
-            records, 'foo_connection'
-        )
+        model.hydrate.assert_called_once_with(records, "foo_connection")
 
     def test_macros_are_called_on_builder(self):
-        builder = Builder(QueryBuilder(
-            flexmock(Connection),
-            flexmock(QueryGrammar),
-            flexmock(QueryProcessor)
-        ))
+        builder = Builder(
+            QueryBuilder(
+                flexmock(Connection), flexmock(QueryGrammar), flexmock(QueryProcessor)
+            )
+        )
 
         def foo_bar(builder):
             builder.foobar = True
 
             return builder
 
-        builder.macro('foo_bar', foo_bar)
+        builder.macro("foo_bar", foo_bar)
         result = builder.foo_bar()
 
         self.assertEqual(result, builder)
@@ -307,29 +260,36 @@ class BuilderTestCase(OratorTestCase):
         builder = Builder(flexmock(QueryBuilder(None, None, None)))
         nop1 = lambda: None
         nop2 = lambda: None
-        builder.set_eager_loads({'foo': nop1, 'foo.bar': nop2})
-        builder.should_receive('_load_relation').with_args(['models'], 'foo', nop1).and_return(['foo'])
+        builder.set_eager_loads({"foo": nop1, "foo.bar": nop2})
+        builder.should_receive("_load_relation").with_args(
+            ["models"], "foo", nop1
+        ).and_return(["foo"])
 
-        results = builder.eager_load_relations(['models'])
-        self.assertEqual(['foo'], results)
+        results = builder.eager_load_relations(["models"])
+        self.assertEqual(["foo"], results)
 
     def test_eager_load_accept_queries(self):
         model = OrmBuilderTestModelCloseRelated()
         flexmock(Builder)
         builder = Builder(flexmock(QueryBuilder(None, None, None)))
-        nop1 = OrmBuilderTestModelFarRelatedStub.where('id', 5)
-        builder.set_eager_loads({'foo': nop1})
+        nop1 = OrmBuilderTestModelFarRelatedStub.where("id", 5)
+        builder.set_eager_loads({"foo": nop1})
         relation = flexmock()
-        relation.should_receive('add_eager_constraints').once().with_args(['models'])
-        relation.should_receive('init_relation').once().with_args(['models'], 'foo').and_return(['models'])
-        relation.should_receive('get_eager').once().and_return(['results'])
-        relation.should_receive('match').once()\
-            .with_args(['models'], ['results'], 'foo').and_return(['foo'])
-        builder.should_receive('get_relation').once().with_args('foo').and_return(relation)
-        relation.should_receive('merge_query').with_args(nop1).and_return(relation)
+        relation.should_receive("add_eager_constraints").once().with_args(["models"])
+        relation.should_receive("init_relation").once().with_args(
+            ["models"], "foo"
+        ).and_return(["models"])
+        relation.should_receive("get_eager").once().and_return(["results"])
+        relation.should_receive("match").once().with_args(
+            ["models"], ["results"], "foo"
+        ).and_return(["foo"])
+        builder.should_receive("get_relation").once().with_args("foo").and_return(
+            relation
+        )
+        relation.should_receive("merge_query").with_args(nop1).and_return(relation)
 
-        results = builder.eager_load_relations(['models'])
-        self.assertEqual(['foo'], results)
+        results = builder.eager_load_relations(["models"])
+        self.assertEqual(["foo"], results)
 
     def test_relationship_eager_load_process(self):
         proof = flexmock()
@@ -339,18 +299,23 @@ class BuilderTestCase(OratorTestCase):
         def callback(q):
             proof.foo = q
 
-        builder.set_eager_loads({'orders': callback})
+        builder.set_eager_loads({"orders": callback})
         relation = flexmock()
-        relation.should_receive('add_eager_constraints').once().with_args(['models'])
-        relation.should_receive('init_relation').once().with_args(['models'], 'orders').and_return(['models'])
-        relation.should_receive('get_eager').once().and_return(['results'])
-        relation.should_receive('get_query').once().and_return(relation)
-        relation.should_receive('match').once()\
-            .with_args(['models'], ['results'], 'orders').and_return(['models.matched'])
-        builder.should_receive('get_relation').once().with_args('orders').and_return(relation)
-        results = builder.eager_load_relations(['models'])
+        relation.should_receive("add_eager_constraints").once().with_args(["models"])
+        relation.should_receive("init_relation").once().with_args(
+            ["models"], "orders"
+        ).and_return(["models"])
+        relation.should_receive("get_eager").once().and_return(["results"])
+        relation.should_receive("get_query").once().and_return(relation)
+        relation.should_receive("match").once().with_args(
+            ["models"], ["results"], "orders"
+        ).and_return(["models.matched"])
+        builder.should_receive("get_relation").once().with_args("orders").and_return(
+            relation
+        )
+        results = builder.eager_load_relations(["models"])
 
-        self.assertEqual(['models.matched'], results)
+        self.assertEqual(["models.matched"], results)
         self.assertEqual(relation, proof.foo)
 
     def test_get_relation_properly_sets_nested_relationships(self):
@@ -358,32 +323,32 @@ class BuilderTestCase(OratorTestCase):
         builder = Builder(flexmock(QueryBuilder(None, None, None)))
         model = flexmock(Model())
         relation = flexmock()
-        model.set_relation('orders', relation)
+        model.set_relation("orders", relation)
         builder.set_model(model)
         relation_query = flexmock()
-        relation.should_receive('get_query').and_return(relation_query)
-        relation_query.should_receive('with_').once().with_args({'lines': None, 'lines.details': None})
-        builder.set_eager_loads({
-            'orders': None,
-            'orders.lines': None,
-            'orders.lines.details': None
-        })
+        relation.should_receive("get_query").and_return(relation_query)
+        relation_query.should_receive("with_").once().with_args(
+            {"lines": None, "lines.details": None}
+        )
+        builder.set_eager_loads(
+            {"orders": None, "orders.lines": None, "orders.lines.details": None}
+        )
 
-        relation = builder.get_relation('orders')
+        relation = builder.get_relation("orders")
 
     def test_query_passthru(self):
         builder = self.get_builder()
-        builder.get_query().foobar = mock.MagicMock(return_value='foo')
+        builder.get_query().foobar = mock.MagicMock(return_value="foo")
 
         self.assertIsInstance(builder.foobar(), Builder)
         self.assertEqual(builder.foobar(), builder)
 
         builder = self.get_builder()
-        builder.get_query().insert = mock.MagicMock(return_value='foo')
+        builder.get_query().insert = mock.MagicMock(return_value="foo")
 
-        self.assertEqual('foo', builder.insert(['bar']))
+        self.assertEqual("foo", builder.insert(["bar"]))
 
-        builder.get_query().insert.assert_called_once_with(['bar'])
+        builder.get_query().insert.assert_called_once_with(["bar"])
 
     def test_query_scopes(self):
         builder = self.get_builder()
@@ -398,11 +363,11 @@ class BuilderTestCase(OratorTestCase):
     def test_simple_where(self):
         builder = self.get_builder()
         builder.get_query().where = mock.MagicMock()
-        result = builder.where('foo', '=', 'bar')
+        result = builder.where("foo", "=", "bar")
 
         self.assertEqual(builder, result)
 
-        builder.get_query().where.assert_called_once_with('foo', '=', 'bar', 'and')
+        builder.get_query().where.assert_called_once_with("foo", "=", "bar", "and")
 
     def test_nested_where(self):
         nested_query = self.get_builder()
@@ -416,42 +381,48 @@ class BuilderTestCase(OratorTestCase):
         result = builder.where(nested_query)
         self.assertEqual(builder, result)
 
-        builder.get_query().add_nested_where_query.assert_called_once_with(nested_raw_query, 'and')
+        builder.get_query().add_nested_where_query.assert_called_once_with(
+            nested_raw_query, "and"
+        )
 
     # TODO: nested query with scopes
 
     def test_delete_override(self):
         builder = self.get_builder()
 
-        builder.on_delete(lambda builder_: {'foo': builder_})
+        builder.on_delete(lambda builder_: {"foo": builder_})
 
-        self.assertEqual({'foo': builder}, builder.delete())
+        self.assertEqual({"foo": builder}, builder.delete())
 
     def test_has_nested(self):
-        builder = OrmBuilderTestModelParentStub.where_has('foo', lambda q: q.has('bar'))
+        builder = OrmBuilderTestModelParentStub.where_has("foo", lambda q: q.has("bar"))
 
-        result = OrmBuilderTestModelParentStub.has('foo.bar').to_sql()
+        result = OrmBuilderTestModelParentStub.has("foo.bar").to_sql()
 
         self.assertEqual(builder.to_sql(), result)
 
     def test_has_nested_with_constraints(self):
         model = OrmBuilderTestModelParentStub
 
-        builder = model.where_has('foo', lambda q: q.where_has('bar', lambda q: q.where('baz', 'bam'))).to_sql()
+        builder = model.where_has(
+            "foo", lambda q: q.where_has("bar", lambda q: q.where("baz", "bam"))
+        ).to_sql()
 
-        result = model.where_has('foo.bar', lambda q: q.where('baz', 'bam')).to_sql()
+        result = model.where_has("foo.bar", lambda q: q.where("baz", "bam")).to_sql()
 
         self.assertEqual(builder, result)
 
     def test_where_exists_accepts_builder_instance(self):
         model = OrmBuilderTestModelCloseRelated
 
-        builder = model.where_exists(OrmBuilderTestModelFarRelatedStub.where('foo', 'bar')).to_sql()
+        builder = model.where_exists(
+            OrmBuilderTestModelFarRelatedStub.where("foo", "bar")
+        ).to_sql()
 
         self.assertEqual(
             'SELECT * FROM "orm_builder_test_model_close_relateds" '
             'WHERE EXISTS (SELECT * FROM "orm_builder_test_model_far_related_stubs" WHERE "foo" = ?)',
-            builder
+            builder,
         )
 
     def get_builder(self):
@@ -466,17 +437,12 @@ class BuilderTestCase(OratorTestCase):
         connection = MockConnection().prepare_mock()
         processor = MockProcessor().prepare_mock()
 
-        builder = MockQueryBuilder(
-            connection,
-            QueryGrammar(),
-            processor
-        ).prepare_mock()
+        builder = MockQueryBuilder(connection, QueryGrammar(), processor).prepare_mock()
 
         return builder
 
 
 class OratorTestModel(Model):
-
     @classmethod
     def _boot_columns(cls):
         return []
@@ -492,21 +458,18 @@ class OrmBuilderTestModelFarRelatedStub(OratorTestModel):
 
 
 class OrmBuilderTestModelScopeStub(OratorTestModel):
-
     @scope
     def approved(self, query):
-        query.where('foo', 'bar')
+        query.where("foo", "bar")
 
 
 class OrmBuilderTestModelCloseRelated(OratorTestModel):
-
     @has_many
     def bar(self):
         return OrmBuilderTestModelFarRelatedStub
 
 
 class OrmBuilderTestModelParentStub(OratorTestModel):
-
     @belongs_to
     def foo(self):
         return OrmBuilderTestModelCloseRelated

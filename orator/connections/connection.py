@@ -14,14 +14,15 @@ from ..dbal.schema_manager import SchemaManager
 from ..exceptions.query import QueryException
 
 
-query_logger = logging.getLogger('orator.connection.queries')
-connection_logger = logging.getLogger('orator.connection')
+query_logger = logging.getLogger("orator.connection.queries")
+connection_logger = logging.getLogger("orator.connection")
 
 
 def run(wrapped):
     """
     Special decorator encapsulating query method.
     """
+
     @wraps(wrapped)
     def _run(self, query, bindings=None, *args, **kwargs):
         self._reconnect_if_missing_connection()
@@ -46,8 +47,15 @@ class Connection(ConnectionInterface):
 
     name = None
 
-    def __init__(self, connection, database='', table_prefix='', config=None,
-                 builder_class=QueryBuilder, builder_default_kwargs=None):
+    def __init__(
+        self,
+        connection,
+        database="",
+        table_prefix="",
+        config=None,
+        builder_class=QueryBuilder,
+        builder_default_kwargs=None,
+    ):
         """
         :param connection: A dbapi connection instance
         :type connection: Connector
@@ -69,7 +77,7 @@ class Connection(ConnectionInterface):
         self._database = database
 
         if table_prefix is None:
-            table_prefix = ''
+            table_prefix = ""
 
         self._table_prefix = table_prefix
 
@@ -91,13 +99,13 @@ class Connection(ConnectionInterface):
 
         self._builder_default_kwargs = builder_default_kwargs
 
-        self._logging_queries = config.get('log_queries', False)
+        self._logging_queries = config.get("log_queries", False)
         self._logged_queries = []
 
         # Setting the marker based on config
         self._marker = None
-        if self._config.get('use_qmark'):
-            self._marker = '?'
+        if self._config.get("use_qmark"):
+            self._marker = "?"
 
         self._query_grammar = self.get_default_query_grammar()
 
@@ -163,7 +171,9 @@ class Connection(ConnectionInterface):
         :rtype: QueryBuilder
         """
         query = self._builder_class(
-            self, self._query_grammar, self._post_processor,
+            self,
+            self._query_grammar,
+            self._post_processor,
             **self._builder_default_kwargs
         )
 
@@ -200,7 +210,9 @@ class Connection(ConnectionInterface):
 
         return cursor.fetchall()
 
-    def select_many(self, size, query, bindings=None, use_read_connection=True, abort=False):
+    def select_many(
+        self, size, query, bindings=None, use_read_connection=True, abort=False
+    ):
         if self.pretending():
             yield []
         else:
@@ -213,7 +225,9 @@ class Connection(ConnectionInterface):
                 if self._caused_by_lost_connection(e) and not abort:
                     self.reconnect()
 
-                    for results in self.select_many(size, query, bindings, use_read_connection, True):
+                    for results in self.select_many(
+                        size, query, bindings, use_read_connection, True
+                    ):
                         yield results
                 else:
                     raise
@@ -332,7 +346,9 @@ class Connection(ConnectionInterface):
 
         self._pretending = False
 
-    def _try_again_if_caused_by_lost_connection(self, e, query, bindings, callback, *args, **kwargs):
+    def _try_again_if_caused_by_lost_connection(
+        self, e, query, bindings, callback, *args, **kwargs
+    ):
         if self._caused_by_lost_connection(e):
             self.reconnect()
 
@@ -343,23 +359,25 @@ class Connection(ConnectionInterface):
     def _caused_by_lost_connection(self, e):
         message = str(e).lower()
 
-        for s in ['server has gone away',
-                  'no connection to the server',
-                  'lost connection',
-                  'is dead or not enabled',
-                  'error while sending',
-                  'decryption failed or bad record mac',
-                  'server closed the connection unexpectedly',
-                  'ssl connection has been closed unexpectedly',
-                  'error writing data to the connection',
-                  'resource deadlock avoided',]:
+        for s in [
+            "server has gone away",
+            "no connection to the server",
+            "lost connection",
+            "is dead or not enabled",
+            "error while sending",
+            "decryption failed or bad record mac",
+            "server closed the connection unexpectedly",
+            "ssl connection has been closed unexpectedly",
+            "error writing data to the connection",
+            "resource deadlock avoided",
+        ]:
             if s in message:
                 return True
 
         return False
 
     def disconnect(self):
-        connection_logger.debug('%s is disconnecting' % self.__class__.__name__)
+        connection_logger.debug("%s is disconnecting" % self.__class__.__name__)
         if self._connection:
             self._connection.close()
 
@@ -368,14 +386,14 @@ class Connection(ConnectionInterface):
 
         self.set_connection(None).set_read_connection(None)
 
-        connection_logger.debug('%s disconnected' % self.__class__.__name__)
+        connection_logger.debug("%s disconnected" % self.__class__.__name__)
 
     def reconnect(self):
-        connection_logger.debug('%s is reconnecting' % self.__class__.__name__)
+        connection_logger.debug("%s is reconnecting" % self.__class__.__name__)
         if self._reconnector is not None and callable(self._reconnector):
             return self._reconnector(self)
 
-        raise Exception('Lost connection and no reconnector available')
+        raise Exception("Lost connection and no reconnector available")
 
     def _reconnect_if_missing_connection(self):
         if self.get_connection() is None or self.get_read_connection() is None:
@@ -391,17 +409,14 @@ class Connection(ConnectionInterface):
         query = self._get_cursor_query(query, bindings)
 
         if query:
-            log = 'Executed %s' % (query,)
+            log = "Executed %s" % (query,)
 
             if time_:
-                log += ' in %sms' % time_
+                log += " in %sms" % time_
 
-            query_logger.debug(log,
-                               extra={
-                                   'query': query,
-                                   'bindings': bindings,
-                                   'elapsed_time': time_
-                               })
+            query_logger.debug(
+                log, extra={"query": query, "bindings": bindings, "elapsed_time": time_}
+            )
 
     def _get_elapsed_time(self, start):
         return round((time.time() - start) * 1000, 2)
@@ -429,8 +444,9 @@ class Connection(ConnectionInterface):
 
     def set_connection(self, connection):
         if self._transactions >= 1:
-            raise RuntimeError("Can't swap dbapi connection"
-                               "while within transaction.")
+            raise RuntimeError(
+                "Can't swap dbapi connection" "while within transaction."
+            )
 
         self._connection = connection
 
@@ -447,7 +463,7 @@ class Connection(ConnectionInterface):
         return self
 
     def get_name(self):
-        return self._config.get('name')
+        return self._config.get("name")
 
     def get_config(self, option):
         return self._config.get(option)

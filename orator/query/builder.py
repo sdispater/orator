@@ -18,12 +18,32 @@ from ..support import Collection
 class QueryBuilder(object):
 
     _operators = [
-        '=', '<', '>', '<=', '>=', '<>', '!=',
-        'like', 'like binary', 'not like', 'between', 'ilike',
-        '&', '|', '^', '<<', '>>',
-        'rlike', 'regexp', 'not regexp',
-        '~', '~*', '!~', '!~*', 'similar to',
-        'not similar to',
+        "=",
+        "<",
+        ">",
+        "<=",
+        ">=",
+        "<>",
+        "!=",
+        "like",
+        "like binary",
+        "not like",
+        "between",
+        "ilike",
+        "&",
+        "|",
+        "^",
+        "<<",
+        ">>",
+        "rlike",
+        "regexp",
+        "not regexp",
+        "~",
+        "~*",
+        "!~",
+        "!~*",
+        "similar to",
+        "not similar to",
     ]
 
     def __init__(self, connection, grammar, processor):
@@ -43,13 +63,13 @@ class QueryBuilder(object):
         self._processor = processor
         self._connection = connection
         self._bindings = OrderedDict()
-        for type in ['select', 'join', 'where', 'having', 'order']:
+        for type in ["select", "join", "where", "having", "order"]:
             self._bindings[type] = []
 
         self.aggregate_ = None
         self.columns = []
         self.distinct_ = False
-        self.from__ = ''
+        self.from__ = ""
         self.joins = []
         self.wheres = []
         self.groups = []
@@ -78,7 +98,7 @@ class QueryBuilder(object):
         :rtype: QueryBuilder
         """
         if not columns:
-            columns = ['*']
+            columns = ["*"]
 
         self.columns = list(columns)
 
@@ -100,7 +120,7 @@ class QueryBuilder(object):
         self.add_select(QueryExpression(expression))
 
         if bindings:
-            self.add_binding(bindings, 'select')
+            self.add_binding(bindings, "select")
 
         return self
 
@@ -124,9 +144,11 @@ class QueryBuilder(object):
         elif isinstance(query, basestring):
             bindings = []
         else:
-            raise ArgumentError('Invalid subselect')
+            raise ArgumentError("Invalid subselect")
 
-        return self.select_raw('(%s) AS %s' % (query, self._grammar.wrap(as_)), bindings)
+        return self.select_raw(
+            "(%s) AS %s" % (query, self._grammar.wrap(as_)), bindings
+        )
 
     def add_select(self, *column):
         """
@@ -170,8 +192,7 @@ class QueryBuilder(object):
 
         return self
 
-    def join(self, table, one=None,
-             operator=None, two=None, type='inner', where=False):
+    def join(self, table, one=None, operator=None, two=None, type="inner", where=False):
         """
         Add a join clause to the query
 
@@ -204,13 +225,11 @@ class QueryBuilder(object):
 
             join = JoinClause(table, type)
 
-            self.joins.append(join.on(
-                one, operator, two, 'and', where
-            ))
+            self.joins.append(join.on(one, operator, two, "and", where))
 
         return self
 
-    def join_where(self, table, one, operator, two, type='inner'):
+    def join_where(self, table, one, operator, two, type="inner"):
         """
         Add a "join where" clause to the query
 
@@ -254,9 +273,9 @@ class QueryBuilder(object):
         :rtype: QueryBuilder
         """
         if isinstance(table, JoinClause):
-            table.type = 'left'
+            table.type = "left"
 
-        return self.join(table, one, operator, two, 'left')
+        return self.join(table, one, operator, two, "left")
 
     def left_join_where(self, table, one, operator, two):
         """
@@ -277,7 +296,7 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        return self.join_where(table, one, operator, two, 'left')
+        return self.join_where(table, one, operator, two, "left")
 
     def right_join(self, table, one=None, operator=None, two=None):
         """
@@ -299,9 +318,9 @@ class QueryBuilder(object):
         :rtype: QueryBuilder
         """
         if isinstance(table, JoinClause):
-            table.type = 'right'
+            table.type = "right"
 
-        return self.join(table, one, operator, two, 'right')
+        return self.join(table, one, operator, two, "right")
 
     def right_join_where(self, table, one, operator, two):
         """
@@ -322,9 +341,9 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        return self.join_where(table, one, operator, two, 'right')
+        return self.join_where(table, one, operator, two, "right")
 
-    def where(self, column, operator=Null(), value=None, boolean='and'):
+    def where(self, column, operator=Null(), value=None, boolean="and"):
         """
         Add a where clause to the query
 
@@ -349,7 +368,7 @@ class QueryBuilder(object):
         if isinstance(column, dict):
             nested = self.new_query()
             for key, value in column.items():
-                nested.where(key, '=', value)
+                nested.where(key, "=", value)
 
             return self.where_nested(nested, boolean)
 
@@ -362,89 +381,84 @@ class QueryBuilder(object):
                 if isinstance(condition, list) and len(condition) == 3:
                     nested.where(condition[0], condition[1], condition[2])
                 else:
-                    raise ArgumentError('Invalid conditions in where() clause')
+                    raise ArgumentError("Invalid conditions in where() clause")
             return self.where_nested(nested, boolean)
 
         if value is None:
             if not isinstance(operator, Null):
                 value = operator
-                operator = '='
+                operator = "="
             else:
-                raise ArgumentError('Value must be provided')
+                raise ArgumentError("Value must be provided")
 
         if operator not in self._operators:
             value = operator
-            operator = '='
+            operator = "="
 
         if isinstance(value, QueryBuilder):
             return self._where_sub(column, operator, value, boolean)
 
         if value is None:
-            return self.where_null(column, boolean, operator != '=')
+            return self.where_null(column, boolean, operator != "=")
 
-        type = 'basic'
+        type = "basic"
 
-        self.wheres.append({
-            'type': type,
-            'column': column,
-            'operator': operator,
-            'value': value,
-            'boolean': boolean
-        })
+        self.wheres.append(
+            {
+                "type": type,
+                "column": column,
+                "operator": operator,
+                "value": value,
+                "boolean": boolean,
+            }
+        )
 
         if not isinstance(value, QueryExpression):
-            self.add_binding(value, 'where')
+            self.add_binding(value, "where")
 
         return self
 
     def or_where(self, column, operator=None, value=None):
-        return self.where(column, operator, value, 'or')
+        return self.where(column, operator, value, "or")
 
     def _invalid_operator_and_value(self, operator, value):
         is_operator = operator in self._operators
 
-        return is_operator and operator != '=' and value is None
+        return is_operator and operator != "=" and value is None
 
-    def where_raw(self, sql, bindings=None, boolean='and'):
-        type = 'raw'
+    def where_raw(self, sql, bindings=None, boolean="and"):
+        type = "raw"
 
-        self.wheres.append({
-            'type': type,
-            'sql': sql,
-            'boolean': boolean
-        })
+        self.wheres.append({"type": type, "sql": sql, "boolean": boolean})
 
-        self.add_binding(bindings, 'where')
+        self.add_binding(bindings, "where")
 
         return self
 
     def or_where_raw(self, sql, bindings=None):
-        return self.where_raw(sql, bindings, 'or')
+        return self.where_raw(sql, bindings, "or")
 
-    def where_between(self, column, values, boolean='and', negate=False):
-        type = 'between'
+    def where_between(self, column, values, boolean="and", negate=False):
+        type = "between"
 
-        self.wheres.append({
-            'column': column,
-            'type': type,
-            'boolean': boolean,
-            'not': negate
-        })
+        self.wheres.append(
+            {"column": column, "type": type, "boolean": boolean, "not": negate}
+        )
 
-        self.add_binding(values, 'where')
+        self.add_binding(values, "where")
 
         return self
 
     def or_where_between(self, column, values):
-        return self.where_between(column, values, 'or')
+        return self.where_between(column, values, "or")
 
-    def where_not_between(self, column, values, boolean='and'):
+    def where_not_between(self, column, values, boolean="and"):
         return self.where_between(column, values, boolean, True)
 
     def or_where_not_between(self, column, values):
-        return self.where_not_between(column, values, 'or')
+        return self.where_not_between(column, values, "or")
 
-    def where_nested(self, query, boolean='and'):
+    def where_nested(self, query, boolean="and"):
         query.from_(self.from__)
 
         return self.add_nested_where_query(query, boolean)
@@ -459,36 +473,34 @@ class QueryBuilder(object):
 
         return query.from_(self.from__)
 
-    def add_nested_where_query(self, query, boolean='and'):
+    def add_nested_where_query(self, query, boolean="and"):
         if len(query.wheres):
-            type = 'nested'
+            type = "nested"
 
-            self.wheres.append({
-                'type': type,
-                'query': query,
-                'boolean': boolean
-            })
+            self.wheres.append({"type": type, "query": query, "boolean": boolean})
 
             self.merge_bindings(query)
 
         return self
 
     def _where_sub(self, column, operator, query, boolean):
-        type = 'sub'
+        type = "sub"
 
-        self.wheres.append({
-            'type': type,
-            'column': column,
-            'operator': operator,
-            'query': query,
-            'boolean': boolean
-        })
+        self.wheres.append(
+            {
+                "type": type,
+                "column": column,
+                "operator": operator,
+                "query": query,
+                "boolean": boolean,
+            }
+        )
 
         self.merge_bindings(query)
 
         return self
 
-    def where_exists(self, query, boolean='and', negate=False):
+    def where_exists(self, query, boolean="and", negate=False):
         """
         Add an exists clause to the query.
 
@@ -502,15 +514,11 @@ class QueryBuilder(object):
         :rtype: QueryBuilder
         """
         if negate:
-            type = 'not_exists'
+            type = "not_exists"
         else:
-            type = 'exists'
+            type = "exists"
 
-        self.wheres.append({
-            'type': type,
-            'query': query,
-            'boolean': boolean
-        })
+        self.wheres.append({"type": type, "query": query, "boolean": boolean})
 
         self.merge_bindings(query)
 
@@ -527,9 +535,9 @@ class QueryBuilder(object):
 
         :rtype: QueryBuilder
         """
-        return self.where_exists(query, 'or', negate)
+        return self.where_exists(query, "or", negate)
 
-    def where_not_exists(self, query, boolean='and'):
+    def where_not_exists(self, query, boolean="and"):
         """
         Add a where not exists clause to the query.
 
@@ -553,11 +561,11 @@ class QueryBuilder(object):
         """
         return self.or_where_exists(query, True)
 
-    def where_in(self, column, values, boolean='and', negate=False):
+    def where_in(self, column, values, boolean="and", negate=False):
         if negate:
-            type = 'not_in'
+            type = "not_in"
         else:
-            type = 'in'
+            type = "in"
 
         if isinstance(values, QueryBuilder):
             return self._where_in_sub(column, values, boolean, negate)
@@ -565,25 +573,22 @@ class QueryBuilder(object):
         if isinstance(values, Collection):
             values = values.all()
 
-        self.wheres.append({
-            'type': type,
-            'column': column,
-            'values': values,
-            'boolean': boolean
-        })
+        self.wheres.append(
+            {"type": type, "column": column, "values": values, "boolean": boolean}
+        )
 
-        self.add_binding(values, 'where')
+        self.add_binding(values, "where")
 
         return self
 
     def or_where_in(self, column, values):
-        return self.where_in(column, values, 'or')
+        return self.where_in(column, values, "or")
 
-    def where_not_in(self, column, values, boolean='and'):
+    def where_not_in(self, column, values, boolean="and"):
         return self.where_in(column, values, boolean, True)
 
     def or_where_not_in(self, column, values):
-        return self.where_not_in(column, values, 'or')
+        return self.where_not_in(column, values, "or")
 
     def _where_in_sub(self, column, query, boolean, negate=False):
         """
@@ -605,79 +610,74 @@ class QueryBuilder(object):
         :rtype: QueryBuilder
         """
         if negate:
-            type = 'not_in_sub'
+            type = "not_in_sub"
         else:
-            type = 'in_sub'
+            type = "in_sub"
 
-        self.wheres.append({
-            'type': type,
-            'column': column,
-            'query': query,
-            'boolean': boolean
-        })
+        self.wheres.append(
+            {"type": type, "column": column, "query": query, "boolean": boolean}
+        )
 
         self.merge_bindings(query)
 
         return self
 
-    def where_null(self, column, boolean='and', negate=False):
+    def where_null(self, column, boolean="and", negate=False):
         if negate:
-            type = 'not_null'
+            type = "not_null"
         else:
-            type = 'null'
+            type = "null"
 
-        self.wheres.append({
-            'type': type,
-            'column': column,
-            'boolean': boolean
-        })
+        self.wheres.append({"type": type, "column": column, "boolean": boolean})
 
         return self
 
     def or_where_null(self, column):
-        return self.where_null(column, 'or')
+        return self.where_null(column, "or")
 
-    def where_not_null(self, column, boolean='and'):
+    def where_not_null(self, column, boolean="and"):
         return self.where_null(column, boolean, True)
 
     def or_where_not_null(self, column):
-        return self.where_not_null(column, 'or')
+        return self.where_not_null(column, "or")
 
-    def where_date(self, column, operator, value, boolean='and'):
-        return self._add_date_based_where('date', column, operator, value, boolean)
+    def where_date(self, column, operator, value, boolean="and"):
+        return self._add_date_based_where("date", column, operator, value, boolean)
 
-    def where_day(self, column, operator, value, boolean='and'):
-        return self._add_date_based_where('day', column, operator, value, boolean)
+    def where_day(self, column, operator, value, boolean="and"):
+        return self._add_date_based_where("day", column, operator, value, boolean)
 
-    def where_month(self, column, operator, value, boolean='and'):
-        return self._add_date_based_where('month', column, operator, value, boolean)
+    def where_month(self, column, operator, value, boolean="and"):
+        return self._add_date_based_where("month", column, operator, value, boolean)
 
-    def where_year(self, column, operator, value, boolean='and'):
-        return self._add_date_based_where('year', column, operator, value, boolean)
+    def where_year(self, column, operator, value, boolean="and"):
+        return self._add_date_based_where("year", column, operator, value, boolean)
 
-    def _add_date_based_where(self, type, column, operator, value, boolean='and'):
-        self.wheres.append({
-            'type': type,
-            'column': column,
-            'boolean': boolean,
-            'operator': operator,
-            'value': value
-        })
+    def _add_date_based_where(self, type, column, operator, value, boolean="and"):
+        self.wheres.append(
+            {
+                "type": type,
+                "column": column,
+                "boolean": boolean,
+                "operator": operator,
+                "value": value,
+            }
+        )
 
-        self.add_binding(value, 'where')
+        self.add_binding(value, "where")
 
     def dynamic_where(self, method):
         finder = method[6:]
 
         def dynamic_where(*parameters):
-            segments = re.split('_(and|or)_(?=[a-z])', finder, 0, re.I)
+            segments = re.split("_(and|or)_(?=[a-z])", finder, 0, re.I)
 
-            connector = 'and'
+            connector = "and"
 
             index = 0
 
             for segment in segments:
-                if segment.lower() != 'and' and segment.lower() != 'or':
+                if segment.lower() != "and" and segment.lower() != "or":
                     self._add_dynamic(segment, connector, parameters, index)
 
                     index += 1
@@ -689,7 +689,7 @@ class QueryBuilder(object):
         return dynamic_where
 
     def _add_dynamic(self, segment, connector, parameters, index):
-        self.where(segment, '=', parameters[index], connector)
+        self.where(segment, "=", parameters[index], connector)
 
     def group_by(self, *columns):
         """
@@ -706,7 +706,7 @@ class QueryBuilder(object):
 
         return self
 
-    def having(self, column, operator=None, value=None, boolean='and'):
+    def having(self, column, operator=None, value=None, boolean="and"):
         """
         Add a "having" clause to the query
 
@@ -725,18 +725,20 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        type = 'basic'
+        type = "basic"
 
-        self.havings.append({
-            'type': type,
-            'column': column,
-            'operator': operator,
-            'value': value,
-            'boolean': boolean
-        })
+        self.havings.append(
+            {
+                "type": type,
+                "column": column,
+                "operator": operator,
+                "value": value,
+                "boolean": boolean,
+            }
+        )
 
         if not isinstance(value, QueryExpression):
-            self.add_binding(value, 'having')
+            self.add_binding(value, "having")
 
         return self
 
@@ -756,9 +758,9 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        return self.having(column, operator, value, 'or')
+        return self.having(column, operator, value, "or")
 
-    def having_raw(self, sql, bindings=None, boolean='and'):
+    def having_raw(self, sql, bindings=None, boolean="and"):
         """
         Add a raw having clause to the query
 
@@ -774,15 +776,11 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        type = 'raw'
+        type = "raw"
 
-        self.havings.append({
-            'type': type,
-            'sql': sql,
-            'boolean': boolean
-        })
+        self.havings.append({"type": type, "sql": sql, "boolean": boolean})
 
-        self.add_binding(bindings, 'having')
+        self.add_binding(bindings, "having")
 
         return self
 
@@ -799,9 +797,9 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        return self.having_raw(sql, bindings, 'or')
+        return self.having_raw(sql, bindings, "or")
 
-    def order_by(self, column, direction='asc'):
+    def order_by(self, column, direction="asc"):
         """
         Add a "order by" clause to the query
 
@@ -815,23 +813,20 @@ class QueryBuilder(object):
         :rtype: QueryBuilder
         """
         if self.unions:
-            prop = 'union_orders'
+            prop = "union_orders"
         else:
-            prop = 'orders'
+            prop = "orders"
 
-        if direction.lower() == 'asc':
-            direction = 'asc'
+        if direction.lower() == "asc":
+            direction = "asc"
         else:
-            direction = 'desc'
+            direction = "desc"
 
-        getattr(self, prop).append({
-            'column': column,
-            'direction': direction
-        })
+        getattr(self, prop).append({"column": column, "direction": direction})
 
         return self
 
-    def latest(self, column='created_at'):
+    def latest(self, column="created_at"):
         """
         Add an "order by" clause for a timestamp to the query
         in descending order
@@ -842,9 +837,9 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        return self.order_by(column, 'desc')
+        return self.order_by(column, "desc")
 
-    def oldest(self, column='created_at'):
+    def oldest(self, column="created_at"):
         """
         Add an "order by" clause for a timestamp to the query
         in ascending order
@@ -855,7 +850,7 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        return self.order_by(column, 'asc')
+        return self.order_by(column, "asc")
 
     def order_by_raw(self, sql, bindings=None):
         """
@@ -873,22 +868,19 @@ class QueryBuilder(object):
         if bindings is None:
             bindings = []
 
-        type = 'raw'
+        type = "raw"
 
-        self.orders.append({
-            'type': type,
-            'sql': sql
-        })
+        self.orders.append({"type": type, "sql": sql})
 
-        self.add_binding(bindings, 'order')
+        self.add_binding(bindings, "order")
 
         return self
 
     def offset(self, value):
         if self.unions:
-            prop = 'union_offset'
+            prop = "union_offset"
         else:
-            prop = 'offset_'
+            prop = "offset_"
 
         setattr(self, prop, max(0, value))
 
@@ -899,9 +891,9 @@ class QueryBuilder(object):
 
     def limit(self, value):
         if self.unions:
-            prop = 'union_limit'
+            prop = "union_limit"
         else:
-            prop = 'limit_'
+            prop = "limit_"
 
         if value is None or value > 0:
             setattr(self, prop, value)
@@ -927,10 +919,7 @@ class QueryBuilder(object):
         :return: The query
         :rtype: QueryBuilder
         """
-        self.unions.append({
-            'query': query,
-            'all': all
-        })
+        self.unions.append({"query": query, "all": all})
 
         return self.merge_bindings(query)
 
@@ -1001,9 +990,9 @@ class QueryBuilder(object):
         :rtype: mixed
         """
         if not columns:
-            columns = ['*']
+            columns = ["*"]
 
-        return self.where('id', '=', id).first(1, columns)
+        return self.where("id", "=", id).first(1, columns)
 
     def pluck(self, column):
         """
@@ -1036,7 +1025,7 @@ class QueryBuilder(object):
         :rtype: mixed
         """
         if not columns:
-            columns = ['*']
+            columns = ["*"]
 
         return self.take(limit).get(columns).first()
 
@@ -1051,7 +1040,7 @@ class QueryBuilder(object):
         :rtype: Collection
         """
         if not columns:
-            columns = ['*']
+            columns = ["*"]
 
         original = self.columns
 
@@ -1072,9 +1061,7 @@ class QueryBuilder(object):
         :rtype: list
         """
         return self._connection.select(
-            self.to_sql(),
-            self.get_bindings(),
-            not self._use_write_connection
+            self.to_sql(), self.get_bindings(), not self._use_write_connection
         )
 
     def paginate(self, per_page=15, current_page=None, columns=None):
@@ -1094,7 +1081,7 @@ class QueryBuilder(object):
         :rtype: LengthAwarePaginator
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         page = current_page or Paginator.resolve_current_page()
 
@@ -1121,7 +1108,7 @@ class QueryBuilder(object):
         :rtype: Paginator
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         page = current_page or Paginator.resolve_current_page()
 
@@ -1139,7 +1126,7 @@ class QueryBuilder(object):
         return total
 
     def _backup_fields_for_count(self):
-        for field, binding in [('orders', 'order'), ('limit', None), ('offset', None)]:
+        for field, binding in [("orders", "order"), ("limit", None), ("offset", None)]:
             self._backups[field] = {}
             self._backups[field]["query"] = getattr(self, field)
             if binding is not None:
@@ -1149,7 +1136,7 @@ class QueryBuilder(object):
             setattr(self, field, None)
 
     def _restore_fields_for_count(self):
-        for field, binding in [('orders', 'order'), ('limit', None), ('offset', None)]:
+        for field, binding in [("orders", "order"), ("limit", None), ("offset", None)]:
             setattr(self, field, self._backups[field]["query"])
             if binding is not None and self._backups[field]["binding"] is not None:
                 self.add_binding(self._backups[field]["binding"], binding)
@@ -1167,10 +1154,7 @@ class QueryBuilder(object):
         :rtype: list
         """
         for chunk in self._connection.select_many(
-            count,
-            self.to_sql(),
-            self.get_bindings(),
-            not self._use_write_connection
+            count, self.to_sql(), self.get_bindings(), not self._use_write_connection
         ):
             yield chunk
 
@@ -1218,16 +1202,16 @@ class QueryBuilder(object):
 
         select = []
         for elem in elements:
-            dot = elem.find('.')
+            dot = elem.find(".")
 
             if dot >= 0:
-                select.append(column[dot + 1:])
+                select.append(column[dot + 1 :])
             else:
                 select.append(elem)
 
         return select
 
-    def implode(self, column, glue=''):
+    def implode(self, column, glue=""):
         """
         Concatenate values of a given column as a string.
 
@@ -1269,11 +1253,11 @@ class QueryBuilder(object):
         """
         if not columns and self.distinct_:
             columns = self.columns
-        
-        if not columns:
-            columns = ['*']
 
-        return int(self.aggregate('count', *columns))
+        if not columns:
+            columns = ["*"]
+
+        return int(self.aggregate("count", *columns))
 
     def min(self, column):
         """
@@ -1285,7 +1269,7 @@ class QueryBuilder(object):
         :return: The min
         :rtype: int
         """
-        return self.aggregate('min', *[column])
+        return self.aggregate("min", *[column])
 
     def max(self, column):
         """
@@ -1298,9 +1282,9 @@ class QueryBuilder(object):
         :rtype: int
         """
         if not column:
-            columns = ['*']
+            columns = ["*"]
 
-        return self.aggregate('max', *[column])
+        return self.aggregate("max", *[column])
 
     def sum(self, column):
         """
@@ -1312,7 +1296,7 @@ class QueryBuilder(object):
         :return: The sum
         :rtype: int
         """
-        return self.aggregate('sum', *[column])
+        return self.aggregate("sum", *[column])
 
     def avg(self, column):
         """
@@ -1325,7 +1309,7 @@ class QueryBuilder(object):
         :rtype: int
         """
 
-        return self.aggregate('avg', *[column])
+        return self.aggregate("avg", *[column])
 
     def aggregate(self, func, *columns):
         """
@@ -1341,12 +1325,9 @@ class QueryBuilder(object):
         :rtype: mixed
         """
         if not columns:
-            columns = ['*']
+            columns = ["*"]
 
-        self.aggregate_ = {
-            'function': func,
-            'columns': columns
-        }
+        self.aggregate_ = {"function": func, "columns": columns}
 
         previous_columns = self.columns
 
@@ -1357,7 +1338,7 @@ class QueryBuilder(object):
         self.columns = previous_columns
 
         if len(results) > 0:
-            return dict((k.lower(), v) for k, v in results[0].items())['aggregate']
+            return dict((k.lower(), v) for k, v in results[0].items())["aggregate"]
 
     def insert(self, _values=None, **values):
         """
@@ -1460,9 +1441,7 @@ class QueryBuilder(object):
         if extras is None:
             extras = {}
 
-        columns = {
-            column: self.raw('%s + %s' % (wrapped, amount))
-        }
+        columns = {column: self.raw("%s + %s" % (wrapped, amount))}
         columns.update(extras)
 
         return self.update(**columns)
@@ -1488,9 +1467,7 @@ class QueryBuilder(object):
         if extras is None:
             extras = {}
 
-        columns = {
-            column: self.raw('%s - %s' % (wrapped, amount))
-        }
+        columns = {column: self.raw("%s - %s" % (wrapped, amount))}
         columns.update(extras)
 
         return self.update(**columns)
@@ -1506,7 +1483,7 @@ class QueryBuilder(object):
         :rtype: int
         """
         if id is not None:
-            self.where('id', '=', id)
+            self.where("id", "=", id)
 
         sql = self._grammar.compile_delete(self)
 
@@ -1543,7 +1520,7 @@ class QueryBuilder(object):
         :rtype: None
         """
         self.wheres = self.wheres + wheres
-        self._bindings['where'] = self._bindings['where'] + bindings
+        self._bindings["where"] = self._bindings["where"] + bindings
 
     def _clean_bindings(self, bindings):
         """
@@ -1582,20 +1559,20 @@ class QueryBuilder(object):
     def get_raw_bindings(self):
         return self._bindings
 
-    def set_bindings(self, bindings, type='where'):
+    def set_bindings(self, bindings, type="where"):
         if type not in self._bindings:
-            raise ArgumentError('Invalid binding type: %s' % type)
+            raise ArgumentError("Invalid binding type: %s" % type)
 
         self._bindings[type] = bindings
 
         return self
 
-    def add_binding(self, value, type='where'):
+    def add_binding(self, value, type="where"):
         if value is None:
             return self
 
         if type not in self._bindings:
-            raise ArgumentError('Invalid binding type: %s' % type)
+            raise ArgumentError("Invalid binding type: %s" % type)
 
         if isinstance(value, (list, tuple)):
             self._bindings[type] += value
@@ -1679,7 +1656,7 @@ class QueryBuilder(object):
         return self
 
     def __getattr__(self, item):
-        if item.startswith('where_'):
+        if item.startswith("where_"):
             return self.dynamic_where(item)
 
         raise AttributeError(item)
@@ -1687,8 +1664,12 @@ class QueryBuilder(object):
     def __copy__(self):
         new = self.__class__(self._connection, self._grammar, self._processor)
 
-        new.__dict__.update(dict((k, copy.deepcopy(v)) for k, v
-                                 in self.__dict__.items()
-                                 if k != '_connection'))
+        new.__dict__.update(
+            dict(
+                (k, copy.deepcopy(v))
+                for k, v in self.__dict__.items()
+                if k != "_connection"
+            )
+        )
 
         return new

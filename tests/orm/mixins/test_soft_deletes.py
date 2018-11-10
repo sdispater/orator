@@ -13,7 +13,6 @@ t = pendulum.now()
 
 
 class SoftDeletesTestCase(OratorTestCase):
-
     def tearDown(self):
         flexmock_teardown()
 
@@ -23,9 +22,9 @@ class SoftDeletesTestCase(OratorTestCase):
         builder = flexmock(Builder)
         query_builder = flexmock(QueryBuilder(None, None, None))
         query = Builder(query_builder)
-        model.should_receive('new_query').and_return(query)
-        builder.should_receive('where').once().with_args('id', 1).and_return(query)
-        builder.should_receive('update').once().with_args({'deleted_at': t})
+        model.should_receive("new_query").and_return(query)
+        builder.should_receive("where").once().with_args("id", 1).and_return(query)
+        builder.should_receive("update").once().with_args({"deleted_at": t})
         model.delete()
 
         self.assertIsInstance(model.deleted_at, datetime.datetime)
@@ -33,7 +32,7 @@ class SoftDeletesTestCase(OratorTestCase):
     def test_restore(self):
         model = flexmock(SoftDeleteModelStub())
         model.set_exists(True)
-        model.should_receive('save').once()
+        model.should_receive("save").once()
 
         model.restore()
 
@@ -41,12 +40,11 @@ class SoftDeletesTestCase(OratorTestCase):
 
 
 class SoftDeleteModelStub(SoftDeletes, Model):
-
     def get_key(self):
         return 1
 
     def get_key_name(self):
-        return 'id'
+        return "id"
 
     def from_datetime(self, value):
         return t

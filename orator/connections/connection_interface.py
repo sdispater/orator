@@ -2,7 +2,6 @@
 
 
 class ConnectionInterface(object):
-
     def table(self, table):
         """
         Begin a fluent query against a database table
@@ -170,5 +169,3 @@ class ConnectionInterface(object):
 
     def pretend(self):
         raise NotImplementedError()
-
-

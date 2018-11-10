@@ -4,7 +4,6 @@ from .has_one_or_many import HasOneOrMany
 
 
 class MorphOneOrMany(HasOneOrMany):
-
     def __init__(self, query, parent, morph_type, foreign_key, local_key):
         """
         :type query: orator.orm.Builder
@@ -84,7 +83,7 @@ class MorphOneOrMany(HasOneOrMany):
         :rtype: Collection or Model
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         instance = self._query.find(id, columns)
 
@@ -185,7 +184,7 @@ class MorphOneOrMany(HasOneOrMany):
         return self._morph_type
 
     def get_plain_morph_type(self):
-        return self._morph_type.split('.')[-1]
+        return self._morph_type.split(".")[-1]
 
     def get_morph_name(self):
         return self._morph_name
@@ -196,5 +195,5 @@ class MorphOneOrMany(HasOneOrMany):
             parent,
             self._morph_type,
             self._foreign_key,
-            self._local_key
+            self._local_key,
         )

@@ -7,7 +7,6 @@ from .result import Result
 
 
 class MorphTo(BelongsTo):
-
     def __init__(self, query, parent, foreign_key, other_key, type, relation):
         """
         :type query: orator.orm.Builder
@@ -87,7 +86,9 @@ class MorphTo(BelongsTo):
         self._parent.set_attribute(self._foreign_key, model.get_key())
         self._parent.set_attribute(self._morph_type, model.get_morph_name())
 
-        return self._parent.set_relation(self._relation, Result(model, self, self._parent))
+        return self._parent.set_relation(
+            self._relation, Result(model, self, self._parent)
+        )
 
     def get_eager(self):
         """
@@ -114,11 +115,7 @@ class MorphTo(BelongsTo):
             if result.get_key() in self._dictionary.get(type, []):
                 for model in self._dictionary[type][result.get_key()]:
                     model.set_relation(
-                        self._relation,
-                        Result(
-                            result, self, model,
-                            related=result
-                        )
+                        self._relation, Result(result, self, model, related=result)
                     )
 
     def _get_results_by_type(self, type):
@@ -151,9 +148,11 @@ class MorphTo(BelongsTo):
         """
         foreign = self._foreign_key
 
-        keys = BaseCollection.make(list(self._dictionary[type].values()))\
-            .map(lambda models: getattr(models[0], foreign))\
+        keys = (
+            BaseCollection.make(list(self._dictionary[type].values()))
+            .map(lambda models: getattr(models[0], foreign))
             .unique()
+        )
 
         return keys
 
@@ -193,5 +192,5 @@ class MorphTo(BelongsTo):
             self._foreign_key,
             self._other_key if not related else related.get_key_name(),
             self._morph_type,
-            self._relation
+            self._relation,
         )

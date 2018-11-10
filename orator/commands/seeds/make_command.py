@@ -24,9 +24,9 @@ class SeedersMakeCommand(BaseCommand):
         Executes the command.
         """
         # Making root seeder
-        self._make('database_seeder', True)
+        self._make("database_seeder", True)
 
-        self._make(self.argument('name'))
+        self._make(self.argument("name"))
 
     def _make(self, name, root=False):
         name = self._parse_name(name)
@@ -34,24 +34,24 @@ class SeedersMakeCommand(BaseCommand):
         path = self._get_path(name)
         if os.path.exists(path):
             if not root:
-                self.error('%s already exists' % name)
+                self.error("%s already exists" % name)
 
             return False
 
         self._make_directory(os.path.dirname(path))
 
-        with open(path, 'w') as fh:
+        with open(path, "w") as fh:
             fh.write(self._build_class(name))
 
         if root:
-            with open(os.path.join(os.path.dirname(path), '__init__.py'), 'w'):
+            with open(os.path.join(os.path.dirname(path), "__init__.py"), "w"):
                 pass
 
-        self.info('<fg=cyan>%s</> created successfully.' % name)
+        self.info("<fg=cyan>%s</> created successfully." % name)
 
     def _parse_name(self, name):
-        if name.endswith('.py'):
-            name = name.replace('.py', '', -1)
+        if name.endswith(".py"):
+            name = name.replace(".py", "", -1)
 
         return name
 
@@ -64,11 +64,11 @@ class SeedersMakeCommand(BaseCommand):
 
         :rtype: str
         """
-        path = self.option('path')
+        path = self.option("path")
         if path is None:
             path = self._get_seeders_path()
 
-        return os.path.join(path, '%s.py' % name)
+        return os.path.join(path, "%s.py" % name)
 
     def _make_directory(self, path):
         try:
@@ -83,7 +83,7 @@ class SeedersMakeCommand(BaseCommand):
         stub = self._get_stub()
         klass = self._get_class_name(name)
 
-        stub = stub.replace('DummyClass', klass)
+        stub = stub.replace("DummyClass", klass)
 
         return stub
 

@@ -23,18 +23,18 @@ class Command(BaseCommand):
         if self.needs_config and not self.resolver:
             # Checking if a default config file is present
             if not self._check_config():
-                self.add_option('config', 'c',
-                                InputOption.VALUE_REQUIRED,
-                                'The config file path')
+                self.add_option(
+                    "config", "c", InputOption.VALUE_REQUIRED, "The config file path"
+                )
 
     def execute(self, i, o):
         """
         Executes the command.
         """
-        self.set_style('question', fg='blue')
+        self.set_style("question", fg="blue")
 
         if self.needs_config and not self.resolver:
-            self._handle_config(self.option('config'))
+            self._handle_config(self.option("config"))
 
         return self.handle()
 
@@ -52,22 +52,22 @@ class Command(BaseCommand):
 
     def confirm_to_proceed(self, message=None):
         if message is None:
-            message = 'Do you really wish to run this command?: '
+            message = "Do you really wish to run this command?: "
 
-        if self.option('force'):
+        if self.option("force"):
             return True
 
         confirmed = self.confirm(message)
 
         if not confirmed:
-            self.comment('Command Cancelled!')
+            self.comment("Command Cancelled!")
 
             return False
 
         return True
 
     def _get_migration_path(self):
-        return os.path.join(os.getcwd(), 'migrations')
+        return os.path.join(os.getcwd(), "migrations")
 
     def _check_config(self):
         """
@@ -77,7 +77,7 @@ class Command(BaseCommand):
         """
         current_path = os.path.relpath(os.getcwd())
 
-        accepted_files = ['orator.yml', 'orator.py']
+        accepted_files = ["orator.yml", "orator.py"]
         for accepted_file in accepted_files:
             config_file = os.path.join(current_path, accepted_file)
             if os.path.exists(config_file):
@@ -97,7 +97,9 @@ class Command(BaseCommand):
         """
         config = self._get_config(config_file)
 
-        self.resolver = DatabaseManager(config.get('databases', config.get('DATABASES', {})))
+        self.resolver = DatabaseManager(
+            config.get("databases", config.get("DATABASES", {}))
+        )
 
         return True
 
@@ -107,22 +109,22 @@ class Command(BaseCommand):
 
         :rtype: dict
         """
-        if not path and not self.option('config'):
-            raise Exception('The --config|-c option is missing.')
+        if not path and not self.option("config"):
+            raise Exception("The --config|-c option is missing.")
 
         if not path:
-            path = self.option('config')
+            path = self.option("config")
 
         filename, ext = os.path.splitext(path)
-        if ext in ['.yml', '.yaml']:
+        if ext in [".yml", ".yaml"]:
             with open(path) as fd:
                 config = yaml.load(fd)
-        elif ext in ['.py']:
+        elif ext in [".py"]:
             config = {}
 
             with open(path) as fh:
                 exec(fh.read(), {}, config)
         else:
-            raise RuntimeError('Config file [%s] is not supported.' % path)
+            raise RuntimeError("Config file [%s] is not supported." % path)
 
         return config

@@ -5,4 +5,4 @@ from orator.orm import Model
 
 class User(Model):
 
-    __fillable__ = ['name']
+    __fillable__ = ["name"]

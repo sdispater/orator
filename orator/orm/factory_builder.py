@@ -4,7 +4,6 @@ from .collection import Collection
 
 
 class FactoryBuilder(object):
-
     def __init__(self, klass, name, definitions, faker, resolver=None):
         """
         :param klass: The class

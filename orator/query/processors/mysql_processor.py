@@ -4,7 +4,6 @@ from .processor import QueryProcessor
 
 
 class MySQLQueryProcessor(QueryProcessor):
-
     def process_insert_get_id(self, query, sql, values, sequence=None):
         """
         Process an "insert get ID" query.
@@ -29,18 +28,18 @@ class MySQLQueryProcessor(QueryProcessor):
                 query.get_connection().insert(sql, values)
 
                 cursor = query.get_connection().get_cursor()
-                if hasattr(cursor, 'lastrowid'):
+                if hasattr(cursor, "lastrowid"):
                     id = cursor.lastrowid
                 else:
-                    id = query.get_connection().statement('SELECT LAST_INSERT_ID()')
+                    id = query.get_connection().statement("SELECT LAST_INSERT_ID()")
         else:
             query.get_connection().insert(sql, values)
 
             cursor = query.get_connection().get_cursor()
-            if hasattr(cursor, 'lastrowid'):
+            if hasattr(cursor, "lastrowid"):
                 id = cursor.lastrowid
             else:
-                id = query.get_connection().statement('SELECT LAST_INSERT_ID()')
+                id = query.get_connection().statement("SELECT LAST_INSERT_ID()")
 
         if isinstance(id, int):
             return id
@@ -60,4 +59,4 @@ class MySQLQueryProcessor(QueryProcessor):
         :return: The processed results
         :return: list
         """
-        return list(map(lambda x: x['column_name'], results))
+        return list(map(lambda x: x["column_name"], results))

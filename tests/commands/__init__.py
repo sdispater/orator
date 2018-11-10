@@ -6,7 +6,6 @@ from .. import OratorTestCase
 
 
 class OratorCommandTestCase(OratorTestCase):
-
     def tearDown(self):
         flexmock_teardown()
 
@@ -20,7 +19,7 @@ class OratorCommandTestCase(OratorTestCase):
         if options is None:
             options = []
 
-        options = [('command', command.get_name())] + options
+        options = [("command", command.get_name())] + options
 
         application = Application()
         application.add(command)
