@@ -11,7 +11,7 @@ from ..dbal.postgres_schema_manager import PostgresSchemaManager
 
 class PostgresConnection(Connection):
 
-    name = 'pgsql'
+    name = "pgsql"
 
     def get_default_query_grammar(self):
         return PostgresQueryGrammar(marker=self._marker)
@@ -64,7 +64,7 @@ class PostgresConnection(Connection):
 
             return self._cursor.mogrify(query, bindings).decode()
 
-        if not hasattr(self._cursor, 'query'):
+        if not hasattr(self._cursor, "query"):
             return super(PostgresConnection, self)._get_cursor_query(query, bindings)
 
         if PY2:

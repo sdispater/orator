@@ -4,7 +4,6 @@ from ..support.fluent import Fluent
 
 
 class Blueprint(object):
-
     def __init__(self, table):
         """
         :param table: The table to operate on
@@ -47,7 +46,7 @@ class Blueprint(object):
         statements = []
 
         for command in self._commands:
-            method = 'compile_%s' % command.name
+            method = "compile_%s" % command.name
 
             if hasattr(grammar, method):
                 sql = getattr(grammar, method)(self, command, connection)
@@ -64,10 +63,10 @@ class Blueprint(object):
         Add the commands that are implied by the blueprint.
         """
         if len(self.get_added_columns()) and not self._creating():
-            self._commands.insert(0, self._create_command('add'))
+            self._commands.insert(0, self._create_command("add"))
 
         if len(self.get_changed_columns()) and not self._creating():
-            self._commands.insert(0, self._create_command('change'))
+            self._commands.insert(0, self._create_command("change"))
 
         return self._add_fluent_indexes()
 
@@ -76,7 +75,7 @@ class Blueprint(object):
         Add the index commands fluently specified on columns:
         """
         for column in self._columns:
-            for index in ['primary', 'unique', 'index']:
+            for index in ["primary", "unique", "index"]:
                 column_index = column.get(index)
 
                 if column_index is True:
@@ -95,7 +94,7 @@ class Blueprint(object):
         :rtype: bool
         """
         for command in self._commands:
-            if command.name == 'create':
+            if command.name == "create":
                 return True
 
         return False
@@ -106,7 +105,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_command('create')
+        return self._add_command("create")
 
     def drop(self):
         """
@@ -114,7 +113,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        self._add_command('drop')
+        self._add_command("drop")
 
         return self
 
@@ -124,7 +123,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_command('drop_if_exists')
+        return self._add_command("drop_if_exists")
 
     def drop_column(self, *columns):
         """
@@ -137,7 +136,7 @@ class Blueprint(object):
         """
         columns = list(columns)
 
-        return self._add_command('drop_column', columns=columns)
+        return self._add_command("drop_column", columns=columns)
 
     def rename_column(self, from_, to):
         """
@@ -150,7 +149,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_command('rename_column', **{'from_': from_, 'to': to})
+        return self._add_command("rename_column", **{"from_": from_, "to": to})
 
     def drop_primary(self, index=None):
         """
@@ -161,7 +160,7 @@ class Blueprint(object):
 
         :rtype: dict
         """
-        return self._drop_index_command('drop_primary', 'primary', index)
+        return self._drop_index_command("drop_primary", "primary", index)
 
     def drop_unique(self, index):
         """
@@ -172,7 +171,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._drop_index_command('drop_unique', 'unique', index)
+        return self._drop_index_command("drop_unique", "unique", index)
 
     def drop_index(self, index):
         """
@@ -183,7 +182,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._drop_index_command('drop_index', 'index', index)
+        return self._drop_index_command("drop_index", "index", index)
 
     def drop_foreign(self, index):
         """
@@ -194,7 +193,7 @@ class Blueprint(object):
 
         :rtype: dict
         """
-        return self._drop_index_command('drop_foreign', 'foreign', index)
+        return self._drop_index_command("drop_foreign", "foreign", index)
 
     def drop_timestamps(self):
         """
@@ -202,7 +201,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self.drop_column('created_at', 'updated_at')
+        return self.drop_column("created_at", "updated_at")
 
     def drop_soft_deletes(self):
         """
@@ -210,7 +209,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self.drop_column('deleted_at')
+        return self.drop_column("deleted_at")
 
     def rename(self, to):
         """
@@ -221,7 +220,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_command('rename', to=to)
+        return self._add_command("rename", to=to)
 
     def primary(self, columns, name=None):
         """
@@ -235,7 +234,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._index_command('primary', columns, name)
+        return self._index_command("primary", columns, name)
 
     def unique(self, columns, name=None):
         """
@@ -249,7 +248,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._index_command('unique', columns, name)
+        return self._index_command("unique", columns, name)
 
     def index(self, columns, name=None):
         """
@@ -263,7 +262,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._index_command('index', columns, name)
+        return self._index_command("index", columns, name)
 
     def foreign(self, columns, name=None):
         """
@@ -277,7 +276,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._index_command('foreign', columns, name)
+        return self._index_command("foreign", columns, name)
 
     def increments(self, column):
         """
@@ -310,7 +309,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('char', column, length=length)
+        return self._add_column("char", column, length=length)
 
     def string(self, column, length=255):
         """
@@ -321,7 +320,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('string', column, length=length)
+        return self._add_column("string", column, length=length)
 
     def text(self, column):
         """
@@ -332,7 +331,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('text', column)
+        return self._add_column("text", column)
 
     def medium_text(self, column):
         """
@@ -343,7 +342,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('medium_text', column)
+        return self._add_column("medium_text", column)
 
     def long_text(self, column):
         """
@@ -354,7 +353,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('long_text', column)
+        return self._add_column("long_text", column)
 
     def integer(self, column, auto_increment=False, unsigned=False):
         """
@@ -369,9 +368,9 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('integer', column,
-                                auto_increment=auto_increment,
-                                unsigned=unsigned)
+        return self._add_column(
+            "integer", column, auto_increment=auto_increment, unsigned=unsigned
+        )
 
     def big_integer(self, column, auto_increment=False, unsigned=False):
         """
@@ -386,9 +385,9 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('big_integer', column,
-                                auto_increment=auto_increment,
-                                unsigned=unsigned)
+        return self._add_column(
+            "big_integer", column, auto_increment=auto_increment, unsigned=unsigned
+        )
 
     def medium_integer(self, column, auto_increment=False, unsigned=False):
         """
@@ -403,9 +402,9 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('medium_integer', column,
-                                auto_increment=auto_increment,
-                                unsigned=unsigned)
+        return self._add_column(
+            "medium_integer", column, auto_increment=auto_increment, unsigned=unsigned
+        )
 
     def tiny_integer(self, column, auto_increment=False, unsigned=False):
         """
@@ -420,9 +419,9 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('tiny_integer', column,
-                                auto_increment=auto_increment,
-                                unsigned=unsigned)
+        return self._add_column(
+            "tiny_integer", column, auto_increment=auto_increment, unsigned=unsigned
+        )
 
     def small_integer(self, column, auto_increment=False, unsigned=False):
         """
@@ -437,9 +436,9 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('small_integer', column,
-                                auto_increment=auto_increment,
-                                unsigned=unsigned)
+        return self._add_column(
+            "small_integer", column, auto_increment=auto_increment, unsigned=unsigned
+        )
 
     def unsigned_integer(self, column, auto_increment=False):
         """
@@ -480,7 +479,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('float', column, total=total, places=places)
+        return self._add_column("float", column, total=total, places=places)
 
     def double(self, column, total=None, places=None):
         """
@@ -495,7 +494,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('double', column, total=total, places=places)
+        return self._add_column("double", column, total=total, places=places)
 
     def decimal(self, column, total=8, places=2):
         """
@@ -510,7 +509,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('decimal', column, total=total, places=places)
+        return self._add_column("decimal", column, total=total, places=places)
 
     def boolean(self, column):
         """
@@ -521,8 +520,8 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('boolean', column)
-    
+        return self._add_column("boolean", column)
+
     def enum(self, column, allowed):
         """
         Create a new enum column on the table.
@@ -534,7 +533,7 @@ class Blueprint(object):
         
         :rtype: Fluent
         """
-        return self._add_column('enum', column, allowed=allowed)
+        return self._add_column("enum", column, allowed=allowed)
 
     def json(self, column):
         """
@@ -545,7 +544,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('json', column)
+        return self._add_column("json", column)
 
     def date(self, column):
         """
@@ -556,7 +555,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('date', column)
+        return self._add_column("date", column)
 
     def datetime(self, column):
         """
@@ -567,7 +566,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('datetime', column)
+        return self._add_column("datetime", column)
 
     def time(self, column):
         """
@@ -578,7 +577,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('time', column)
+        return self._add_column("time", column)
 
     def timestamp(self, column):
         """
@@ -589,7 +588,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('timestamp', column)
+        return self._add_column("timestamp", column)
 
     def nullable_timestamps(self):
         """
@@ -597,8 +596,8 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        self.timestamp('created_at').nullable()
-        self.timestamp('updated_at').nullable()
+        self.timestamp("created_at").nullable()
+        self.timestamp("updated_at").nullable()
 
     def timestamps(self, use_current=True):
         """
@@ -607,11 +606,11 @@ class Blueprint(object):
         :rtype: Fluent
         """
         if use_current:
-            self.timestamp('created_at').use_current()
-            self.timestamp('updated_at').use_current()
+            self.timestamp("created_at").use_current()
+            self.timestamp("updated_at").use_current()
         else:
-            self.timestamp('created_at')
-            self.timestamp('updated_at')
+            self.timestamp("created_at")
+            self.timestamp("updated_at")
 
     def soft_deletes(self):
         """
@@ -619,7 +618,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self.timestamp('deleted_at').nullable()
+        return self.timestamp("deleted_at").nullable()
 
     def binary(self, column):
         """
@@ -630,7 +629,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('binary', column)
+        return self._add_column("binary", column)
 
     def morphs(self, name, index_name=None):
         """
@@ -640,9 +639,9 @@ class Blueprint(object):
 
         :type index_name: str
         """
-        self.unsigned_integer('%s_id' % name)
-        self.string('%s_type' % name)
-        self.index(['%s_id' % name, '%s_type' % name], index_name)
+        self.unsigned_integer("%s_id" % name)
+        self.string("%s_type" % name)
+        self.index(["%s_id" % name, "%s_type" % name], index_name)
 
     def _drop_index_command(self, command, type, index):
         """
@@ -695,9 +694,13 @@ class Blueprint(object):
         if not isinstance(columns, list):
             columns = [columns]
 
-        index = '%s_%s_%s' % (self._table, '_'.join([str(column) for column in columns]), type)
+        index = "%s_%s_%s" % (
+            self._table,
+            "_".join([str(column) for column in columns]),
+            type,
+        )
 
-        return index.lower().replace('-', '_').replace('.', '_')
+        return index.lower().replace("-", "_").replace(".", "_")
 
     def _add_column(self, type, name, **parameters):
         """
@@ -714,10 +717,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        parameters.update({
-            'type': type,
-            'name': name
-        })
+        parameters.update({"type": type, "name": name})
 
         column = Fluent(**parameters)
         self._columns.append(column)
@@ -766,7 +766,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        parameters.update({'name': name})
+        parameters.update({"name": name})
 
         return Fluent(**parameters)
 
@@ -780,7 +780,7 @@ class Blueprint(object):
         return self._commands
 
     def get_added_columns(self):
-        return list(filter(lambda column: not column.get('change'), self._columns))
+        return list(filter(lambda column: not column.get("change"), self._columns))
 
     def get_changed_columns(self):
-        return list(filter(lambda column: column.get('change'), self._columns))
+        return list(filter(lambda column: column.get("change"), self._columns))

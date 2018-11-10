@@ -8,7 +8,6 @@ from . import IntegrationTestCase
 
 
 class SchemaBuilderMySQLIntegrationTestCase(IntegrationTestCase, OratorTestCase):
-
     @classmethod
     def get_connection_resolver(cls):
         return DatabaseIntegrationConnectionResolver()
@@ -22,28 +21,26 @@ class DatabaseIntegrationConnectionResolver(object):
         if self._connection:
             return self._connection
 
-        ci = os.environ.get('CI', False)
+        ci = os.environ.get("CI", False)
         if ci:
-            database = 'orator_test'
-            user = 'root'
-            password = ''
+            database = "orator_test"
+            user = "root"
+            password = ""
         else:
-            database = 'orator_test'
-            user = 'orator'
-            password = 'orator'
+            database = "orator_test"
+            user = "orator"
+            password = "orator"
 
         self._connection = MySQLConnection(
-            MySQLConnector().connect({
-                'database': database,
-                'user': user,
-                'password': password
-            })
+            MySQLConnector().connect(
+                {"database": database, "user": user, "password": password}
+            )
         )
 
         return self._connection
 
     def get_default_connection(self):
-        return 'default'
+        return "default"
 
     def set_default_connection(self, name):
         pass

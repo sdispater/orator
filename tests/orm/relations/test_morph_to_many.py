@@ -18,15 +18,17 @@ from orator.orm.collection import Collection
 
 
 class OrmMorphToManyTestCase(OratorTestCase):
-
     def tearDown(self):
         flexmock_teardown()
 
     def test_eager_constraints_are_properly_added(self):
         relation = self._get_relation()
-        relation.get_query().get_query().should_receive('where_in').once().with_args('taggables.taggable_id', [1, 2])
-        relation.get_query().should_receive('where').once()\
-            .with_args('taggables.taggable_type', relation.get_parent().__class__.__name__)
+        relation.get_query().get_query().should_receive("where_in").once().with_args(
+            "taggables.taggable_id", [1, 2]
+        )
+        relation.get_query().should_receive("where").once().with_args(
+            "taggables.taggable_type", relation.get_parent().__class__.__name__
+        )
         model1 = OrmMorphToManyModelStub()
         model1.id = 1
         model2 = OrmMorphToManyModelStub()
@@ -38,37 +40,41 @@ class OrmMorphToManyTestCase(OratorTestCase):
         flexmock(MorphToMany, touch_if_touching=lambda: True)
         relation = self._get_relation()
         query = flexmock()
-        query.should_receive('from_').once().with_args('taggables').and_return(query)
-        query.should_receive('insert').once()\
-            .with_args(
-                [{
-                    'taggable_id': 1,
-                    'taggable_type': relation.get_parent().__class__.__name__,
-                    'tag_id': 2,
-                    'foo': 'bar',
-                }])\
-            .and_return(True)
+        query.should_receive("from_").once().with_args("taggables").and_return(query)
+        query.should_receive("insert").once().with_args(
+            [
+                {
+                    "taggable_id": 1,
+                    "taggable_type": relation.get_parent().__class__.__name__,
+                    "tag_id": 2,
+                    "foo": "bar",
+                }
+            ]
+        ).and_return(True)
         mock_query_builder = flexmock()
-        relation.get_query().should_receive('get_query').and_return(mock_query_builder)
-        mock_query_builder.should_receive('new_query').once().and_return(query)
-        relation.should_receive('touch_if_touching').once()
+        relation.get_query().should_receive("get_query").and_return(mock_query_builder)
+        mock_query_builder.should_receive("new_query").once().and_return(query)
+        relation.should_receive("touch_if_touching").once()
 
-        relation.attach(2, {'foo': 'bar'})
+        relation.attach(2, {"foo": "bar"})
 
     def test_detach_remove_pivot_table_record(self):
         flexmock(MorphToMany, touch_if_touching=lambda: True)
         relation = self._get_relation()
         query = flexmock()
-        query.should_receive('from_').once().with_args('taggables').and_return(query)
-        query.should_receive('where').once().with_args('taggable_id', 1).and_return(query)
-        query.should_receive('where').once()\
-            .with_args('taggable_type', relation.get_parent().__class__.__name__).and_return(query)
-        query.should_receive('where_in').once().with_args('tag_id', [1, 2, 3])
-        query.should_receive('delete').once().and_return(True)
+        query.should_receive("from_").once().with_args("taggables").and_return(query)
+        query.should_receive("where").once().with_args("taggable_id", 1).and_return(
+            query
+        )
+        query.should_receive("where").once().with_args(
+            "taggable_type", relation.get_parent().__class__.__name__
+        ).and_return(query)
+        query.should_receive("where_in").once().with_args("tag_id", [1, 2, 3])
+        query.should_receive("delete").once().and_return(True)
         mock_query_builder = flexmock()
-        relation.get_query().should_receive('get_query').and_return(mock_query_builder)
-        mock_query_builder.should_receive('new_query').once().and_return(query)
-        relation.should_receive('touch_if_touching').once()
+        relation.get_query().should_receive("get_query").and_return(mock_query_builder)
+        mock_query_builder.should_receive("new_query").once().and_return(query)
+        relation.should_receive("touch_if_touching").once()
 
         self.assertTrue(relation.detach([1, 2, 3]))
 
@@ -76,48 +82,72 @@ class OrmMorphToManyTestCase(OratorTestCase):
         flexmock(MorphToMany, touch_if_touching=lambda: True)
         relation = self._get_relation()
         query = flexmock()
-        query.should_receive('from_').once().with_args('taggables').and_return(query)
-        query.should_receive('where').once().with_args('taggable_id', 1).and_return(query)
-        query.should_receive('where').once()\
-            .with_args('taggable_type', relation.get_parent().__class__.__name__).and_return(query)
-        query.should_receive('where_in').never()
-        query.should_receive('delete').once().and_return(True)
+        query.should_receive("from_").once().with_args("taggables").and_return(query)
+        query.should_receive("where").once().with_args("taggable_id", 1).and_return(
+            query
+        )
+        query.should_receive("where").once().with_args(
+            "taggable_type", relation.get_parent().__class__.__name__
+        ).and_return(query)
+        query.should_receive("where_in").never()
+        query.should_receive("delete").once().and_return(True)
         mock_query_builder = flexmock()
-        relation.get_query().should_receive('get_query').and_return(mock_query_builder)
-        mock_query_builder.should_receive('new_query').once().and_return(query)
-        relation.should_receive('touch_if_touching').once()
+        relation.get_query().should_receive("get_query").and_return(mock_query_builder)
+        mock_query_builder.should_receive("new_query").once().and_return(query)
+        relation.should_receive("touch_if_touching").once()
 
         self.assertTrue(relation.detach())
 
     def _get_relation(self):
         builder, parent = self._get_relation_arguments()[:2]
 
-        return MorphToMany(builder, parent, 'taggable', 'taggables', 'taggable_id', 'tag_id')
+        return MorphToMany(
+            builder, parent, "taggable", "taggables", "taggable_id", "tag_id"
+        )
 
     def _get_relation_arguments(self):
         parent = flexmock(Model())
-        parent.should_receive('get_morph_name').and_return(parent.__class__.__name__)
-        parent.should_receive('get_key').and_return(1)
-        parent.should_receive('get_created_at_column').and_return('created_at')
-        parent.should_receive('get_updated_at_column').and_return('updated_at')
+        parent.should_receive("get_morph_name").and_return(parent.__class__.__name__)
+        parent.should_receive("get_key").and_return(1)
+        parent.should_receive("get_created_at_column").and_return("created_at")
+        parent.should_receive("get_updated_at_column").and_return("updated_at")
 
-        query = flexmock(QueryBuilder(MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()))
+        query = flexmock(
+            QueryBuilder(
+                MockConnection().prepare_mock(), QueryGrammar(), QueryProcessor()
+            )
+        )
         flexmock(Builder)
         builder = Builder(query)
-        builder.should_receive('get_query').and_return(query)
+        builder.should_receive("get_query").and_return(query)
         related = flexmock(Model())
         builder.set_model(related)
-        builder.should_receive('get_model').and_return(related)
+        builder.should_receive("get_model").and_return(related)
 
-        related.should_receive('get_key_name').and_return('id')
-        related.should_receive('get_table').and_return('tags')
-        related.should_receive('get_morph_name').and_return(parent.__class__.__name__)
+        related.should_receive("get_key_name").and_return("id")
+        related.should_receive("get_table").and_return("tags")
+        related.should_receive("get_morph_name").and_return(parent.__class__.__name__)
 
-        builder.get_query().should_receive('join').once().with_args('taggables', 'tags.id', '=', 'taggables.tag_id')
-        builder.should_receive('where').once().with_args('taggables.taggable_id', '=', 1)
-        builder.should_receive('where').once().with_args('taggables.taggable_type', parent.__class__.__name__)
+        builder.get_query().should_receive("join").once().with_args(
+            "taggables", "tags.id", "=", "taggables.tag_id"
+        )
+        builder.should_receive("where").once().with_args(
+            "taggables.taggable_id", "=", 1
+        )
+        builder.should_receive("where").once().with_args(
+            "taggables.taggable_type", parent.__class__.__name__
+        )
 
-        return builder, parent, 'taggable', 'taggables', 'taggable_id', 'tag_id', 'relation_name', False
+        return (
+            builder,
+            parent,
+            "taggable",
+            "taggables",
+            "taggable_id",
+            "tag_id",
+            "relation_name",
+            False,
+        )
 
 
 class OrmMorphToManyModelStub(Model):

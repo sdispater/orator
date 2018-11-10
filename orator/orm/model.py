@@ -15,8 +15,16 @@ from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
 from .relations import (
-    Relation, HasOne, HasMany, BelongsTo, BelongsToMany, HasManyThrough,
-    MorphOne, MorphMany, MorphTo, MorphToMany
+    Relation,
+    HasOne,
+    HasMany,
+    BelongsTo,
+    BelongsToMany,
+    HasManyThrough,
+    MorphOne,
+    MorphMany,
+    MorphTo,
+    MorphToMany,
 )
 from .relations.wrapper import Wrapper, BelongsToManyWrapper
 from .utils import mutator, accessor
@@ -25,7 +33,6 @@ from ..events import Event
 
 
 class ModelRegister(dict):
-
     def __init__(self, *args, **kwargs):
         self.inverse = {}
 
@@ -68,12 +75,12 @@ class Model(object):
 
     __table__ = None
 
-    __primary_key__ = 'id'
+    __primary_key__ = "id"
 
     __incrementing__ = True
 
     __fillable__ = []
-    __guarded__ = ['*']
+    __guarded__ = ["*"]
     __unguarded__ = False
 
     __hidden__ = []
@@ -110,10 +117,10 @@ class Model(object):
 
     __attributes__ = {}
 
-    many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
+    many_methods = ["belongs_to_many", "morph_to_many", "morphed_by_many"]
 
-    CREATED_AT = 'created_at'
-    UPDATED_AT = 'updated_at'
+    CREATED_AT = "created_at"
+    UPDATED_AT = "updated_at"
 
     def __init__(self, _attributes=None, **attributes):
         """
@@ -144,11 +151,11 @@ class Model(object):
         if not klass._booted.get(klass):
             klass._booted[klass] = True
 
-            self._fire_model_event('booting')
+            self._fire_model_event("booting")
 
             klass._boot()
 
-            self._fire_model_event('booted')
+            self._fire_model_event("booted")
 
     @classmethod
     def _boot(cls):
@@ -169,7 +176,9 @@ class Model(object):
     @classmethod
     def _boot_columns(cls):
         connection = cls.resolve_connection()
-        columns = connection.get_schema_manager().list_table_columns(cls.__table__ or inflection.tableize(cls.__name__))
+        columns = connection.get_schema_manager().list_table_columns(
+            cls.__table__ or inflection.tableize(cls.__name__)
+        )
         cls.__columns__ = list(columns.keys())
 
     @classmethod
@@ -178,15 +187,15 @@ class Model(object):
         Boot the mixins
         """
         for mixin in cls.__bases__:
-            #if mixin == Model:
+            # if mixin == Model:
             #    continue
 
-            method = 'boot_%s' % inflection.underscore(mixin.__name__)
+            method = "boot_%s" % inflection.underscore(mixin.__name__)
             if hasattr(mixin, method):
                 getattr(mixin, method)(cls)
 
     @classmethod
-    def add_global_scope(cls, scope, implementation = None):
+    def add_global_scope(cls, scope, implementation=None):
         """
         Register a new global scope on the model.
 
@@ -206,7 +215,7 @@ class Model(object):
         elif isinstance(scope, Scope):
             cls._global_scopes[cls][scope.__class__] = scope
         else:
-            raise Exception('Global scope must be an instance of Scope or a callable')
+            raise Exception("Global scope must be an instance of Scope or a callable")
 
     @classmethod
     def has_global_scope(cls, scope):
@@ -566,7 +575,7 @@ class Model(object):
             return instance.new_collection()
 
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         return instance.new_query().find(id, columns)
 
@@ -640,9 +649,9 @@ class Model(object):
 
         return instance.new_query().with_(*relations)
 
-    def has_one(self, related,
-                foreign_key=None, local_key=None, relation=None,
-                _wrapped=True):
+    def has_one(
+        self, related, foreign_key=None, local_key=None, relation=None, _wrapped=True
+    ):
         """
         Define a one to one relationship.
 
@@ -676,15 +685,19 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        rel = HasOne(instance.new_query(),
-                     self,
-                     '%s.%s' % (instance.get_table(), foreign_key),
-                     local_key)
+        rel = HasOne(
+            instance.new_query(),
+            self,
+            "%s.%s" % (instance.get_table(), foreign_key),
+            local_key,
+        )
 
         if _wrapped:
-            warn('Using has_one method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using has_one method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = Wrapper(rel)
 
@@ -692,10 +705,16 @@ class Model(object):
 
         return rel
 
-    def morph_one(self, related, name,
-                  type_column=None, id_column=None,
-                  local_key=None, relation=None,
-                  _wrapped=True):
+    def morph_one(
+        self,
+        related,
+        name,
+        type_column=None,
+        id_column=None,
+        local_key=None,
+        relation=None,
+        _wrapped=True,
+    ):
         """
         Define a polymorphic one to one relationship.
 
@@ -731,14 +750,20 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        rel = MorphOne(instance.new_query(), self,
-                       '%s.%s' % (table, type_column),
-                       '%s.%s' % (table, id_column), local_key)
+        rel = MorphOne(
+            instance.new_query(),
+            self,
+            "%s.%s" % (table, type_column),
+            "%s.%s" % (table, id_column),
+            local_key,
+        )
 
         if _wrapped:
-            warn('Using morph_one method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using morph_one method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = Wrapper(rel)
 
@@ -746,9 +771,9 @@ class Model(object):
 
         return rel
 
-    def belongs_to(self, related,
-                   foreign_key=None, other_key=None, relation=None,
-                   _wrapped=True):
+    def belongs_to(
+        self, related, foreign_key=None, other_key=None, relation=None, _wrapped=True
+    ):
         """
         Define an inverse one to one or many relationship.
 
@@ -772,7 +797,7 @@ class Model(object):
             return self._relations[relation]
 
         if foreign_key is None:
-            foreign_key = '%s_id' % inflection.underscore(relation)
+            foreign_key = "%s_id" % inflection.underscore(relation)
 
         instance = self._get_related(related, True)
 
@@ -784,9 +809,11 @@ class Model(object):
         rel = BelongsTo(query, self, foreign_key, other_key, relation)
 
         if _wrapped:
-            warn('Using belongs_to method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using belongs_to method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = Wrapper(rel)
 
@@ -794,8 +821,7 @@ class Model(object):
 
         return rel
 
-    def morph_to(self, name=None, type_column=None, id_column=None,
-                 _wrapped=True):
+    def morph_to(self, name=None, type_column=None, id_column=None, _wrapped=True):
         """
         Define a polymorphic, inverse one-to-one or many relationship.
 
@@ -832,14 +858,21 @@ class Model(object):
         instance = klass()
         instance.set_connection(self.get_connection_name())
 
-        rel = MorphTo(instance.new_query(),
-                      self, id_column,
-                      instance.get_key_name(), type_column, name)
+        rel = MorphTo(
+            instance.new_query(),
+            self,
+            id_column,
+            instance.get_key_name(),
+            type_column,
+            name,
+        )
 
         if _wrapped:
-            warn('Using morph_to method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using morph_to method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = Wrapper(rel)
 
@@ -859,8 +892,9 @@ class Model(object):
             if morph_name == slug:
                 return cls
 
-    def has_many(self, related, foreign_key=None, local_key=None,
-                 relation=None, _wrapped=True):
+    def has_many(
+        self, related, foreign_key=None, local_key=None, relation=None, _wrapped=True
+    ):
         """
         Define a one to many relationship.
 
@@ -894,15 +928,19 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        rel = HasMany(instance.new_query(),
-                      self,
-                      '%s.%s' % (instance.get_table(), foreign_key),
-                      local_key)
+        rel = HasMany(
+            instance.new_query(),
+            self,
+            "%s.%s" % (instance.get_table(), foreign_key),
+            local_key,
+        )
 
         if _wrapped:
-            warn('Using has_many method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using has_many method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = Wrapper(rel)
 
@@ -910,9 +948,15 @@ class Model(object):
 
         return rel
 
-    def has_many_through(self, related, through,
-                         first_key=None, second_key=None, relation=None,
-                         _wrapped=True):
+    def has_many_through(
+        self,
+        related,
+        through,
+        first_key=None,
+        second_key=None,
+        relation=None,
+        _wrapped=True,
+    ):
         """
         Define a has-many-through relationship.
 
@@ -949,13 +993,20 @@ class Model(object):
         if not second_key:
             second_key = through.get_foreign_key()
 
-        rel = HasManyThrough(self._get_related(related)().new_query(),
-                             self, through, first_key, second_key)
+        rel = HasManyThrough(
+            self._get_related(related)().new_query(),
+            self,
+            through,
+            first_key,
+            second_key,
+        )
 
         if _wrapped:
-            warn('Using has_many_through method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using has_many_through method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = Wrapper(rel)
 
@@ -963,10 +1014,16 @@ class Model(object):
 
         return rel
 
-    def morph_many(self, related, name,
-                   type_column=None, id_column=None,
-                   local_key=None, relation=None,
-                   _wrapped=True):
+    def morph_many(
+        self,
+        related,
+        name,
+        type_column=None,
+        id_column=None,
+        local_key=None,
+        relation=None,
+        _wrapped=True,
+    ):
         """
         Define a polymorphic one to many relationship.
 
@@ -1002,14 +1059,20 @@ class Model(object):
         if not local_key:
             local_key = self.get_key_name()
 
-        rel = MorphMany(instance.new_query(), self,
-                        '%s.%s' % (table, type_column),
-                        '%s.%s' % (table, id_column), local_key)
+        rel = MorphMany(
+            instance.new_query(),
+            self,
+            "%s.%s" % (table, type_column),
+            "%s.%s" % (table, id_column),
+            local_key,
+        )
 
         if _wrapped:
-            warn('Using morph_many method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using morph_many method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = Wrapper(rel)
 
@@ -1017,9 +1080,15 @@ class Model(object):
 
         return rel
 
-    def belongs_to_many(self, related, table=None,
-                        foreign_key=None, other_key=None,
-                        relation=None, _wrapped=True):
+    def belongs_to_many(
+        self,
+        related,
+        table=None,
+        foreign_key=None,
+        other_key=None,
+        relation=None,
+        _wrapped=True,
+    ):
         """
         Define a many-to-many relationship.
 
@@ -1061,9 +1130,11 @@ class Model(object):
         rel = BelongsToMany(query, self, table, foreign_key, other_key, relation)
 
         if _wrapped:
-            warn('Using belongs_to_many method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using belongs_to_many method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = BelongsToManyWrapper(rel)
 
@@ -1071,10 +1142,17 @@ class Model(object):
 
         return rel
 
-    def morph_to_many(self, related, name, table=None,
-                      foreign_key=None, other_key=None,
-                      inverse=False, relation=None,
-                      _wrapped=True):
+    def morph_to_many(
+        self,
+        related,
+        name,
+        table=None,
+        foreign_key=None,
+        other_key=None,
+        inverse=False,
+        relation=None,
+        _wrapped=True,
+    ):
         """
         Define a polymorphic many-to-many relationship.
 
@@ -1107,7 +1185,7 @@ class Model(object):
             return self._relations[caller]
 
         if not foreign_key:
-            foreign_key = name + '_id'
+            foreign_key = name + "_id"
 
         instance = self._get_related(related, True)
 
@@ -1119,13 +1197,16 @@ class Model(object):
         if not table:
             table = inflection.pluralize(name)
 
-        rel = MorphToMany(query, self, name, table,
-                          foreign_key, other_key, caller, inverse)
+        rel = MorphToMany(
+            query, self, name, table, foreign_key, other_key, caller, inverse
+        )
 
         if _wrapped:
-            warn('Using morph_to_many method directly is deprecated. '
-                 'Use the appropriate decorator instead.',
-                 category=DeprecationWarning)
+            warn(
+                "Using morph_to_many method directly is deprecated. "
+                "Use the appropriate decorator instead.",
+                category=DeprecationWarning,
+            )
 
             rel = Wrapper(rel)
 
@@ -1133,7 +1214,16 @@ class Model(object):
 
         return rel
 
-    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None, relation=None, _wrapped=False):
+    def morphed_by_many(
+        self,
+        related,
+        name,
+        table=None,
+        foreign_key=None,
+        other_key=None,
+        relation=None,
+        _wrapped=False,
+    ):
         """
         Define a polymorphic many-to-many relationship.
 
@@ -1161,9 +1251,11 @@ class Model(object):
             foreign_key = self.get_foreign_key()
 
         if not other_key:
-            other_key = name + '_id'
+            other_key = name + "_id"
 
-        return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation, _wrapped)
+        return self.morph_to_many(
+            related, name, table, foreign_key, other_key, True, relation, _wrapped
+        )
 
     def _get_related(self, related, as_instance=False):
         """
@@ -1211,7 +1303,7 @@ class Model(object):
 
         models = sorted([related, base])
 
-        return '_'.join(models)
+        return "_".join(models)
 
     @classmethod
     def destroy(cls, *ids):
@@ -1250,10 +1342,10 @@ class Model(object):
         :raises: Exception
         """
         if self.__primary_key__ is None:
-            raise Exception('No primary key defined on the model.')
+            raise Exception("No primary key defined on the model.")
 
         if self._exists:
-            if self._fire_model_event('deleting') is False:
+            if self._fire_model_event("deleting") is False:
                 return False
 
             self.touch_owners()
@@ -1262,7 +1354,7 @@ class Model(object):
 
             self._exists = False
 
-            self._fire_model_event('deleted')
+            self._fire_model_event("deleted")
 
             return True
 
@@ -1276,7 +1368,7 @@ class Model(object):
         """
         Perform the actual delete query on this model instance.
         """
-        if hasattr(self, '_do_perform_delete_on_model'):
+        if hasattr(self, "_do_perform_delete_on_model"):
             return self._do_perform_delete_on_model()
 
         return self.new_query().where(self.get_key_name(), self.get_key()).delete()
@@ -1288,7 +1380,7 @@ class Model(object):
 
         :type callback: callable
         """
-        cls._register_model_event('saving', callback)
+        cls._register_model_event("saving", callback)
 
     @classmethod
     def saved(cls, callback):
@@ -1297,7 +1389,7 @@ class Model(object):
 
         :type callback: callable
         """
-        cls._register_model_event('saved', callback)
+        cls._register_model_event("saved", callback)
 
     @classmethod
     def updating(cls, callback):
@@ -1306,7 +1398,7 @@ class Model(object):
 
         :type callback: callable
         """
-        cls._register_model_event('updating', callback)
+        cls._register_model_event("updating", callback)
 
     @classmethod
     def updated(cls, callback):
@@ -1315,7 +1407,7 @@ class Model(object):
 
         :type callback: callable
         """
-        cls._register_model_event('updated', callback)
+        cls._register_model_event("updated", callback)
 
     @classmethod
     def creating(cls, callback):
@@ -1324,7 +1416,7 @@ class Model(object):
 
         :type callback: callable
         """
-        cls._register_model_event('creating', callback)
+        cls._register_model_event("creating", callback)
 
     @classmethod
     def created(cls, callback):
@@ -1333,7 +1425,7 @@ class Model(object):
 
         :type callback: callable
         """
-        cls._register_model_event('created', callback)
+        cls._register_model_event("created", callback)
 
     @classmethod
     def deleting(cls, callback):
@@ -1342,7 +1434,7 @@ class Model(object):
 
         :type callback: callable
         """
-        cls._register_model_event('deleting', callback)
+        cls._register_model_event("deleting", callback)
 
     @classmethod
     def deleted(cls, callback):
@@ -1351,7 +1443,7 @@ class Model(object):
 
         :type callback: callable
         """
-        cls._register_model_event('deleted', callback)
+        cls._register_model_event("deleted", callback)
 
     @classmethod
     def flush_event_listeners(cls):
@@ -1362,7 +1454,7 @@ class Model(object):
             return
 
         for event in cls.get_observable_events():
-            cls.__dispatcher__.forget('%s: %s' % (event, cls.__name__))
+            cls.__dispatcher__.forget("%s: %s" % (event, cls.__name__))
 
     @classmethod
     def _register_model_event(cls, event, callback):
@@ -1376,7 +1468,7 @@ class Model(object):
         :type callback: callable
         """
         if cls.__dispatcher__:
-            cls.__dispatcher__.listen('%s: %s' % (event, cls.__name__), callback)
+            cls.__dispatcher__.listen("%s: %s" % (event, cls.__name__), callback)
 
     @classmethod
     def get_observable_events(cls):
@@ -1386,9 +1478,16 @@ class Model(object):
         :rtype: list
         """
         default_events = [
-            'creating', 'created', 'updating', 'updated',
-            'deleting', 'deleted', 'saving', 'saved',
-            'restoring', 'restored'
+            "creating",
+            "created",
+            "updating",
+            "updated",
+            "deleting",
+            "deleted",
+            "saving",
+            "saved",
+            "restoring",
+            "restored",
         ]
 
         return default_events + cls.__observables__
@@ -1406,7 +1505,7 @@ class Model(object):
         :return: The new column value
         :rtype: int
         """
-        return self._increment_or_decrement(column, amount, 'increment')
+        return self._increment_or_decrement(column, amount, "increment")
 
     def _decrement(self, column, amount=1):
         """
@@ -1421,7 +1520,7 @@ class Model(object):
         :return: The new column value
         :rtype: int
         """
-        return self._increment_or_decrement(column, amount, 'decrement')
+        return self._increment_or_decrement(column, amount, "decrement")
 
     def _increment_or_decrement(self, column, amount, method):
         """
@@ -1465,7 +1564,11 @@ class Model(object):
 
         :return: None
         """
-        setattr(self, column, getattr(self, column) + (amount if method == 'increment' else amount * -1))
+        setattr(
+            self,
+            column,
+            getattr(self, column) + (amount if method == "increment" else amount * -1),
+        )
 
         self.sync_original_attribute(column)
 
@@ -1518,7 +1621,7 @@ class Model(object):
 
         query = self.new_query()
 
-        if self._fire_model_event('saving') is False:
+        if self._fire_model_event("saving") is False:
             return False
 
         if self._exists:
@@ -1535,11 +1638,11 @@ class Model(object):
         """
         Finish processing on a successful save operation.
         """
-        self._fire_model_event('saved')
+        self._fire_model_event("saved")
 
         self.sync_original()
 
-        if options.get('touch', True):
+        if options.get("touch", True):
             self.touch_owners()
 
     def _perform_update(self, query, options=None):
@@ -1558,10 +1661,10 @@ class Model(object):
         dirty = self.get_dirty()
 
         if len(dirty):
-            if self._fire_model_event('updating') is False:
+            if self._fire_model_event("updating") is False:
                 return False
 
-            if self.__timestamps__ and options.get('timestamps', True):
+            if self.__timestamps__ and options.get("timestamps", True):
                 self._update_timestamps()
 
             dirty = self.get_dirty()
@@ -1569,7 +1672,7 @@ class Model(object):
             if len(dirty):
                 self._set_keys_for_save_query(query).update(dirty)
 
-                self._fire_model_event('updated')
+                self._fire_model_event("updated")
 
         return True
 
@@ -1586,10 +1689,10 @@ class Model(object):
         if options is None:
             options = {}
 
-        if self._fire_model_event('creating') is False:
+        if self._fire_model_event("creating") is False:
             return False
 
-        if self.__timestamps__ and options.get('timestamps', True):
+        if self.__timestamps__ and options.get("timestamps", True):
             self._update_timestamps()
 
         attributes = self._attributes
@@ -1601,7 +1704,7 @@ class Model(object):
 
         self._exists = True
 
-        self._fire_model_event('created')
+        self._fire_model_event("created")
 
         return True
 
@@ -1656,7 +1759,7 @@ class Model(object):
         # We will append the names of the class to the event to distinguish it from
         # other model events that are fired, allowing us to listen on each model
         # event set individually instead of catching event for all the models.
-        event = '%s: %s' % (event, self.__class__.__name__)
+        event = "%s: %s" % (event, self.__class__.__name__)
 
         return self.__dispatcher__.fire(event, self)
 
@@ -1702,10 +1805,16 @@ class Model(object):
         """
         time = self.fresh_timestamp()
 
-        if not self.is_dirty(self.UPDATED_AT) and self._should_set_timestamp(self.UPDATED_AT):
+        if not self.is_dirty(self.UPDATED_AT) and self._should_set_timestamp(
+            self.UPDATED_AT
+        ):
             self.set_updated_at(time)
 
-        if not self._exists and not self.is_dirty(self.CREATED_AT) and self._should_set_timestamp(self.CREATED_AT):
+        if (
+            not self._exists
+            and not self.is_dirty(self.CREATED_AT)
+            and self._should_set_timestamp(self.CREATED_AT)
+        ):
             self.set_created_at(time)
 
     def _should_set_timestamp(self, timestamp):
@@ -1804,9 +1913,7 @@ class Model(object):
         :return: A Builder instance
         :rtype: Builder
         """
-        builder = self.new_orm_builder(
-            self._new_base_query_builder()
-        )
+        builder = self.new_orm_builder(self._new_base_query_builder())
 
         return builder.set_model(self).with_(*self._with)
 
@@ -1928,7 +2035,7 @@ class Model(object):
 
         :rtype: str
         """
-        return '%s.%s' % (self.get_table(), self.get_key_name())
+        return "%s.%s" % (self.get_table(), self.get_key_name())
 
     def uses_timestamps(self):
         """
@@ -1943,10 +2050,10 @@ class Model(object):
         Get the polymorphic relationship columns.
         """
         if not type:
-            type = name + '_type'
+            type = name + "_type"
 
         if not id:
-            id = name + '_id'
+            id = name + "_id"
 
         return type, id
 
@@ -1974,7 +2081,7 @@ class Model(object):
 
         :rtype: str
         """
-        return '%s_id' % inflection.singularize(self.get_table())
+        return "%s_id" % inflection.singularize(self.get_table())
 
     def get_hidden(self):
         """
@@ -2104,7 +2211,7 @@ class Model(object):
         if self.is_guarded(key):
             return False
 
-        return not self.__fillable__ and not key.startswith('_')
+        return not self.__fillable__ and not key.startswith("_")
 
     def is_guarded(self, key):
         """
@@ -2116,7 +2223,7 @@ class Model(object):
         :return: Whether the attribute is guarded or not
         :rtype: bool
         """
-        return key in self.__guarded__ or self.__guarded__ == ['*']
+        return key in self.__guarded__ or self.__guarded__ == ["*"]
 
     def totally_guarded(self):
         """
@@ -2124,7 +2231,7 @@ class Model(object):
 
         :rtype: bool
         """
-        return len(self.__fillable__) == 0 and self.__guarded__ == ['*']
+        return len(self.__fillable__) == 0 and self.__guarded__ == ["*"]
 
     def _remove_table_from_key(self, key):
         """
@@ -2135,10 +2242,10 @@ class Model(object):
 
         :rtype: str
         """
-        if '.' not in key:
+        if "." not in key:
             return key
 
-        return key.split('.')[-1]
+        return key.split(".")[-1]
 
     def get_incrementing(self):
         return self.__incrementing__
@@ -2251,9 +2358,9 @@ class Model(object):
                 continue
 
             relation = None
-            if hasattr(value, 'serialize'):
+            if hasattr(value, "serialize"):
                 relation = value.serialize()
-            elif hasattr(value, 'to_dict'):
+            elif hasattr(value, "to_dict"):
                 relation = value.to_dict()
             elif value is None:
                 relation = value
@@ -2281,7 +2388,11 @@ class Model(object):
         if len(self.__visible__) > 0:
             return {x: values[x] for x in values.keys() if x in self.__visible__}
 
-        return {x: values[x] for x in values.keys() if x not in self.__hidden__ and not x.startswith('_')}
+        return {
+            x: values[x]
+            for x in values.keys()
+            if x not in self.__hidden__ and not x.startswith("_")
+        }
 
     def get_attribute(self, key, original=None):
         """
@@ -2346,7 +2457,9 @@ class Model(object):
         relations = relations or super(Model, self).__getattribute__(method)
 
         if not isinstance(relations, Relation):
-            raise RuntimeError('Relationship method must return an object of type Relation')
+            raise RuntimeError(
+                "Relationship method must return an object of type Relation"
+            )
 
         self._relations[method] = relations
 
@@ -2361,7 +2474,7 @@ class Model(object):
 
         :rtype: bool
         """
-        return hasattr(self, 'get_%s_attribute' % inflection.underscore(key))
+        return hasattr(self, "get_%s_attribute" % inflection.underscore(key))
 
     def _mutate_attribute_for_dict(self, key):
         """
@@ -2372,7 +2485,7 @@ class Model(object):
         """
         value = getattr(self, key)
 
-        if hasattr(value, 'to_dict'):
+        if hasattr(value, "to_dict"):
             return value.to_dict()
 
         if key in self.get_dates():
@@ -2418,7 +2531,7 @@ class Model(object):
         if self._has_cast(key):
             type = self._get_cast_type(key)
 
-            return type in ['list', 'dict', 'json', 'object']
+            return type in ["list", "dict", "json", "object"]
 
         return False
 
@@ -2449,15 +2562,15 @@ class Model(object):
             return None
 
         type = self._get_cast_type(key)
-        if type in ['int', 'integer']:
+        if type in ["int", "integer"]:
             return int(value)
-        elif type in ['real', 'float', 'double']:
+        elif type in ["real", "float", "double"]:
             return float(value)
-        elif type in ['string', 'str']:
+        elif type in ["string", "str"]:
             return str(value)
-        elif type in ['bool', 'boolean']:
+        elif type in ["bool", "boolean"]:
             return bool(value)
-        elif type in ['dict', 'list', 'json'] and isinstance(value, basestring):
+        elif type in ["dict", "list", "json"] and isinstance(value, basestring):
             return json.loads(value)
         else:
             return value
@@ -2486,7 +2599,9 @@ class Model(object):
         if isinstance(value, pendulum.Pendulum):
             return value.format(date_format)
 
-        if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
+        if isinstance(value, datetime.date) and not isinstance(
+            value, (datetime.datetime)
+        ):
             value = pendulum.date.instance(value)
 
             return value.format(date_format)
@@ -2505,7 +2620,9 @@ class Model(object):
         if isinstance(value, (int, float)):
             return pendulum.from_timestamp(value)
 
-        if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
+        if isinstance(value, datetime.date) and not isinstance(
+            value, (datetime.datetime)
+        ):
             return pendulum.date.instance(value)
 
         return pendulum.instance(value)
@@ -2516,7 +2633,7 @@ class Model(object):
 
         :rtype: str
         """
-        return 'iso'
+        return "iso"
 
     def _format_date(self, date):
         """
@@ -2532,7 +2649,7 @@ class Model(object):
 
         format = self.get_date_format()
 
-        if format == 'iso':
+        if format == "iso":
             if isinstance(date, basestring):
                 return pendulum.parse(date).isoformat()
 
@@ -2571,10 +2688,12 @@ class Model(object):
             except_ = [
                 self.get_key_name(),
                 self.get_created_at_column(),
-                self.get_updated_at_column()
+                self.get_updated_at_column(),
             ]
 
-            attributes = {x: self._attributes[x] for x in self._attributes if x not in except_}
+            attributes = {
+                x: self._attributes[x] for x in self._attributes if x not in except_
+            }
 
             instance = self.new_instance(attributes)
 
@@ -2838,7 +2957,12 @@ class Model(object):
         return self.get_attribute(item)
 
     def __setattr__(self, key, value):
-        if key in ['_attributes', '_exists', '_relations', '_original'] or key.startswith('__'):
+        if key in [
+            "_attributes",
+            "_exists",
+            "_relations",
+            "_original",
+        ] or key.startswith("__"):
             return object.__setattr__(self, key, value)
 
         if self._has_set_mutator(key):
@@ -2863,14 +2987,14 @@ class Model(object):
 
     def __getstate__(self):
         return {
-            'attributes': self._attributes,
-            'relations': self._relations,
-            'exists': self._exists
+            "attributes": self._attributes,
+            "relations": self._relations,
+            "exists": self._exists,
         }
 
     def __setstate__(self, state):
         self._boot_if_not_booted()
 
-        self.set_raw_attributes(state['attributes'], True)
-        self.set_relations(state['relations'])
-        self.set_exists(state['exists'])
+        self.set_raw_attributes(state["attributes"], True)
+        self.set_relations(state["relations"])
+        self.set_exists(state["exists"])

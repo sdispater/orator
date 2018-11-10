@@ -18,7 +18,6 @@ def mkdir_p(path):
 
 
 class MigrationCreator(object):
-
     def create(self, name, path, table=None, create=False):
         """
         Create a new migration at the given path.
@@ -38,14 +37,14 @@ class MigrationCreator(object):
         if not os.path.exists(os.path.dirname(path)):
             mkdir_p(os.path.dirname(path))
 
-        parent = os.path.join(os.path.dirname(path), '__init__.py')
+        parent = os.path.join(os.path.dirname(path), "__init__.py")
         if not os.path.exists(parent):
-            with open(parent, 'w'):
+            with open(parent, "w"):
                 pass
 
         stub = self._get_stub(table, create)
 
-        with open(path, 'w') as fh:
+        with open(path, "w") as fh:
             fh.write(self._populate_stub(name, stub, table))
 
         return path
@@ -87,10 +86,10 @@ class MigrationCreator(object):
 
         :rtype: str
         """
-        stub = stub.replace('DummyClass', self._get_class_name(name))
+        stub = stub.replace("DummyClass", self._get_class_name(name))
 
         if table is not None:
-            stub = stub.replace('dummy_table', table)
+            stub = stub.replace("dummy_table", table)
 
         return stub
 
@@ -98,7 +97,7 @@ class MigrationCreator(object):
         return inflection.camelize(name)
 
     def _get_path(self, name, path):
-        return os.path.join(path, self._get_date_prefix() + '_' + name + '.py')
+        return os.path.join(path, self._get_date_prefix() + "_" + name + ".py")
 
     def _get_date_prefix(self):
-        return datetime.datetime.utcnow().strftime('%Y_%m_%d_%H%M%S')
+        return datetime.datetime.utcnow().strftime("%Y_%m_%d_%H%M%S")

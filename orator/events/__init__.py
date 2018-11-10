@@ -9,7 +9,7 @@ class Event(object):
 
     @classmethod
     def fire(cls, name, *args, **kwargs):
-        name = 'orator.%s' % name
+        name = "orator.%s" % name
         signal = cls.events.signal(name)
 
         for response in signal.send(*args, **kwargs):
@@ -18,14 +18,14 @@ class Event(object):
 
     @classmethod
     def listen(cls, name, callback, *args, **kwargs):
-        name = 'orator.%s' % name
+        name = "orator.%s" % name
         signal = cls.events.signal(name)
 
         signal.connect(callback, weak=False, *args, **kwargs)
 
     @classmethod
     def forget(cls, name, *args, **kwargs):
-        name = 'orator.%s' % name
+        name = "orator.%s" % name
         signal = cls.events.signal(name)
 
         for receiver in signal.receivers:

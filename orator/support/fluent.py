@@ -29,7 +29,6 @@ class Dynamic(ObjectProxy):
 
 
 class Fluent(object):
-
     def __init__(self, **attributes):
         self._attributes = {}
 
@@ -78,7 +77,7 @@ class Fluent(object):
         return Dynamic(self._attributes.get(item), item, self)
 
     def __setattr__(self, key, value):
-        if key == '_attributes':
+        if key == "_attributes":
             super(Fluent, self).__setattr__(key, value)
 
         try:

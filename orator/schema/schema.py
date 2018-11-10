@@ -2,7 +2,6 @@
 
 
 class Schema(object):
-
     def __init__(self, manager):
         """
         :param manager: The database manager

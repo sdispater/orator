@@ -8,7 +8,6 @@ from .factory_builder import FactoryBuilder
 
 
 class Factory(object):
-
     def __init__(self, faker=None, resolver=None):
         """
         :param faker: A faker generator instance
@@ -56,7 +55,7 @@ class Factory(object):
         """
         return self.define(klass, name)
 
-    def define(self, klass, name='default'):
+    def define(self, klass, name="default"):
         """
         Define a class with a given set of attributes.
 
@@ -66,6 +65,7 @@ class Factory(object):
         :param name: The short name
         :type name: str
         """
+
         def decorate(func):
             @wraps(func)
             def wrapped(*args, **kwargs):
@@ -77,7 +77,7 @@ class Factory(object):
 
         return decorate
 
-    def register(self, klass, callback, name='default'):
+    def register(self, klass, callback, name="default"):
         """
         Register a class with a function.
 
@@ -189,7 +189,7 @@ class Factory(object):
         """
         return self.raw(klass, _name=name, **attributes)
 
-    def raw(self, klass, _name='default', **attributes):
+    def raw(self, klass, _name="default", **attributes):
         """
         Get the raw attribute dict for a given named model.
 
@@ -210,7 +210,7 @@ class Factory(object):
 
         return raw
 
-    def of(self, klass, name='default'):
+    def of(self, klass, name="default"):
         """
         Create a builder for the given model.
 
@@ -222,9 +222,11 @@ class Factory(object):
 
         :return: orator.orm.factory_builder.FactoryBuilder
         """
-        return FactoryBuilder(klass, name, self._definitions, self._faker, self._resolver)
+        return FactoryBuilder(
+            klass, name, self._definitions, self._faker, self._resolver
+        )
 
-    def build(self, klass, name='default', amount=None):
+    def build(self, klass, name="default", amount=None):
         """
         Makes a factory builder with a specified amount.
 
@@ -242,7 +244,7 @@ class Factory(object):
         if amount is None:
             if isinstance(name, int):
                 amount = name
-                name = 'default'
+                name = "default"
             else:
                 amount = 1
 
@@ -287,7 +289,7 @@ class Factory(object):
     def __contains__(self, item):
         return item in self._definitions
 
-    def __call__(self, klass, name='default', amount=None):
+    def __call__(self, klass, name="default", amount=None):
         """
         Makes a factory builder with a specified amount.
 

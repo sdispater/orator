@@ -5,7 +5,6 @@ from .result import Result
 
 
 class MorphOne(MorphOneOrMany):
-
     def get_results(self):
         """
         Get the results of the relationship.

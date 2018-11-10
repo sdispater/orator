@@ -5,7 +5,6 @@ from ..utils import basestring
 
 
 class Column(AbstractAsset):
-
     def __init__(self, name, type, options=None):
         self._set_name(name)
         self._type = type
@@ -25,7 +24,7 @@ class Column(AbstractAsset):
 
     def set_options(self, options):
         for key, value in options.items():
-            method = 'set_%s' % key
+            method = "set_%s" % key
             if hasattr(self, method):
                 getattr(self, method)(value)
 
@@ -59,7 +58,11 @@ class Column(AbstractAsset):
         return self
 
     def set_precision(self, precision):
-        if precision is None or isinstance(precision, basestring) and not precision.isdigit():
+        if (
+            precision is None
+            or isinstance(precision, basestring)
+            and not precision.isdigit()
+        ):
             precision = 10
 
         self._precision = int(precision)
@@ -123,21 +126,19 @@ class Column(AbstractAsset):
 
     def to_dict(self):
         d = {
-            'name': self._name,
-            'type': self._type,
-            'default': self._default,
-            'notnull': self._notnull,
-            'length': self._length,
-            'precision': self._precision,
-            'scale': self._scale,
-            'fixed': self._fixed,
-            'unsigned': self._unsigned,
-            'autoincrement': self._autoincrement,
-            'extra': self._extra
+            "name": self._name,
+            "type": self._type,
+            "default": self._default,
+            "notnull": self._notnull,
+            "length": self._length,
+            "precision": self._precision,
+            "scale": self._scale,
+            "fixed": self._fixed,
+            "unsigned": self._unsigned,
+            "autoincrement": self._autoincrement,
+            "extra": self._extra,
         }
 
         d.update(self._platform_options)
 
         return d
-
-

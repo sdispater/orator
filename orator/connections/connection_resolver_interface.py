@@ -2,7 +2,6 @@
 
 
 class ConnectionResolverInterface(object):
-
     def connection(self, name=None):
         raise NotImplementedError()
 

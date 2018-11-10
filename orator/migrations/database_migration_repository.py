@@ -4,7 +4,6 @@ from .migration import Migration
 
 
 class DatabaseMigrationRepository(object):
-
     def __init__(self, resolver, table):
         """
         :type resolver: orator.database_manager.DatabaseManager
@@ -20,7 +19,7 @@ class DatabaseMigrationRepository(object):
 
         :rtype: list
         """
-        return self.table().lists('migration')
+        return self.table().lists("migration")
 
     def get_last(self):
         """
@@ -28,9 +27,9 @@ class DatabaseMigrationRepository(object):
 
         :rtype: list
         """
-        query = self.table().where('batch', self.get_last_batch_number())
+        query = self.table().where("batch", self.get_last_batch_number())
 
-        return query.order_by('migration', 'desc').get()
+        return query.order_by("migration", "desc").get()
 
     def log(self, file, batch):
         """
@@ -39,10 +38,7 @@ class DatabaseMigrationRepository(object):
         :type file: str
         :type batch: int
         """
-        record = {
-            'migration': file,
-            'batch': batch
-        }
+        record = {"migration": file, "batch": batch}
 
         self.table().insert(**record)
 
@@ -52,7 +48,7 @@ class DatabaseMigrationRepository(object):
 
         :type migration: dict
         """
-        self.table().where('migration', migration['migration']).delete()
+        self.table().where("migration", migration["migration"]).delete()
 
     def get_next_batch_number(self):
         """
@@ -68,7 +64,7 @@ class DatabaseMigrationRepository(object):
 
         :rtype: int
         """
-        return self.table().max('batch') or 0
+        return self.table().max("batch") or 0
 
     def create_repository(self):
         """
@@ -80,8 +76,8 @@ class DatabaseMigrationRepository(object):
             # The migrations table is responsible for keeping track of which of the
             # migrations have actually run for the application. We'll create the
             # table to hold the migration file's path as well as the batch ID.
-            table.string('migration')
-            table.integer('batch')
+            table.string("migration")
+            table.integer("batch")
 
     def repository_exists(self):
         """

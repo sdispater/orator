@@ -13,8 +13,19 @@ from .scopes import Scope
 class Builder(object):
 
     _passthru = [
-        'to_sql', 'lists', 'insert', 'insert_get_id', 'pluck', 'count',
-        'min', 'max', 'avg', 'sum', 'exists', 'get_bindings', 'raw'
+        "to_sql",
+        "lists",
+        "insert",
+        "insert_get_id",
+        "pluck",
+        "count",
+        "min",
+        "max",
+        "avg",
+        "sum",
+        "exists",
+        "get_bindings",
+        "raw",
     ]
 
     def __init__(self, query):
@@ -97,12 +108,12 @@ class Builder(object):
         :rtype: orator.Model
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         if isinstance(id, list):
             return self.find_many(id, columns)
 
-        self._query.where(self._model.get_qualified_key_name(), '=', id)
+        self._query.where(self._model.get_qualified_key_name(), "=", id)
 
         return self.first(columns)
 
@@ -120,7 +131,7 @@ class Builder(object):
         :rtype: orator.Collection
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         if not id:
             return self._model.new_collection()
@@ -165,7 +176,7 @@ class Builder(object):
         :rtype: mixed
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         return self.take(1).get(columns).first()
 
@@ -291,7 +302,7 @@ class Builder(object):
         :return: The paginator
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         total = self.to_base().get_count_for_pagination()
 
@@ -317,7 +328,7 @@ class Builder(object):
         :return: The paginator
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         page = current_page or Paginator.resolve_current_page()
         per_page = per_page or self._model.get_per_page()
@@ -402,7 +413,7 @@ class Builder(object):
 
         column = self._model.get_updated_at_column()
 
-        if 'updated_at' not in values:
+        if "updated_at" not in values:
             values.update({column: self._model.fresh_timestamp_string()})
 
         return values
@@ -460,7 +471,7 @@ class Builder(object):
         :rtype: list
         """
         for name, constraints in self._eager_load.items():
-            if name.find('.') == -1:
+            if name.find(".") == -1:
                 models = self._load_relation(models, name, constraints)
 
         return models
@@ -514,7 +525,7 @@ class Builder(object):
 
         for name, constraints in self._eager_load.items():
             if self._is_nested(name, relation):
-                nested[name[len(relation + '.'):]] = constraints
+                nested[name[len(relation + ".") :]] = constraints
 
         return nested
 
@@ -527,11 +538,11 @@ class Builder(object):
 
         :rtype: bool
         """
-        dots = name.find('.')
+        dots = name.find(".")
 
-        return dots and name.startswith(relation + '.')
+        return dots and name.startswith(relation + ".")
 
-    def where(self, column, operator=Null(), value=None, boolean='and'):
+    def where(self, column, operator=Null(), value=None, boolean="and"):
         """
         Add a where clause to the query
 
@@ -573,9 +584,9 @@ class Builder(object):
         :return: The current Builder instance
         :rtype: Builder
         """
-        return self.where(column, operator, value, 'or')
+        return self.where(column, operator, value, "or")
 
-    def where_exists(self, query, boolean='and', negate=False):
+    def where_exists(self, query, boolean="and", negate=False):
         """
         Add an exists clause to the query.
 
@@ -606,9 +617,9 @@ class Builder(object):
 
         :rtype: Builder
         """
-        return self.where_exists(query, 'or', negate)
+        return self.where_exists(query, "or", negate)
 
-    def where_not_exists(self, query, boolean='and'):
+    def where_not_exists(self, query, boolean="and"):
         """
         Add a where not exists clause to the query.
 
@@ -632,7 +643,7 @@ class Builder(object):
         """
         return self.or_where_exists(query, True)
 
-    def has(self, relation, operator='>=', count=1, boolean='and', extra=None):
+    def has(self, relation, operator=">=", count=1, boolean="and", extra=None):
         """
         Add a relationship count condition to the query.
 
@@ -653,21 +664,25 @@ class Builder(object):
 
         :type: Builder
         """
-        if relation.find('.') >= 0:
+        if relation.find(".") >= 0:
             return self._has_nested(relation, operator, count, boolean, extra)
 
         relation = self._get_has_relation_query(relation)
 
-        query = relation.get_relation_count_query(relation.get_related().new_query(), self)
+        query = relation.get_relation_count_query(
+            relation.get_related().new_query(), self
+        )
 
         # TODO: extra query
         if extra:
             if callable(extra):
                 extra(query)
 
-        return self._add_has_where(query.apply_scopes(), relation, operator, count, boolean)
+        return self._add_has_where(
+            query.apply_scopes(), relation, operator, count, boolean
+        )
 
-    def _has_nested(self, relations, operator='>=', count=1, boolean='and', extra=None):
+    def _has_nested(self, relations, operator=">=", count=1, boolean="and", extra=None):
         """
         Add nested relationship count conditions to the query.
 
@@ -688,7 +703,7 @@ class Builder(object):
 
         :rtype: Builder
         """
-        relations = relations.split('.')
+        relations = relations.split(".")
 
         def closure(q):
             if len(relations) > 1:
@@ -698,7 +713,7 @@ class Builder(object):
 
         return self.where_has(relations.pop(0), closure)
 
-    def doesnt_have(self, relation, boolean='and', extra=None):
+    def doesnt_have(self, relation, boolean="and", extra=None):
         """
         Add a relationship count to the query.
 
@@ -713,9 +728,9 @@ class Builder(object):
 
         :rtype: Builder
         """
-        return self.has(relation, '<', 1, boolean, extra)
+        return self.has(relation, "<", 1, boolean, extra)
 
-    def where_has(self, relation, extra, operator='>=', count=1):
+    def where_has(self, relation, extra, operator=">=", count=1):
         """
         Add a relationship count condition to the query with where clauses.
 
@@ -733,7 +748,7 @@ class Builder(object):
 
         :rtype: Builder
         """
-        return self.has(relation, operator, count, 'and', extra)
+        return self.has(relation, operator, count, "and", extra)
 
     def where_doesnt_have(self, relation, extra=None):
         """
@@ -747,9 +762,9 @@ class Builder(object):
 
         :rtype: Builder
         """
-        return self.doesnt_have(relation, 'and', extra)
+        return self.doesnt_have(relation, "and", extra)
 
-    def or_has(self, relation, operator='>=', count=1):
+    def or_has(self, relation, operator=">=", count=1):
         """
         Add a relationship count condition to the query with an "or".
 
@@ -764,9 +779,9 @@ class Builder(object):
 
         :rtype: Builder
         """
-        return self.has(relation, operator, count, 'or')
+        return self.has(relation, operator, count, "or")
 
-    def or_where_has(self, relation, extra, operator='>=', count=1):
+    def or_where_has(self, relation, extra, operator=">=", count=1):
         """
         Add a relationship count condition to the query with where clauses and an "or".
 
@@ -784,7 +799,7 @@ class Builder(object):
 
         :rtype: Builder
         """
-        return self.has(relation, operator, count, 'or', extra)
+        return self.has(relation, operator, count, "or", extra)
 
     def _add_has_where(self, has_query, relation, operator, count, boolean):
         """
@@ -812,7 +827,9 @@ class Builder(object):
         if isinstance(count, basestring) and count.isdigit():
             count = QueryExpression(count)
 
-        return self.where(QueryExpression('(%s)' % has_query.to_sql()), operator, count, boolean)
+        return self.where(
+            QueryExpression("(%s)" % has_query.to_sql()), operator, count, boolean
+        )
 
     def _merge_model_defined_relation_wheres_to_has_query(self, has_query, relation):
         """
@@ -826,11 +843,9 @@ class Builder(object):
         """
         relation_query = relation.get_base_query()
 
-        has_query.merge_wheres(
-            relation_query.wheres, relation_query.get_bindings()
-        )
+        has_query.merge_wheres(relation_query.wheres, relation_query.get_bindings())
 
-        self._query.add_binding(has_query.get_query().get_bindings(), 'where')
+        self._query.add_binding(has_query.get_query().get_bindings(), "where")
 
     def _get_has_relation_query(self, relation):
         """
@@ -899,10 +914,10 @@ class Builder(object):
         """
         progress = []
 
-        for segment in name.split('.'):
+        for segment in name.split("."):
             progress.append(segment)
 
-            last = '.'.join(progress)
+            last = ".".join(progress)
             if last not in results:
                 results[last] = self.__class__(self.get_query().new_query())
 
@@ -925,7 +940,9 @@ class Builder(object):
         result = getattr(self._model, scope)(self, *args, **kwargs)
 
         if self._should_nest_wheres_for_scope(query, original_where_count):
-            self._nest_wheres_for_scope(query, [0, original_where_count, len(query.wheres)])
+            self._nest_wheres_for_scope(
+                query, [0, original_where_count, len(query.wheres)]
+            )
 
         return result or self
 
@@ -1027,13 +1044,9 @@ class Builder(object):
         :rtype: list
         """
         where_group = self.get_query().for_nested_where()
-        where_group.wheres = wheres[offset:(offset + length)]
+        where_group.wheres = wheres[offset : (offset + length)]
 
-        return {
-            'type': 'nested',
-            'query': where_group,
-            'boolean': 'and'
-        }
+        return {"type": "nested", "query": where_group, "boolean": "and"}
 
     def get_query(self):
         """
@@ -1129,12 +1142,14 @@ class Builder(object):
     def __dynamic(self, method):
         from .utils import scope
 
-        scope_method = 'scope_%s' % method
+        scope_method = "scope_%s" % method
         is_scope = False
         is_macro = False
 
         # New scope definition check
-        if hasattr(self._model, method) and isinstance(getattr(self._model, method), scope):
+        if hasattr(self._model, method) and isinstance(
+            getattr(self._model, method), scope
+        ):
             is_scope = True
             attribute = getattr(self._model, method)
             scope_method = method
@@ -1177,4 +1192,3 @@ class Builder(object):
         new.set_model(self._model)
 
         return new
-
