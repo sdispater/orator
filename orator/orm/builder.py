@@ -889,8 +889,12 @@ class Builder(object):
 
         for relation in relations:
             if isinstance(relation, dict):
-                name = list(relation.keys())[0]
-                constraints = relation[name]
+                for name, constraints in relation.items():
+                    results = self._parse_nested_with(name, results)
+
+                    results[name] = constraints
+
+                continue
             else:
                 name = relation
                 constraints = self.__class__(self.get_query().new_query())

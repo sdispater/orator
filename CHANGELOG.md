@@ -1,5 +1,12 @@
 # Change Log
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed missing relationships when eager loading multiple nested relationships.
+
+
 ## [0.9.8] - 2018-10-10
 
 ### Fixed

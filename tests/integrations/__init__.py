@@ -224,6 +224,23 @@ class IntegrationTestCase(object):
         queries = formatter.logged_queries
         self.assertEqual(6, len(queries))
 
+    def test_all_eager_loaded_transitive_relations_must_be_present(self):
+        user = OratorTestUser.create(id=1, email="john@doe.com")
+        post = user.posts().create(name="First Post")
+        comment = post.comments().create(body="Text")
+        comment2 = post.comments().create(body="Text 2")
+        comment.children().save(comment2)
+        post = (
+            OratorTestPost.with_("user", "user.posts", "user.post")
+            .where("id", post.id)
+            .first()
+        )
+
+        data = post.serialize()
+        assert "user" in data
+        assert "posts" in data["user"]
+        assert "post" in data["user"]
+
     def test_basic_morph_many_relationship(self):
         user = OratorTestUser.create(email="john@doe.com")
         user.photos().create(name="Avatar 1")
