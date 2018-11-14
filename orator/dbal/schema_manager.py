@@ -7,7 +7,6 @@ from .index import Index
 
 
 class SchemaManager(object):
-
     def __init__(self, connection, platform=None):
         """
         :param connection: The connection to use
@@ -78,35 +77,38 @@ class SchemaManager(object):
         result = OrderedDict()
 
         for table_index in table_indexes:
-            index_name = table_index['key_name']
-            key_name = table_index['key_name']
-            if table_index['primary']:
-                key_name = 'primary'
+            index_name = table_index["key_name"]
+            key_name = table_index["key_name"]
+            if table_index["primary"]:
+                key_name = "primary"
 
             key_name = key_name.lower()
 
             if key_name not in result:
                 options = {}
-                if 'where' in table_index:
-                    options['where'] = table_index['where']
+                if "where" in table_index:
+                    options["where"] = table_index["where"]
 
                 result[key_name] = {
-                    'name': index_name,
-                    'columns': [table_index['column_name']],
-                    'unique': not table_index['non_unique'],
-                    'primary': table_index['primary'],
-                    'flags': table_index.get('flags') or None,
-                    'options': options
+                    "name": index_name,
+                    "columns": [table_index["column_name"]],
+                    "unique": not table_index["non_unique"],
+                    "primary": table_index["primary"],
+                    "flags": table_index.get("flags") or None,
+                    "options": options,
                 }
             else:
-                result[key_name]['columns'].append(table_index['column_name'])
+                result[key_name]["columns"].append(table_index["column_name"])
 
         indexes = OrderedDict()
         for index_key, data in result.items():
             index = Index(
-                data['name'], data['columns'],
-                data['unique'], data['primary'],
-                data['flags'], data['options']
+                data["name"],
+                data["columns"],
+                data["unique"],
+                data["primary"],
+                data["flags"],
+                data["options"],
             )
 
             indexes[index_key] = index

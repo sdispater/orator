@@ -9,12 +9,7 @@ from orator.pagination import Paginator
 
 class SoftDeletesIntegrationTestCase(OratorTestCase):
 
-    databases = {
-        'test': {
-            'driver': 'sqlite',
-            'database': ':memory:'
-        }
-    }
+    databases = {"test": {"driver": "sqlite", "database": ":memory:"}}
 
     def setUp(self):
         self.db = DatabaseManager(self.databases)
@@ -24,30 +19,30 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
         self.create_schema()
 
     def create_schema(self):
-        with self.schema().create('users') as table:
-            table.increments('id')
-            table.string('email').unique()
+        with self.schema().create("users") as table:
+            table.increments("id")
+            table.string("email").unique()
             table.timestamps()
             table.soft_deletes()
 
-        with self.schema().create('posts') as table:
-            table.increments('id')
-            table.string('title')
-            table.integer('user_id')
+        with self.schema().create("posts") as table:
+            table.increments("id")
+            table.string("title")
+            table.integer("user_id")
             table.timestamps()
             table.soft_deletes()
 
-        with self.schema().create('comments') as table:
-            table.increments('id')
-            table.string('body')
-            table.integer('post_id')
+        with self.schema().create("comments") as table:
+            table.increments("id")
+            table.string("body")
+            table.integer("post_id")
             table.timestamps()
             table.soft_deletes()
 
     def tearDown(self):
-        self.schema().drop('users')
-        self.schema().drop('posts')
-        self.schema().drop('comments')
+        self.schema().drop("users")
+        self.schema().drop("posts")
+        self.schema().drop("comments")
 
         Model.unset_connection_resolver()
 
@@ -79,7 +74,7 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
         self.assertEqual(1, count)
 
         query = SoftDeletesTestUser.query()
-        self.assertEqual(1, len(query.lists('email')))
+        self.assertEqual(1, len(query.lists("email")))
 
         Paginator.current_page_resolver(lambda: 1)
         query = SoftDeletesTestUser.query()
@@ -89,15 +84,20 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
         query = SoftDeletesTestUser.query()
         self.assertEqual(1, len(query.simple_paginate(2).items))
 
-        self.assertEqual(0, SoftDeletesTestUser.where('email', 'john@doe.com').increment('id'))
-        self.assertEqual(0, SoftDeletesTestUser.where('email', 'john@doe.com').decrement('id'))
-
+        self.assertEqual(
+            0, SoftDeletesTestUser.where("email", "john@doe.com").increment("id")
+        )
+        self.assertEqual(
+            0, SoftDeletesTestUser.where("email", "john@doe.com").decrement("id")
+        )
 
     def test_with_trashed_returns_all_records(self):
         self.create_users()
 
         self.assertEqual(2, SoftDeletesTestUser.with_trashed().get().count())
-        self.assertIsInstance(SoftDeletesTestUser.with_trashed().find(1), SoftDeletesTestUser)
+        self.assertIsInstance(
+            SoftDeletesTestUser.with_trashed().find(1), SoftDeletesTestUser
+        )
 
     def test_delete_sets_deleted_column(self):
         self.create_users()
@@ -142,63 +142,73 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
         self.create_users()
 
         john = SoftDeletesTestUser.first_or_new(id=1)
-        self.assertEqual('john@doe.com', john.email)
+        self.assertEqual("john@doe.com", john.email)
 
     def test_where_has_with_deleted_relationship(self):
         self.create_users()
 
-        jane = SoftDeletesTestUser.where('email', 'jane@doe.com').first()
-        post = jane.posts().create(title='First Title')
+        jane = SoftDeletesTestUser.where("email", "jane@doe.com").first()
+        post = jane.posts().create(title="First Title")
 
-        users = SoftDeletesTestUser.where('email', 'john@doe.com').has('posts').get()
+        users = SoftDeletesTestUser.where("email", "john@doe.com").has("posts").get()
         self.assertEqual(0, len(users))
 
-        users = SoftDeletesTestUser.where('email', 'jane@doe.com').has('posts').get()
+        users = SoftDeletesTestUser.where("email", "jane@doe.com").has("posts").get()
         self.assertEqual(1, len(users))
 
-        users = SoftDeletesTestUser.where('email', 'doesnt@exist.com').or_has('posts').get()
+        users = (
+            SoftDeletesTestUser.where("email", "doesnt@exist.com").or_has("posts").get()
+        )
         self.assertEqual(1, len(users))
 
-        users = SoftDeletesTestUser.where_has('posts', lambda q: q.where('title', 'First Title')).get()
+        users = SoftDeletesTestUser.where_has(
+            "posts", lambda q: q.where("title", "First Title")
+        ).get()
         self.assertEqual(1, len(users))
 
-        users = SoftDeletesTestUser.where_has('posts', lambda q: q.where('title', 'Another Title')).get()
+        users = SoftDeletesTestUser.where_has(
+            "posts", lambda q: q.where("title", "Another Title")
+        ).get()
         self.assertEqual(0, len(users))
 
-        users = SoftDeletesTestUser.where('email', 'doesnt@exist.com')\
-            .or_where_has('posts', lambda q: q.where('title', 'First Title'))\
+        users = (
+            SoftDeletesTestUser.where("email", "doesnt@exist.com")
+            .or_where_has("posts", lambda q: q.where("title", "First Title"))
             .get()
+        )
         self.assertEqual(1, len(users))
 
         # With post delete
         post.delete()
-        users = SoftDeletesTestUser.has('posts').get()
+        users = SoftDeletesTestUser.has("posts").get()
         self.assertEqual(0, len(users))
 
     def test_where_has_with_nested_deleted_relationship(self):
         self.create_users()
 
-        jane = SoftDeletesTestUser.where('email', 'jane@doe.com').first()
-        post = jane.posts().create(title='First Title')
-        comment = post.comments().create(body='Comment Body')
+        jane = SoftDeletesTestUser.where("email", "jane@doe.com").first()
+        post = jane.posts().create(title="First Title")
+        comment = post.comments().create(body="Comment Body")
         comment.delete()
 
-        users = SoftDeletesTestUser.has('posts.comments').get()
+        users = SoftDeletesTestUser.has("posts.comments").get()
         self.assertEqual(0, len(users))
 
-        users = SoftDeletesTestUser.doesnt_have('posts.comments').get()
+        users = SoftDeletesTestUser.doesnt_have("posts.comments").get()
         self.assertEqual(1, len(users))
 
     def test_or_where_with_soft_deletes_constraint(self):
         self.create_users()
 
-        users = SoftDeletesTestUser.where('email', 'john@doe.com').or_where('email', 'jane@doe.com')
+        users = SoftDeletesTestUser.where("email", "john@doe.com").or_where(
+            "email", "jane@doe.com"
+        )
         self.assertEqual(1, len(users.get()))
-        self.assertEqual(['jane@doe.com'], users.order_by('id').lists('email'))
+        self.assertEqual(["jane@doe.com"], users.order_by("id").lists("email"))
 
     def create_users(self):
-        john = SoftDeletesTestUser.create(email='john@doe.com')
-        jane = SoftDeletesTestUser.create(email='jane@doe.com')
+        john = SoftDeletesTestUser.create(email="john@doe.com")
+        jane = SoftDeletesTestUser.create(email="jane@doe.com")
 
         john.delete()
 
@@ -211,9 +221,9 @@ class SoftDeletesIntegrationTestCase(OratorTestCase):
 
 class SoftDeletesTestUser(SoftDeletes, Model):
 
-    __table__ = 'users'
+    __table__ = "users"
 
-    __dates__ = ['deleted_at']
+    __dates__ = ["deleted_at"]
 
     __guarded__ = []
 
@@ -224,9 +234,9 @@ class SoftDeletesTestUser(SoftDeletes, Model):
 
 class SoftDeletesTestPost(SoftDeletes, Model):
 
-    __table__ = 'posts'
+    __table__ = "posts"
 
-    __dates__ = ['deleted_at']
+    __dates__ = ["deleted_at"]
 
     __guarded__ = []
 
@@ -237,8 +247,8 @@ class SoftDeletesTestPost(SoftDeletes, Model):
 
 class SoftDeletesTestComment(SoftDeletes, Model):
 
-    __table__ = 'comments'
+    __table__ = "comments"
 
-    __dates__ = ['deleted_at']
+    __dates__ = ["deleted_at"]
 
     __guarded__ = []

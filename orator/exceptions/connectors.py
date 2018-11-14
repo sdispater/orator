@@ -7,7 +7,6 @@ class ConnectorException(Exception):
 
 
 class UnsupportedDriver(ConnectorException):
-
     def __init__(self, driver):
         message = 'Driver "%s" is not supported' % driver
 
@@ -15,7 +14,6 @@ class UnsupportedDriver(ConnectorException):
 
 
 class MissingPackage(ConnectorException):
-
     def __init__(self, driver, supported_packages):
         if not isinstance(supported_packages, list):
             supported_packages = [supported_packages]
@@ -24,6 +22,8 @@ class MissingPackage(ConnectorException):
         if len(supported_packages) == 1:
             message += '"%s" package' % supported_packages[0]
         else:
-            message += 'one of the following packages: "%s"' % ('", "'.join(supported_packages))
-            
+            message += 'one of the following packages: "%s"' % (
+                '", "'.join(supported_packages)
+            )
+
         super(MissingPackage, self).__init__(message)

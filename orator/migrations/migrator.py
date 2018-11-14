@@ -11,7 +11,6 @@ from ..utils.command_formatter import CommandFormatter
 
 
 class MigratorHandler(logging.NullHandler):
-
     def __init__(self, level=logging.DEBUG):
         super(MigratorHandler, self).__init__(level)
 
@@ -22,7 +21,6 @@ class MigratorHandler(logging.NullHandler):
 
 
 class Migrator(object):
-
     def __init__(self, repository, resolver):
         """
         :type repository: DatabaseMigrationRepository
@@ -61,7 +59,7 @@ class Migrator(object):
         :type pretend: bool
         """
         if not migrations:
-            self._note('<info>Nothing to migrate</info>')
+            self._note("<info>Nothing to migrate</info>")
 
             return
 
@@ -83,7 +81,7 @@ class Migrator(object):
         migration = self._resolve(path, migration_file)
 
         if pretend:
-            return self._pretend_to_run(migration, 'up')
+            return self._pretend_to_run(migration, "up")
 
         if migration.transactional:
             with migration.db.transaction():
@@ -93,7 +91,10 @@ class Migrator(object):
 
         self._repository.log(migration_file, batch)
 
-        self._note(decode('[<info>OK</>] <info>Migrated</info> ') + '<fg=cyan>%s</>' % migration_file)
+        self._note(
+            decode("[<info>OK</>] <info>Migrated</info> ")
+            + "<fg=cyan>%s</>" % migration_file
+        )
 
     def rollback(self, path, pretend=False):
         """
@@ -112,7 +113,7 @@ class Migrator(object):
         migrations = self._repository.get_last()
 
         if not migrations:
-            self._note('<info>Nothing to rollback.</info>')
+            self._note("<info>Nothing to rollback.</info>")
 
             return len(migrations)
 
@@ -140,10 +141,10 @@ class Migrator(object):
         count = len(migrations)
 
         if count == 0:
-            self._note('<info>Nothing to rollback.</info>')
+            self._note("<info>Nothing to rollback.</info>")
         else:
             for migration in migrations:
-                self._run_down(path, {'migration': migration}, pretend)
+                self._run_down(path, {"migration": migration}, pretend)
 
         return count
 
@@ -151,12 +152,12 @@ class Migrator(object):
         """
         Run "down" a migration instance.
         """
-        migration_file = migration['migration']
+        migration_file = migration["migration"]
 
         instance = self._resolve(path, migration_file)
 
         if pretend:
-            return self._pretend_to_run(instance, 'down')
+            return self._pretend_to_run(instance, "down")
 
         if instance.transactional:
             with instance.db.transaction():
@@ -166,7 +167,10 @@ class Migrator(object):
 
         self._repository.delete(migration)
 
-        self._note(decode('[<info>OK</>] <info>Rolled back</info> ') + '<fg=cyan>%s</>' % migration_file)
+        self._note(
+            decode("[<info>OK</>] <info>Rolled back</info> ")
+            + "<fg=cyan>%s</>" % migration_file
+        )
 
     def _get_migration_files(self, path):
         """
@@ -176,12 +180,12 @@ class Migrator(object):
 
         :rtype: list
         """
-        files = glob.glob(os.path.join(path, '[0-9]*_*.py'))
+        files = glob.glob(os.path.join(path, "[0-9]*_*.py"))
 
         if not files:
             return []
 
-        files = list(map(lambda f: os.path.basename(f).replace('.py', ''), files))
+        files = list(map(lambda f: os.path.basename(f).replace(".py", ""), files))
 
         files = sorted(files)
 
@@ -197,7 +201,7 @@ class Migrator(object):
         :param method: The method to execute
         :type method: str
         """
-        self._note('')
+        self._note("")
         names = []
         for query in self._get_queries(migration, method):
             name = migration.__class__.__name__
@@ -206,17 +210,13 @@ class Migrator(object):
             if isinstance(query, tuple):
                 query, bindings = query
 
-            query = highlight(
-                query,
-                SqlLexer(),
-                CommandFormatter()
-            ).strip()
+            query = highlight(query, SqlLexer(), CommandFormatter()).strip()
 
             if bindings:
                 query = (query, bindings)
 
             if name not in names:
-                self._note('[<info>{}</info>]'.format(name))
+                self._note("[<info>{}</info>]".format(name))
                 names.append(name)
 
             self._note(query)
@@ -250,19 +250,19 @@ class Migrator(object):
 
         :rtype: orator.migrations.migration.Migration
         """
-        name = '_'.join(migration_file.split('_')[4:])
-        migration_file = os.path.join(path, '%s.py' % migration_file)
+        name = "_".join(migration_file.split("_")[4:])
+        migration_file = os.path.join(path, "%s.py" % migration_file)
 
         # Loading parent module
-        parent = os.path.join(path, '__init__.py')
+        parent = os.path.join(path, "__init__.py")
         if not os.path.exists(parent):
-            with open(parent, 'w'):
+            with open(parent, "w"):
                 pass
 
-        load_module('migrations', parent)
+        load_module("migrations", parent)
 
         # Loading module
-        mod = load_module('migrations.%s' % name, migration_file)
+        mod = load_module("migrations.%s" % name, migration_file)
 
         klass = getattr(mod, inflection.camelize(name))
 

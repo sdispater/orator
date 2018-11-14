@@ -5,7 +5,6 @@ from .blueprint import Blueprint
 
 
 class SchemaBuilder(object):
-
     def __init__(self, connection):
         """
         :param connection: The schema connection

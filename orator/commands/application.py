@@ -3,13 +3,17 @@
 from cleo import Application
 from .. import __version__
 
-application = Application('Orator', __version__, complete=True)
+application = Application("Orator", __version__, complete=True)
 
 # Migrations
 from .migrations import (
-    InstallCommand, MigrateCommand,
-    MigrateMakeCommand, RollbackCommand,
-    StatusCommand, ResetCommand, RefreshCommand
+    InstallCommand,
+    MigrateCommand,
+    MigrateMakeCommand,
+    RollbackCommand,
+    StatusCommand,
+    ResetCommand,
+    RefreshCommand,
 )
 
 application.add(InstallCommand())

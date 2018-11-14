@@ -20,20 +20,20 @@ class MigrateCommand(BaseCommand):
 
     def handle(self):
         if not self.confirm_to_proceed(
-            '<question>Are you sure you want to proceed with the migration?</question> '
+            "<question>Are you sure you want to proceed with the migration?</question> "
         ):
             return
 
-        database = self.option('database')
-        repository = DatabaseMigrationRepository(self.resolver, 'migrations')
+        database = self.option("database")
+        repository = DatabaseMigrationRepository(self.resolver, "migrations")
 
         migrator = Migrator(repository, self.resolver)
 
         self._prepare_database(migrator, database)
 
-        pretend = self.option('pretend')
+        pretend = self.option("pretend")
 
-        path = self.option('path')
+        path = self.option("path")
 
         if path is None:
             path = self._get_migration_path()
@@ -45,21 +45,19 @@ class MigrateCommand(BaseCommand):
 
         # If the "seed" option has been given, we will rerun the database seed task
         # to repopulate the database.
-        if self.option('seed'):
-            options = [
-                ('--force', self.option('force'))
-            ]
+        if self.option("seed"):
+            options = [("--force", self.option("force"))]
 
             if database:
-                options.append(('--database', database))
+                options.append(("--database", database))
 
-            if self.get_definition().has_option('config'):
-                options.append(('--config', self.option('config')))
+            if self.get_definition().has_option("config"):
+                options.append(("--config", self.option("config")))
 
-            if self.option('seed-path'):
-                options.append(('--path', self.option('seed-path')))
+            if self.option("seed-path"):
+                options.append(("--path", self.option("seed-path")))
 
-            self.call('db:seed', options)
+            self.call("db:seed", options)
 
     def _prepare_database(self, migrator, database):
         migrator.set_connection(database)
@@ -68,9 +66,9 @@ class MigrateCommand(BaseCommand):
             options = []
 
             if database:
-                options.append(('--database', database))
+                options.append(("--database", database))
 
-            if self.get_definition().has_option('config'):
-                options.append(('--config', self.option('config')))
+            if self.get_definition().has_option("config"):
+                options.append(("--config", self.option("config")))
 
-            self.call('migrate:install', options)
+            self.call("migrate:install", options)

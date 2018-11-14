@@ -5,6 +5,5 @@ from ..command import Command
 
 
 class BaseCommand(Command):
-
     def _get_seeders_path(self):
-        return os.path.join(os.getcwd(), 'seeds')
+        return os.path.join(os.getcwd(), "seeds")

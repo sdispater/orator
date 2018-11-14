@@ -2,7 +2,6 @@
 
 
 class QueryException(Exception):
-
     def __init__(self, sql, bindings, previous):
         self.sql = sql
         self.bindings = bindings
@@ -10,7 +9,7 @@ class QueryException(Exception):
         self.message = self.format_message(sql, bindings, previous)
 
     def format_message(self, sql, bindings, previous):
-        return '%s (SQL: %s (%s))' % (str(previous), sql, bindings)
+        return "%s (SQL: %s (%s))" % (str(previous), sql, bindings)
 
     def __repr__(self):
         return self.message

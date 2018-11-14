@@ -22,48 +22,43 @@ class RefreshCommand(BaseCommand):
         Executes the command.
         """
         if not self.confirm_to_proceed(
-            '<question>Are you sure you want to refresh the database?:</question> '
+            "<question>Are you sure you want to refresh the database?:</question> "
         ):
             return
 
-        database = self.option('database')
+        database = self.option("database")
 
-        options = [
-            ('--force', True)
-        ]
+        options = [("--force", True)]
 
-        if self.option('path'):
-            options.append(('--path', self.option('path')))
+        if self.option("path"):
+            options.append(("--path", self.option("path")))
 
         if database:
-            options.append(('--database', database))
+            options.append(("--database", database))
 
-        if self.get_definition().has_option('config'):
-            options.append(('--config', self.option('config')))
+        if self.get_definition().has_option("config"):
+            options.append(("--config", self.option("config")))
 
-        self.call('migrate:reset', options)
+        self.call("migrate:reset", options)
 
-        self.call('migrate', options)
+        self.call("migrate", options)
 
         if self._needs_seeding():
             self._run_seeder(database)
 
     def _needs_seeding(self):
-        return self.option('seed')
+        return self.option("seed")
 
     def _run_seeder(self, database):
-        options = [
-            ('--seeder', self.option('seeder')),
-            ('--force', True)
-        ]
+        options = [("--seeder", self.option("seeder")), ("--force", True)]
 
         if database:
-            options.append(('--database', database))
+            options.append(("--database", database))
 
-        if self.get_definition().has_option('config'):
-            options.append(('--config', self.option('config')))
+        if self.get_definition().has_option("config"):
+            options.append(("--config", self.option("config")))
 
-        if self.option('seed-path'):
-            options.append(('--path', self.option('seed-path')))
+        if self.option("seed-path"):
+            options.append(("--path", self.option("seed-path")))
 
-        self.call('db:seed', options)
+        self.call("db:seed", options)

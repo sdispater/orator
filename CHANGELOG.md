@@ -1,5 +1,25 @@
 # Change Log
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed missing relationships when eager loading multiple nested relationships.
+
+
+## [0.9.8] - 2018-10-10
+
+### Fixed
+
+- Fixed the `morphed_by_many()` decorator.
+- Fixed decoding errors for MySQL.
+- Fixed connection errors check.
+- Fixed the `touches()` method.
+- Fixed `has_many` not showing `DISTINCT`.
+- Fixed `save_many()` for Python 3.
+- Fixed an error when listing columns for recent MySQL versions.
+
+
 ## [0.9.7] - 2017-05-17
 
 ### Fixed
