@@ -95,7 +95,7 @@ class SQLiteQueryGrammar(QueryGrammar):
         :return: The compiled clause
         :rtype: str
         """
-        return self._date_based_where('%Y-%m-%d', query, where)
+        return self._date_based_where("%Y-%m-%d", query, where)
 
     def _where_day(self, query, where):
         """
