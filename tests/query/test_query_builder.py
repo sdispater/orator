@@ -1290,6 +1290,12 @@ class QueryBuilderTestCase(OratorTestCase):
             query, ['foo', 'bar', 1]
         )
         self.assertEqual(1, result)
+    
+    def test_where_date(self):
+        builder = self.get_sqlite_builder()
+        builder.where_date('date', '=', '10-20-2018')
+
+        self.assertEqual(builder.to_sql(), 'SELECT * FROM "" WHERE strftime(\'%Y-%m-%d\', "date") = ?')
 
     def test_update_with_joins(self):
         builder = self.get_builder()
