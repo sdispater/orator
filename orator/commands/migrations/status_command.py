@@ -17,20 +17,20 @@ class StatusCommand(BaseCommand):
         """
         Executes the command.
         """
-        database = self.option('database')
+        database = self.option("database")
 
         self.resolver.set_default_connection(database)
 
-        repository = DatabaseMigrationRepository(self.resolver, 'migrations')
+        repository = DatabaseMigrationRepository(self.resolver, "migrations")
 
         migrator = Migrator(repository, self.resolver)
 
         if not migrator.repository_exists():
-            return self.error('No migrations found')
+            return self.error("No migrations found")
 
         self._prepare_database(migrator, database)
 
-        path = self.option('path')
+        path = self.option("path")
 
         if path is None:
             path = self._get_migration_path()
@@ -40,18 +40,15 @@ class StatusCommand(BaseCommand):
         migrations = []
         for migration in migrator._get_migration_files(path):
             if migration in ran:
-                migrations.append(['<fg=cyan>%s</>' % migration, '<info>Yes</>'])
+                migrations.append(["<fg=cyan>%s</>" % migration, "<info>Yes</>"])
             else:
-                migrations.append(['<fg=cyan>%s</>' % migration, '<fg=red>No</>'])
+                migrations.append(["<fg=cyan>%s</>" % migration, "<fg=red>No</>"])
 
         if migrations:
-            table = self.table(
-                ['Migration', 'Ran?'],
-                migrations
-            )
+            table = self.table(["Migration", "Ran?"], migrations)
             table.render()
         else:
-            return self.error('No migrations found')
+            return self.error("No migrations found")
 
         for note in migrator.get_notes():
             self.line(note)

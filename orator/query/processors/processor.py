@@ -2,7 +2,6 @@
 
 
 class QueryProcessor(object):
-
     def process_select(self, query, results):
         """
         Process the results of a "select" query

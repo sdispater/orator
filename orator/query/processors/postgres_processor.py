@@ -4,7 +4,6 @@ from .processor import QueryProcessor
 
 
 class PostgresQueryProcessor(QueryProcessor):
-
     def process_insert_get_id(self, query, sql, values, sequence=None):
         """
         Process an "insert get ID" query.
@@ -46,4 +45,4 @@ class PostgresQueryProcessor(QueryProcessor):
         :return: The processed results
         :return: list
         """
-        return list(map(lambda x: x['column_name'], results))
+        return list(map(lambda x: x["column_name"], results))

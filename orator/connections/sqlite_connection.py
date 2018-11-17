@@ -10,7 +10,7 @@ from ..dbal.sqlite_schema_manager import SQLiteSchemaManager
 
 class SQLiteConnection(Connection):
 
-    name = 'sqlite'
+    name = "sqlite"
 
     def get_default_query_grammar(self):
         return self.with_table_prefix(SQLiteQueryGrammar())
@@ -25,7 +25,7 @@ class SQLiteConnection(Connection):
         return SQLiteSchemaManager(self)
 
     def begin_transaction(self):
-        self._connection.isolation_level = 'DEFERRED'
+        self._connection.isolation_level = "DEFERRED"
 
         super(SQLiteConnection, self).begin_transaction()
 

@@ -4,7 +4,6 @@ from ..support.collection import Collection as BaseCollection
 
 
 class Collection(BaseCollection):
-
     def load(self, *relations):
         """
         Load a set of relationships onto the collection.

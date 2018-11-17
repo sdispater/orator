@@ -10,9 +10,14 @@ class ForeignKeyConstraint(AbstractAsset):
     An abstraction class for a foreign key constraint.
     """
 
-    def __init__(self, local_column_names,
-                 foreign_table_name, foreign_column_names,
-                 name=None, options=None):
+    def __init__(
+        self,
+        local_column_names,
+        foreign_table_name,
+        foreign_column_names,
+        name=None,
+        options=None,
+    ):
         """
         Constructor.
 
@@ -152,7 +157,7 @@ class ForeignKeyConstraint(AbstractAsset):
 
         :rtype: str
         """
-        parts = self.get_foreign_table_name().split('.')
+        parts = self.get_foreign_table_name().split(".")
 
         return parts[-1].lower()
 
@@ -227,7 +232,7 @@ class ForeignKeyConstraint(AbstractAsset):
 
         :rtype: str or None
         """
-        return self._on_event('on_update')
+        return self._on_event("on_update")
 
     def on_delete(self):
         """
@@ -236,7 +241,7 @@ class ForeignKeyConstraint(AbstractAsset):
 
         :rtype: str or None
         """
-        return self._on_event('on_delete')
+        return self._on_event("on_delete")
 
     def _on_event(self, event):
         """
@@ -251,7 +256,7 @@ class ForeignKeyConstraint(AbstractAsset):
         if self.has_option(event):
             on_event = self.get_option(event).upper()
 
-            if on_event not in ['NO ACTION', 'RESTRICT']:
+            if on_event not in ["NO ACTION", "RESTRICT"]:
                 return on_event
 
         return False

@@ -5,7 +5,7 @@ from .scope import Scope
 
 class SoftDeletingScope(Scope):
 
-    _extensions = ['force_delete', 'restore', 'with_trashed', 'only_trashed']
+    _extensions = ["force_delete", "restore", "with_trashed", "only_trashed"]
 
     def apply(self, builder, model):
         """
@@ -29,7 +29,7 @@ class SoftDeletingScope(Scope):
         :type builder: orator.orm.builder.Builder
         """
         for extension in self._extensions:
-            getattr(self, '_add_%s' % extension)(builder)
+            getattr(self, "_add_%s" % extension)(builder)
 
         builder.on_delete(self._on_delete)
 
@@ -42,9 +42,7 @@ class SoftDeletingScope(Scope):
         """
         column = self._get_deleted_at_column(builder)
 
-        return builder.update({
-            column: builder.get_model().fresh_timestamp()
-        })
+        return builder.update({column: builder.get_model().fresh_timestamp()})
 
     def _get_deleted_at_column(self, builder):
         """
@@ -67,7 +65,7 @@ class SoftDeletingScope(Scope):
         :param builder: The query builder
         :type builder: orator.orm.builder.Builder
         """
-        builder.macro('force_delete', self._force_delete)
+        builder.macro("force_delete", self._force_delete)
 
     def _force_delete(self, builder):
         """
@@ -85,7 +83,7 @@ class SoftDeletingScope(Scope):
         :param builder: The query builder
         :type builder: orator.orm.builder.Builder
         """
-        builder.macro('restore', self._restore)
+        builder.macro("restore", self._restore)
 
     def _restore(self, builder):
         """
@@ -96,9 +94,7 @@ class SoftDeletingScope(Scope):
         """
         builder.with_trashed()
 
-        return builder.update({
-            builder.get_model().get_deleted_at_column(): None
-        })
+        return builder.update({builder.get_model().get_deleted_at_column(): None})
 
     def _add_with_trashed(self, builder):
         """
@@ -107,7 +103,7 @@ class SoftDeletingScope(Scope):
         :param builder: The query builder
         :type builder: orator.orm.builder.Builder
         """
-        builder.macro('with_trashed', self._with_trashed)
+        builder.macro("with_trashed", self._with_trashed)
 
     def _with_trashed(self, builder):
         """
@@ -127,7 +123,7 @@ class SoftDeletingScope(Scope):
         :param builder: The query builder
         :type builder: orator.orm.builder.Builder
         """
-        builder.macro('only_trashed', self._only_trashed)
+        builder.macro("only_trashed", self._only_trashed)
 
     def _only_trashed(self, builder):
         """

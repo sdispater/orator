@@ -8,15 +8,19 @@ from .index import Index
 from .foreign_key_constraint import ForeignKeyConstraint
 from .exceptions import (
     DBALException,
-    IndexDoesNotExist, IndexAlreadyExists, IndexNameInvalid,
-    ColumnDoesNotExist, ColumnAlreadyExists,
-    ForeignKeyDoesNotExist
+    IndexDoesNotExist,
+    IndexAlreadyExists,
+    IndexNameInvalid,
+    ColumnDoesNotExist,
+    ColumnAlreadyExists,
+    ForeignKeyDoesNotExist,
 )
 
 
 class Table(AbstractAsset):
-
-    def __init__(self, table_name, columns=None, indexes=None, fk_constraints=None, options=None):
+    def __init__(
+        self, table_name, columns=None, indexes=None, fk_constraints=None, options=None
+    ):
         self._set_name(table_name)
         self._primary_key_name = False
         self._columns = OrderedDict()
@@ -37,7 +41,11 @@ class Table(AbstractAsset):
         for index in indexes:
             self._add_index(index)
 
-        fk_constraints = fk_constraints.values() if isinstance(fk_constraints, dict) else fk_constraints
+        fk_constraints = (
+            fk_constraints.values()
+            if isinstance(fk_constraints, dict)
+            else fk_constraints
+        )
         for constraint in fk_constraints:
             self._add_foreign_key_constraint(constraint)
 
@@ -53,7 +61,9 @@ class Table(AbstractAsset):
 
         :rtype: Table
         """
-        self._add_index(self._create_index(columns, index_name or 'primary', True, True))
+        self._add_index(
+            self._create_index(columns, index_name or "primary", True, True)
+        )
 
         for column_name in columns:
             column = self.get_column(column_name)
@@ -64,10 +74,12 @@ class Table(AbstractAsset):
     def add_index(self, columns, name=None, flags=None, options=None):
         if not name:
             name = self._generate_identifier_name(
-                [self.get_name()] + columns, 'idx', self._get_max_identifier_length()
+                [self.get_name()] + columns, "idx", self._get_max_identifier_length()
             )
 
-        return self._add_index(self._create_index(columns, name, False, False, flags, options))
+        return self._add_index(
+            self._create_index(columns, name, False, False, flags, options)
+        )
 
     def drop_primary_key(self):
         """
@@ -92,10 +104,12 @@ class Table(AbstractAsset):
     def add_unique_index(self, columns, name=None, options=None):
         if not name:
             name = self._generate_identifier_name(
-                [self.get_name()] + columns, 'uniq', self._get_max_identifier_length()
+                [self.get_name()] + columns, "uniq", self._get_max_identifier_length()
             )
 
-        return self._add_index(self._create_index(columns, name, True, False, None, options))
+        return self._add_index(
+            self._create_index(columns, name, True, False, None, options)
+        )
 
     def rename_index(self, old_name, new_name=None):
         """
@@ -149,7 +163,9 @@ class Table(AbstractAsset):
 
         return False
 
-    def _create_index(self, columns, name, is_unique, is_primary, flags=None, options=None):
+    def _create_index(
+        self, columns, name, is_unique, is_primary, flags=None, options=None
+    ):
         """
         Creates an Index instance.
 
@@ -173,7 +189,7 @@ class Table(AbstractAsset):
 
         :rtype: Index
         """
-        if re.match('[^a-zA-Z0-9_]+', self._normalize_identifier(name)):
+        if re.match("[^a-zA-Z0-9_]+", self._normalize_identifier(name)):
             raise IndexNameInvalid(name)
 
         for column in columns:
@@ -237,8 +253,14 @@ class Table(AbstractAsset):
 
         return self
 
-    def add_foreign_key_constraint(self, foreign_table, local_columns,
-                                   foreign_columns, options=None, constraint_name=None):
+    def add_foreign_key_constraint(
+        self,
+        foreign_table,
+        local_columns,
+        foreign_columns,
+        options=None,
+        constraint_name=None,
+    ):
         """
         Adds a foreign key constraint.
 
@@ -259,16 +281,18 @@ class Table(AbstractAsset):
         """
         if not constraint_name:
             constraint_name = self._generate_identifier_name(
-                [self.get_name()] + local_columns, 'fk', self._get_max_identifier_length()
+                [self.get_name()] + local_columns,
+                "fk",
+                self._get_max_identifier_length(),
             )
 
         return self.add_named_foreign_key_constraint(
-            constraint_name, foreign_table,
-            local_columns, foreign_columns, options
+            constraint_name, foreign_table, local_columns, foreign_columns, options
         )
 
-    def add_named_foreign_key_constraint(self, name, foreign_table,
-                                     local_columns, foreign_columns, options):
+    def add_named_foreign_key_constraint(
+        self, name, foreign_table, local_columns, foreign_columns, options
+    ):
         """
         Adds a foreign key constraint with a given name.
 
@@ -334,8 +358,10 @@ class Table(AbstractAsset):
                 replaced_implicit_indexes.append(name)
 
         already_exists = (
-            index_name in self._indexes and index_name not in replaced_implicit_indexes
-            or self._primary_key_name is not False and index.is_primary()
+            index_name in self._indexes
+            and index_name not in replaced_implicit_indexes
+            or self._primary_key_name is not False
+            and index.is_primary()
         )
         if already_exists:
             raise IndexAlreadyExists(index_name, self._name)
@@ -366,7 +392,9 @@ class Table(AbstractAsset):
             name = constraint.get_name()
         else:
             name = self._generate_identifier_name(
-                [self.get_name()] + constraint.get_local_columns(), 'fk', self._get_max_identifier_length()
+                [self.get_name()] + constraint.get_local_columns(),
+                "fk",
+                self._get_max_identifier_length(),
             )
 
         name = self._normalize_identifier(name)
@@ -380,16 +408,20 @@ class Table(AbstractAsset):
         # This creates computation overhead in this case, however no duplicate indexes
         # are ever added (based on columns).
         index_name = self._generate_identifier_name(
-            [self.get_name()] + constraint.get_columns(), 'idx', self._get_max_identifier_length()
+            [self.get_name()] + constraint.get_columns(),
+            "idx",
+            self._get_max_identifier_length(),
         )
-        index_candidate = self._create_index(constraint.get_columns(), index_name, False, False)
+        index_candidate = self._create_index(
+            constraint.get_columns(), index_name, False, False
+        )
 
         for existing_index in self._indexes.values():
             if index_candidate.is_fullfilled_by(existing_index):
                 return
 
-        #self._add_index(index_candidate)
-        #self._implicit_indexes[self._normalize_identifier(index_name)] = index_candidate
+        # self._add_index(index_candidate)
+        # self._implicit_indexes[self._normalize_identifier(index_name)] = index_candidate
 
         return self
 
@@ -550,19 +582,27 @@ class Table(AbstractAsset):
         table._primary_key_name = self._primary_key_name
 
         for k, column in self._columns.items():
-            table._columns[k] = Column(column.get_name(), column.get_type(), column.to_dict())
+            table._columns[k] = Column(
+                column.get_name(), column.get_type(), column.to_dict()
+            )
 
         for k, index in self._indexes.items():
             table._indexes[k] = Index(
-                index.get_name(), index.get_columns(),
-                index.is_unique(), index.is_primary(),
-                index.get_flags(), index.get_options()
+                index.get_name(),
+                index.get_columns(),
+                index.is_unique(),
+                index.is_primary(),
+                index.get_flags(),
+                index.get_options(),
             )
 
         for k, fk in self._fk_constraints.items():
             table._fk_constraints[k] = ForeignKeyConstraint(
-                fk.get_local_columns(), fk.get_foreign_table_name(),
-                fk.get_foreign_columns(), fk.get_name(), fk.get_options()
+                fk.get_local_columns(),
+                fk.get_foreign_table_name(),
+                fk.get_foreign_columns(),
+                fk.get_name(),
+                fk.get_options(),
             )
             table._fk_constraints[k].set_local_table(table)
 

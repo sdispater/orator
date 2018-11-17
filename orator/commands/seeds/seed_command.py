@@ -26,25 +26,25 @@ class SeedCommand(BaseCommand):
         Executes the command.
         """
         if not self.confirm_to_proceed(
-            '<question>Are you sure you want to seed the database?:</question> '
+            "<question>Are you sure you want to seed the database?:</question> "
         ):
             return
 
-        self.resolver.set_default_connection(self.option('database'))
+        self.resolver.set_default_connection(self.option("database"))
 
         self._get_seeder().run()
 
-        self.info('Database seeded!')
+        self.info("Database seeded!")
 
     def _get_seeder(self):
-        name = self._parse_name(self.option('seeder'))
+        name = self._parse_name(self.option("seeder"))
         seeder_file = self._get_path(name)
 
         # Loading parent module
-        load_module('seeds', self._get_path('__init__'))
+        load_module("seeds", self._get_path("__init__"))
 
         # Loading module
-        mod = load_module('seeds.%s' % name, seeder_file)
+        mod = load_module("seeds.%s" % name, seeder_file)
 
         klass = getattr(mod, inflection.camelize(name))
 
@@ -55,8 +55,8 @@ class SeedCommand(BaseCommand):
         return instance
 
     def _parse_name(self, name):
-        if name.endswith('.py'):
-            name = name.replace('.py', '', -1)
+        if name.endswith(".py"):
+            name = name.replace(".py", "", -1)
 
         return name
 
@@ -69,8 +69,8 @@ class SeedCommand(BaseCommand):
 
         :rtype: str
         """
-        path = self.option('path')
+        path = self.option("path")
         if path is None:
             path = self._get_seeders_path()
 
-        return os.path.join(path, '%s.py' % name)
+        return os.path.join(path, "%s.py" % name)

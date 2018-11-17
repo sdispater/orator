@@ -10,7 +10,6 @@ from ..blueprint import Blueprint
 
 
 class SchemaGrammar(Grammar):
-
     def __init__(self, connection):
         super(SchemaGrammar, self).__init__(marker=connection.get_marker())
 
@@ -93,19 +92,21 @@ class SchemaGrammar(Grammar):
 
         columns = self.columnize(command.columns)
 
-        on_columns = self.columnize(command.references
-                                    if isinstance(command.references, list)
-                                    else [command.references])
+        on_columns = self.columnize(
+            command.references
+            if isinstance(command.references, list)
+            else [command.references]
+        )
 
-        sql = 'ALTER TABLE %s ADD CONSTRAINT %s ' % (table, command.index)
+        sql = "ALTER TABLE %s ADD CONSTRAINT %s " % (table, command.index)
 
-        sql += 'FOREIGN KEY (%s) REFERENCES %s (%s)' % (columns, on, on_columns)
+        sql += "FOREIGN KEY (%s) REFERENCES %s (%s)" % (columns, on, on_columns)
 
-        if command.get('on_delete'):
-            sql += ' ON DELETE %s' % command.on_delete
+        if command.get("on_delete"):
+            sql += " ON DELETE %s" % command.on_delete
 
-        if command.get('on_update'):
-            sql += ' ON UPDATE %s' % command.on_update
+        if command.get("on_update"):
+            sql += " ON UPDATE %s" % command.on_update
 
         return sql
 
@@ -121,7 +122,7 @@ class SchemaGrammar(Grammar):
         columns = []
 
         for column in blueprint.get_added_columns():
-            sql = self.wrap(column) + ' ' + self._get_type(column)
+            sql = self.wrap(column) + " " + self._get_type(column)
 
             columns.append(self._add_modifiers(sql, blueprint, column))
 
@@ -132,7 +133,7 @@ class SchemaGrammar(Grammar):
         Add the column modifiers to the deifinition
         """
         for modifier in self._modifiers:
-            method = '_modify_%s' % modifier
+            method = "_modify_%s" % modifier
 
             if hasattr(self, method):
                 sql += getattr(self, method)(blueprint, column)
@@ -163,13 +164,13 @@ class SchemaGrammar(Grammar):
 
         :rtype sql
         """
-        return getattr(self, '_type_%s' % column.type)(column)
+        return getattr(self, "_type_%s" % column.type)(column)
 
     def prefix_list(self, prefix, values):
         """
         Add a prefix to a list of values.
         """
-        return list(map(lambda value: prefix + ' ' + value, values))
+        return list(map(lambda value: prefix + " " + value, values))
 
     def wrap_table(self, table):
         if isinstance(table, Blueprint):
@@ -245,9 +246,13 @@ class SchemaGrammar(Grammar):
 
         :rtype: orator.dbal.TableDiff
         """
-        table = schema.list_table_details(self.get_table_prefix() + blueprint.get_table())
+        table = schema.list_table_details(
+            self.get_table_prefix() + blueprint.get_table()
+        )
 
-        return Comparator().diff_table(table, self._get_table_with_column_changes(blueprint, table))
+        return Comparator().diff_table(
+            table, self._get_table_with_column_changes(blueprint, table)
+        )
 
     def _get_table_with_column_changes(self, blueprint, table):
         """
@@ -269,7 +274,7 @@ class SchemaGrammar(Grammar):
                 option = self._map_fluent_option(key)
 
                 if option is not None:
-                    method = 'set_%s' % option
+                    method = "set_%s" % option
 
                     if hasattr(column, method):
                         getattr(column, method)(self._map_fluent_value(option, value))
@@ -293,13 +298,13 @@ class SchemaGrammar(Grammar):
         Get the column change options.
         """
         options = {
-            'name': fluent.name,
-            'type': self._get_dbal_column_type(fluent.type),
-            'default': fluent.get('default')
+            "name": fluent.name,
+            "type": self._get_dbal_column_type(fluent.type),
+            "default": fluent.get("default"),
         }
 
-        if fluent.type in ['string']:
-            options['length'] = fluent.length
+        if fluent.type in ["string"]:
+            options["length"] = fluent.length
 
         return options
 
@@ -314,29 +319,29 @@ class SchemaGrammar(Grammar):
         """
         type_ = type_.lower()
 
-        if type_ == 'big_integer':
-            type_ = 'bigint'
-        elif type == 'small_integer':
-            type_ = 'smallint'
-        elif type_ in ['medium_text', 'long_text']:
-            type_ = 'text'
+        if type_ == "big_integer":
+            type_ = "bigint"
+        elif type == "small_integer":
+            type_ = "smallint"
+        elif type_ in ["medium_text", "long_text"]:
+            type_ = "text"
 
         return type_
 
     def _map_fluent_option(self, attribute):
-        if attribute in ['type', 'name']:
+        if attribute in ["type", "name"]:
             return
-        elif attribute == 'nullable':
-            return 'notnull'
-        elif attribute == 'total':
-            return 'precision'
-        elif attribute == 'places':
-            return 'scale'
+        elif attribute == "nullable":
+            return "notnull"
+        elif attribute == "total":
+            return "precision"
+        elif attribute == "places":
+            return "scale"
         else:
             return
 
     def _map_fluent_value(self, option, value):
-        if option == 'notnull':
+        if option == "notnull":
             return not value
 
         return value

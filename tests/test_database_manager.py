@@ -8,17 +8,14 @@ from orator.database_manager import DatabaseManager
 
 
 class ConnectionTestCase(OratorTestCase):
-
     def test_connection_method_create_a_new_connection_if_needed(self):
         manager = self._get_manager()
-        manager.table('users')
+        manager.table("users")
 
-        manager._make_connection.assert_called_once_with(
-            'sqlite'
-        )
+        manager._make_connection.assert_called_once_with("sqlite")
 
         manager._make_connection.reset_mock()
-        manager.table('users')
+        manager.table("users")
         self.assertFalse(manager._make_connection.called)
 
     def test_manager_uses_factory_to_create_connections(self):
@@ -28,37 +25,30 @@ class ConnectionTestCase(OratorTestCase):
         manager.connection()
 
         manager._factory.make.assert_called_with(
-            {
-                'name': 'sqlite',
-                'driver': 'sqlite',
-                'database': ':memory:'
-            }, 'sqlite'
+            {"name": "sqlite", "driver": "sqlite", "database": ":memory:"}, "sqlite"
         )
 
         manager._factory.make = original_make
 
     def test_connection_can_select_connections(self):
         manager = self._get_manager()
-        self.assertEqual(manager.connection(), manager.connection('sqlite'))
-        self.assertNotEqual(manager.connection('sqlite'), manager.connection('sqlite2'))
+        self.assertEqual(manager.connection(), manager.connection("sqlite"))
+        self.assertNotEqual(manager.connection("sqlite"), manager.connection("sqlite2"))
 
     def test_dynamic_attribute_gets_connection_attribute(self):
         manager = self._get_manager()
-        manager.statement('CREATE TABLE users')
+        manager.statement("CREATE TABLE users")
 
-        manager.get_connections()['sqlite'].statement.assert_called_once_with(
-            'CREATE TABLE users'
+        manager.get_connections()["sqlite"].statement.assert_called_once_with(
+            "CREATE TABLE users"
         )
 
     def test_default_database_with_one_database(self):
-        manager = MockManager({
-            'sqlite': {
-                'driver': 'sqlite',
-                'database': ':memory:'
-            }
-        }).prepare_mock()
+        manager = MockManager(
+            {"sqlite": {"driver": "sqlite", "database": ":memory:"}}
+        ).prepare_mock()
 
-        self.assertEqual('sqlite', manager.get_default_connection())
+        self.assertEqual("sqlite", manager.get_default_connection())
 
     def test_reconnect(self):
         manager = self._get_real_manager()
@@ -73,31 +63,26 @@ class ConnectionTestCase(OratorTestCase):
 
         manager.set_default_connection(None)
 
-        self.assertEqual('sqlite', manager.get_default_connection())
+        self.assertEqual("sqlite", manager.get_default_connection())
 
     def _get_manager(self):
-        manager = MockManager({
-            'default': 'sqlite',
-            'sqlite': {
-                'driver': 'sqlite',
-                'database': ':memory:'
-            },
-            'sqlite2': {
-                'driver': 'sqlite',
-                'database': ':memory:'
+        manager = MockManager(
+            {
+                "default": "sqlite",
+                "sqlite": {"driver": "sqlite", "database": ":memory:"},
+                "sqlite2": {"driver": "sqlite", "database": ":memory:"},
             }
-        }).prepare_mock()
+        ).prepare_mock()
 
         return manager
 
     def _get_real_manager(self):
-        manager = DatabaseManager({
-            'default': 'sqlite',
-            'sqlite': {
-                'driver': 'sqlite',
-                'database': ':memory:'
+        manager = DatabaseManager(
+            {
+                "default": "sqlite",
+                "sqlite": {"driver": "sqlite", "database": ":memory:"},
             }
-        })
+        )
 
         return manager
 

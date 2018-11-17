@@ -7,7 +7,7 @@ try:
 
     from sqlite3 import register_adapter
 
-    register_adapter(Pendulum, lambda val: val.isoformat(' '))
+    register_adapter(Pendulum, lambda val: val.isoformat(" "))
     register_adapter(Date, lambda val: val.isoformat())
 except ImportError:
     sqlite3 = None
@@ -18,14 +18,13 @@ from .connector import Connector
 
 
 class DictCursor(dict):
-
     def __init__(self, cursor, row):
         self.dict = {}
         self.cursor = cursor
 
         for idx, col in enumerate(cursor.description):
             self.dict[col[0]] = row[idx]
-            
+
         super(DictCursor, self).__init__(self.dict)
 
     def __getattr__(self, item):
@@ -41,8 +40,12 @@ class DictCursor(dict):
 class SQLiteConnector(Connector):
 
     RESERVED_KEYWORDS = [
-        'log_queries', 'driver', 'prefix', 'name',
-        'foreign_keys', 'use_qmark'
+        "log_queries",
+        "driver",
+        "prefix",
+        "name",
+        "foreign_keys",
+        "use_qmark",
     ]
 
     def _do_connect(self, config):
@@ -51,7 +54,7 @@ class SQLiteConnector(Connector):
         connection.row_factory = DictCursor
 
         # We activate foreign keys support by default
-        if config.get('foreign_keys', True):
+        if config.get("foreign_keys", True):
             connection.execute("PRAGMA foreign_keys = ON")
 
         return connection
@@ -74,9 +77,9 @@ class SQLiteConnector(Connector):
         return False
 
     def get_server_version(self):
-        sql = 'select sqlite_version() AS sqlite_version'
+        sql = "select sqlite_version() AS sqlite_version"
 
         rows = self._connection.execute(sql).fetchall()
-        version = rows[0]['sqlite_version']
+        version = rows[0]["sqlite_version"]
 
-        return tuple(version.split('.')[:3] + [''])
+        return tuple(version.split(".")[:3] + [""])

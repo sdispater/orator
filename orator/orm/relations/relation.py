@@ -105,11 +105,11 @@ class Relation(object):
 
         :rtype: Builder
         """
-        query.select(QueryExpression('COUNT(*)'))
+        query.select(QueryExpression("COUNT(*)"))
 
         key = self.wrap(self.get_qualified_parent_key_name())
 
-        return query.where(self.get_has_compare_key(), '=', QueryExpression(key))
+        return query.where(self.get_has_compare_key(), "=", QueryExpression(key))
 
     @classmethod
     @contextmanager
@@ -142,7 +142,14 @@ class Relation(object):
 
         :rtype: list
         """
-        return list(set(map(lambda value: value.get_attribute(key) if key else value.get_key(), models)))
+        return list(
+            set(
+                map(
+                    lambda value: value.get_attribute(key) if key else value.get_key(),
+                    models,
+                )
+            )
+        )
 
     def get_query(self):
         return self._query

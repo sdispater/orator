@@ -35,7 +35,11 @@ class SoftDeletes(object):
         Perform the actual delete query on this model instance.
         """
         if self.__force_deleting__:
-            return self.with_trashed().where(self.get_key_name(), self.get_key()).force_delete()
+            return (
+                self.with_trashed()
+                .where(self.get_key_name(), self.get_key())
+                .force_delete()
+            )
 
         return self._run_soft_delete()
 
@@ -48,15 +52,13 @@ class SoftDeletes(object):
         time = self.fresh_timestamp()
         setattr(self, self.get_deleted_at_column(), time)
 
-        query.update({
-            self.get_deleted_at_column(): self.from_datetime(time)
-        })
+        query.update({self.get_deleted_at_column(): self.from_datetime(time)})
 
     def restore(self):
         """
         Restore a soft-deleted model instance.
         """
-        if self._fire_model_event('restoring') is False:
+        if self._fire_model_event("restoring") is False:
             return False
 
         setattr(self, self.get_deleted_at_column(), None)
@@ -65,7 +67,7 @@ class SoftDeletes(object):
 
         result = self.save()
 
-        self._fire_model_event('restored')
+        self._fire_model_event("restored")
 
         return result
 
@@ -99,7 +101,9 @@ class SoftDeletes(object):
 
         column = instance.get_qualified_deleted_at_column()
 
-        return instance.new_query_without_scope(SoftDeletingScope()).where_not_null(column)
+        return instance.new_query_without_scope(SoftDeletingScope()).where_not_null(
+            column
+        )
 
     @classmethod
     def restoring(cls, callback):
@@ -108,7 +112,7 @@ class SoftDeletes(object):
 
         :type callback: callable
         """
-        cls._register_model_event('restoring', callback)
+        cls._register_model_event("restoring", callback)
 
     @classmethod
     def restored(cls, callback):
@@ -117,7 +121,7 @@ class SoftDeletes(object):
 
         :type callback: callable
         """
-        cls._register_model_event('restored', callback)
+        cls._register_model_event("restored", callback)
 
     def get_deleted_at_column(self):
         """
@@ -125,7 +129,7 @@ class SoftDeletes(object):
 
         :rtype: str
         """
-        return getattr(self, 'DELETED_AT', 'deleted_at')
+        return getattr(self, "DELETED_AT", "deleted_at")
 
     def get_qualified_deleted_at_column(self):
         """
@@ -133,4 +137,4 @@ class SoftDeletes(object):
 
         :rtype: str
         """
-        return '%s.%s' % (self.get_table(), self.get_deleted_at_column())
+        return "%s.%s" % (self.get_table(), self.get_deleted_at_column())

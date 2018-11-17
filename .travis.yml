@@ -1,13 +1,8 @@
 language: python
 
-python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
-
-env:
-  - MYSQL_PACKAGE=pymysql
-  - MYSQL_PACKAGE=mysqlclient
+stages:
+  - linting
+  - test
 
 cache:
   pip: true
@@ -22,7 +17,8 @@ addons:
 
 install:
   - curl -fsS -o get-poetry.py https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py
-  - python get-poetry.py --preview
+  - python get-poetry.py --preview -y
+  - source $HOME/.poetry/env
   - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then poetry install --extras mysql-python --extras pgsql; fi
   - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then poetry install --extras mysql --extras pgsql; fi
 
@@ -31,3 +27,32 @@ script: pytest tests/
 before_script:
   - psql -c 'create database orator_test;' -U postgres
   - mysql -e 'create database orator_test;'
+
+jobs:
+  include:
+    - python: "2.7"
+      env: MYSQL_PACKAGE=pymysql
+    - python: "2.7"
+      env: MYSQL_PACKAGE=mysqlclient
+    - python: "3.5"
+      env: MYSQL_PACKAGE=pymysql
+    - python: "3.5"
+      env: MYSQL_PACKAGE=mysqlclient
+    - python: "3.6"
+      env: MYSQL_PACKAGE=pymysql
+    - python: "3.6"
+      env: MYSQL_PACKAGE=mysqlclient
+    - python: "3.7"
+      env: MYSQL_PACKAGE=pymysql
+      dist: xenial
+    - python: "3.7"
+      env: MYSQL_PACKAGE=mysqlclient
+      dist: xenial
+
+    - stage: linting
+      python: "3.6"
+      install:
+        - pip install pre-commit
+        - pre-commit install-hooks
+      script:
+        - pre-commit run --all-files

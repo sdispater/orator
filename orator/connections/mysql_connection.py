@@ -12,7 +12,7 @@ from ..dbal.mysql_schema_manager import MySQLSchemaManager
 
 class MySQLConnection(Connection):
 
-    name = 'mysql'
+    name = "mysql"
 
     def get_default_query_grammar(self):
         return MySQLQueryGrammar(marker=self._marker)
@@ -59,7 +59,7 @@ class MySQLConnection(Connection):
             self._transactions -= 1
 
     def _get_cursor_query(self, query, bindings):
-        if not hasattr(self._cursor, '_last_executed') or self._pretending:
+        if not hasattr(self._cursor, "_last_executed") or self._pretending:
             return super(MySQLConnection, self)._get_cursor_query(query, bindings)
 
         if PY2:

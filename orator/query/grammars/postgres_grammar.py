@@ -7,12 +7,25 @@ from ...utils import basestring
 class PostgresQueryGrammar(QueryGrammar):
 
     _operators = [
-        '=', '<', '>', '<=', '>=', '<>', '!=',
-        'like', 'not like', 'between', 'ilike',
-        '&', '|', '#', '<<', '>>'
+        "=",
+        "<",
+        ">",
+        "<=",
+        ">=",
+        "<>",
+        "!=",
+        "like",
+        "not like",
+        "between",
+        "ilike",
+        "&",
+        "|",
+        "#",
+        "<<",
+        ">>",
     ]
 
-    marker = '%s'
+    marker = "%s"
 
     def _compile_lock(self, query, value):
         """
@@ -31,9 +44,9 @@ class PostgresQueryGrammar(QueryGrammar):
             return value
 
         if value:
-            return 'FOR UPDATE'
+            return "FOR UPDATE"
 
-        return 'FOR SHARE'
+        return "FOR SHARE"
 
     def compile_update(self, query, values):
         """
@@ -56,7 +69,7 @@ class PostgresQueryGrammar(QueryGrammar):
 
         where = self._compile_update_wheres(query)
 
-        return ('UPDATE %s SET %s%s %s' % (table, columns, from_, where)).strip()
+        return ("UPDATE %s SET %s%s %s" % (table, columns, from_, where)).strip()
 
     def _compile_update_columns(self, values):
         """
@@ -71,9 +84,9 @@ class PostgresQueryGrammar(QueryGrammar):
         columns = []
 
         for key, value in values.items():
-            columns.append('%s = %s' % (self.wrap(key), self.parameter(value)))
+            columns.append("%s = %s" % (self.wrap(key), self.parameter(value)))
 
-        return ', '.join(columns)
+        return ", ".join(columns)
 
     def _compile_update_from(self, query):
         """
@@ -86,7 +99,7 @@ class PostgresQueryGrammar(QueryGrammar):
         :rtype: str
         """
         if not query.joins:
-            return ''
+            return ""
 
         froms = []
 
@@ -94,9 +107,9 @@ class PostgresQueryGrammar(QueryGrammar):
             froms.append(self.wrap_table(join.table))
 
         if len(froms):
-            return ' FROM %s' % ', '.join(froms)
+            return " FROM %s" % ", ".join(froms)
 
-        return ''
+        return ""
 
     def _compile_update_wheres(self, query):
         """
@@ -116,9 +129,9 @@ class PostgresQueryGrammar(QueryGrammar):
         join_where = self._compile_update_join_wheres(query)
 
         if not base_where.strip():
-            return 'WHERE %s' % self._remove_leading_boolean(join_where)
+            return "WHERE %s" % self._remove_leading_boolean(join_where)
 
-        return '%s %s' % (base_where, join_where)
+        return "%s %s" % (base_where, join_where)
 
     def _compile_update_join_wheres(self, query):
         """
@@ -136,7 +149,7 @@ class PostgresQueryGrammar(QueryGrammar):
             for clause in join.clauses:
                 join_wheres.append(self._compile_join_constraints(clause))
 
-        return ' '.join(join_wheres)
+        return " ".join(join_wheres)
 
     def compile_insert_get_id(self, query, values, sequence=None):
         """
@@ -155,10 +168,12 @@ class PostgresQueryGrammar(QueryGrammar):
         :rtype: str
         """
         if sequence is None:
-            sequence = 'id'
+            sequence = "id"
 
-        return '%s RETURNING %s'\
-               % (self.compile_insert(query, values), self.wrap(sequence))
+        return "%s RETURNING %s" % (
+            self.compile_insert(query, values),
+            self.wrap(sequence),
+        )
 
     def compile_truncate(self, query):
         """
@@ -170,6 +185,4 @@ class PostgresQueryGrammar(QueryGrammar):
         :return: The compiled statement
         :rtype: str
         """
-        return {
-            'TRUNCATE %s RESTART IDENTITY' % self.wrap_table(query.from__): {}
-        }
+        return {"TRUNCATE %s RESTART IDENTITY" % self.wrap_table(query.from__): {}}

@@ -32,7 +32,7 @@ class Seeder(object):
         self._resolve(klass).run()
 
         if self._command:
-            self._command.line('<info>Seeded:</info> <fg=cyan>%s</>' % klass.__name__)
+            self._command.line("<info>Seeded:</info> <fg=cyan>%s</>" % klass.__name__)
 
     def _resolve(self, klass):
         """

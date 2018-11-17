@@ -5,7 +5,6 @@ from .result import Result
 
 
 class MorphMany(MorphOneOrMany):
-
     def get_results(self):
         """
         Get the results of the relationship.
@@ -20,7 +19,9 @@ class MorphMany(MorphOneOrMany):
         :type relation: str
         """
         for model in models:
-            model.set_relation(relation, Result(self._related.new_collection(), self, model))
+            model.set_relation(
+                relation, Result(self._related.new_collection(), self, model)
+            )
 
         return models
 

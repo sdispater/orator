@@ -22,31 +22,27 @@ from ..utils.helpers import serialize
 
 
 class BaseDictConnection(connection_class):
-
     def cursor(self, *args, **kwargs):
-        kwargs.setdefault('cursor_factory', BaseDictCursor)
+        kwargs.setdefault("cursor_factory", BaseDictCursor)
 
         return super(BaseDictConnection, self).cursor(*args, **kwargs)
 
 
 class DictConnection(BaseDictConnection):
-
     def cursor(self, *args, **kwargs):
-        kwargs.setdefault('cursor_factory', DictCursor)
+        kwargs.setdefault("cursor_factory", DictCursor)
 
         return super(DictConnection, self).cursor(*args, **kwargs)
 
 
 class BaseDictCursor(cursor_class):
-
     def __init__(self, *args, **kwargs):
-        kwargs['row_factory'] = DictRow
+        kwargs["row_factory"] = DictRow
         super(cursor_class, self).__init__(*args, **kwargs)
         self._prefetch = 1
 
 
 class DictCursor(BaseDictCursor):
-
     def execute(self, query, vars=None):
         query = qmark(query)
 
@@ -55,12 +51,10 @@ class DictCursor(BaseDictCursor):
     def executemany(self, query, args_seq):
         query = qmark(query)
 
-        return super(DictCursor, self).executemany(
-            query, denullify(args_seq))
+        return super(DictCursor, self).executemany(query, denullify(args_seq))
 
 
 class DictRow(row_class):
-
     def __getattr__(self, item):
         try:
             return self[item]
@@ -78,11 +72,15 @@ class DictRow(row_class):
 class PostgresConnector(Connector):
 
     RESERVED_KEYWORDS = [
-        'log_queries', 'driver', 'prefix', 'name',
-        'register_unicode', 'use_qmark'
+        "log_queries",
+        "driver",
+        "prefix",
+        "name",
+        "register_unicode",
+        "use_qmark",
     ]
 
-    SUPPORTED_PACKAGES = ['psycopg2']
+    SUPPORTED_PACKAGES = ["psycopg2"]
 
     def _do_connect(self, config):
         connection = self.get_api().connect(
@@ -90,7 +88,7 @@ class PostgresConnector(Connector):
             **self.get_config(config)
         )
 
-        if config.get('use_unicode', True):
+        if config.get("use_unicode", True):
             extensions.register_type(extensions.UNICODE, connection)
             extensions.register_type(extensions.UNICODEARRAY, connection)
 
@@ -99,7 +97,7 @@ class PostgresConnector(Connector):
         return connection
 
     def get_connection_class(self, config):
-        if config.get('use_qmark'):
+        if config.get("use_qmark"):
             return DictConnection
 
         return BaseDictConnection
@@ -127,4 +125,4 @@ class PostgresConnector(Connector):
         minor = int_version // 100 % 100
         fix = int_version % 10
 
-        return major, minor, fix, ''
+        return major, minor, fix, ""
