@@ -6,7 +6,6 @@ from ..utils import deprecated
 
 
 class Paginator(BasePaginator):
-
     def __init__(self, items, per_page, current_page=None, options=None):
         """
         Constructor
@@ -59,7 +58,7 @@ class Paginator(BasePaginator):
         """
         self._has_more = len(self._items) > self.per_page
 
-        self._items = self._items[0:self.per_page]
+        self._items = self._items[0 : self.per_page]
 
     def has_more_pages(self):
         """

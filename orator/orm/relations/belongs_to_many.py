@@ -21,7 +21,9 @@ class BelongsToMany(Relation):
     _pivot_columns = []
     _pivot_wheres = []
 
-    def __init__(self, query, parent, table, foreign_key, other_key, relation_name=None):
+    def __init__(
+        self, query, parent, table, foreign_key, other_key, relation_name=None
+    ):
         """
         :param query: A Builder instance
         :type query: Builder
@@ -57,7 +59,7 @@ class BelongsToMany(Relation):
         """
         return self.get()
 
-    def where_pivot(self, column, operator=None, value=None, boolean='and'):
+    def where_pivot(self, column, operator=None, value=None, boolean="and"):
         """
         Set a where clause for a pivot table column.
 
@@ -78,7 +80,9 @@ class BelongsToMany(Relation):
         """
         self._pivot_wheres.append([column, operator, value, boolean])
 
-        return self._query.where('%s.%s' % (self._table, column), operator, value, boolean)
+        return self._query.where(
+            "%s.%s" % (self._table, column), operator, value, boolean
+        )
 
     def or_where_pivot(self, column, operator=None, value=None):
         """
@@ -96,7 +100,7 @@ class BelongsToMany(Relation):
         :return: self
         :rtype: BelongsToMany
         """
-        return self.where_pivot(column, operator, value, 'or')
+        return self.where_pivot(column, operator, value, "or")
 
     def first(self, columns=None):
         """
@@ -136,7 +140,7 @@ class BelongsToMany(Relation):
         :rtype: orator.Collection
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         if self._query.get_query().columns:
             columns = []
@@ -161,7 +165,7 @@ class BelongsToMany(Relation):
         for model in models:
             pivot = self.new_existing_pivot(self._clean_pivot_attributes(model))
 
-            model.set_relation('pivot', pivot)
+            model.set_relation("pivot", pivot)
 
     def _clean_pivot_attributes(self, model):
         """
@@ -173,7 +177,7 @@ class BelongsToMany(Relation):
         delete_keys = []
 
         for key, value in model.get_attributes().items():
-            if key.find('pivot_') == 0:
+            if key.find("pivot_") == 0:
                 values[key[6:]] = value
 
                 delete_keys.append(key)
@@ -219,16 +223,18 @@ class BelongsToMany(Relation):
 
         :rtype: orator.orm.Builder
         """
-        query.select(QueryExpression('COUNT(*)'))
+        query.select(QueryExpression("COUNT(*)"))
 
         table_prefix = self._query.get_query().get_connection().get_table_prefix()
 
         hash_ = self.get_relation_count_hash()
-        query.from_('%s AS %s%s' % (self._table, table_prefix, hash_))
+        query.from_("%s AS %s%s" % (self._table, table_prefix, hash_))
 
         key = self.wrap(self.get_qualified_parent_key_name())
 
-        return query.where('%s.%s' % (hash_, self._foreign_key), '=', QueryExpression(key))
+        return query.where(
+            "%s.%s" % (hash_, self._foreign_key), "=", QueryExpression(key)
+        )
 
     def get_relation_count_hash(self):
         """
@@ -236,7 +242,7 @@ class BelongsToMany(Relation):
 
         :rtype: str
         """
-        return 'self_%s' % (hashlib.md5(str(time.time()).encode()).hexdigest())
+        return "self_%s" % (hashlib.md5(str(time.time()).encode()).hexdigest())
 
     def _get_select_columns(self, columns=None):
         """
@@ -247,8 +253,8 @@ class BelongsToMany(Relation):
 
         :rtype: list
         """
-        if columns == ['*'] or columns is None:
-            columns = ['%s.*' % self._related.get_table()]
+        if columns == ["*"] or columns is None:
+            columns = ["%s.*" % self._related.get_table()]
 
         return columns + self._get_aliased_pivot_columns()
 
@@ -263,9 +269,9 @@ class BelongsToMany(Relation):
         columns = []
 
         for column in defaults + self._pivot_columns:
-            value = '%s.%s AS pivot_%s' % (self._table, column, column)
+            value = "%s.%s AS pivot_%s" % (self._table, column, column)
             if value not in columns:
-                columns.append('%s.%s AS pivot_%s' % (self._table, column, column))
+                columns.append("%s.%s AS pivot_%s" % (self._table, column, column))
 
         return columns
 
@@ -295,9 +301,9 @@ class BelongsToMany(Relation):
 
         base_table = self._related.get_table()
 
-        key = '%s.%s' % (base_table, self._related.get_key_name())
+        key = "%s.%s" % (base_table, self._related.get_key_name())
 
-        query.join(self._table, key, '=', self.get_other_key())
+        query.join(self._table, key, "=", self.get_other_key())
 
         return self
 
@@ -310,7 +316,7 @@ class BelongsToMany(Relation):
         """
         foreign = self.get_foreign_key()
 
-        self._query.where(foreign, '=', self._parent.get_key())
+        self._query.where(foreign, "=", self._parent.get_key())
 
         return self
 
@@ -330,7 +336,9 @@ class BelongsToMany(Relation):
         :type relation:  str
         """
         for model in models:
-            model.set_relation(relation, Result(self._related.new_collection(), self, model))
+            model.set_relation(
+                relation, Result(self._related.new_collection(), self, model)
+            )
 
         return models
 
@@ -348,7 +356,9 @@ class BelongsToMany(Relation):
             key = model.get_key()
 
             if key in dictionary:
-                collection = Result(self._related.new_collection(dictionary[key]), self, model)
+                collection = Result(
+                    self._related.new_collection(dictionary[key]), self, model
+                )
             else:
                 collection = Result(self._related.new_collection(), self, model)
 
@@ -416,7 +426,7 @@ class BelongsToMany(Relation):
         if joining is None:
             joining = {}
 
-        model.save({'touch': False})
+        model.save({"touch": False})
 
         self.attach(model.get_key(), joining, touch)
 
@@ -477,7 +487,9 @@ class BelongsToMany(Relation):
 
         return instance
 
-    def first_or_create(self, _attributes=None, _joining=None, _touch=True, **attributes):
+    def first_or_create(
+        self, _attributes=None, _joining=None, _touch=True, **attributes
+    ):
         """
         Get the first related model record matching the attributes or create it.
 
@@ -517,7 +529,7 @@ class BelongsToMany(Relation):
 
         instance.fill(**values)
 
-        instance.save({'touch': False})
+        instance.save({"touch": False})
 
         return instance
 
@@ -535,7 +547,7 @@ class BelongsToMany(Relation):
 
         instance = self._related.new_instance(attributes)
 
-        instance.save({'touch': False})
+        instance.save({"touch": False})
 
         self.attach(instance.get_key(), _joining, _touch)
 
@@ -561,11 +573,7 @@ class BelongsToMany(Relation):
         """
         Sync the intermediate tables with a list of IDs or collection of models
         """
-        changes = {
-            'attached': [],
-            'detached': [],
-            'updated': []
-        }
+        changes = {"attached": [], "detached": [], "updated": []}
 
         if isinstance(ids, Collection):
             ids = ids.model_keys()
@@ -579,11 +587,11 @@ class BelongsToMany(Relation):
         if detaching and len(detach) > 0:
             self.detach(detach)
 
-            changes['detached'] = detach
+            changes["detached"] = detach
 
         changes.update(self._attach_new(records, current, False))
 
-        if len(changes['attached']) or len(changes['updated']):
+        if len(changes["attached"]) or len(changes["updated"]):
             self.touch_if_touching()
 
         return changes
@@ -609,18 +617,17 @@ class BelongsToMany(Relation):
         """
         Attach all of the IDs that aren't in the current dict.
         """
-        changes = {
-            'attached': [],
-            'updated': []
-        }
+        changes = {"attached": [], "updated": []}
 
         for id, attributes in records.items():
             if id not in current:
                 self.attach(id, attributes, touch)
 
-                changes['attached'].append(id)
-            elif len(attributes) > 0 and self.update_existing_pivot(id, attributes, touch):
-                changes['updated'].append(id)
+                changes["attached"].append(id)
+            elif len(attributes) > 0 and self.update_existing_pivot(
+                id, attributes, touch
+            ):
+                changes["updated"].append(id)
 
         return changes
 
@@ -661,8 +668,9 @@ class BelongsToMany(Relation):
         """
         records = []
 
-        timed = (self._has_pivot_column(self.created_at())
-                 or self._has_pivot_column(self.updated_at()))
+        timed = self._has_pivot_column(self.created_at()) or self._has_pivot_column(
+            self.updated_at()
+        )
 
         for key, value in enumerate(ids):
             records.append(self._attacher(key, value, attributes, timed))
@@ -765,7 +773,9 @@ class BelongsToMany(Relation):
         return self.get_related().touches(self._guess_inverse_relation())
 
     def _guess_inverse_relation(self):
-        return inflection.camelize(inflection.pluralize(self.get_parent().__class__.__name__))
+        return inflection.camelize(
+            inflection.pluralize(self.get_parent().__class__.__name__)
+        )
 
     def _new_pivot_query(self):
         """
@@ -841,10 +851,10 @@ class BelongsToMany(Relation):
         return self.get_foreign_key()
 
     def get_foreign_key(self):
-        return '%s.%s' % (self._table, self._foreign_key)
+        return "%s.%s" % (self._table, self._foreign_key)
 
     def get_other_key(self):
-        return '%s.%s' % (self._table, self._other_key)
+        return "%s.%s" % (self._table, self._other_key)
 
     def get_table(self):
         return self._table
@@ -859,7 +869,7 @@ class BelongsToMany(Relation):
             self._table,
             self._foreign_key,
             self._other_key,
-            self._relation_name
+            self._relation_name,
         )
 
         relation.with_pivot(*self._pivot_columns)

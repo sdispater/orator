@@ -2,7 +2,6 @@
 
 
 class Scope(object):
-
     def apply(self, builder, model):
         """
         Apply the scope to a given query builder.

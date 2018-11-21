@@ -5,21 +5,22 @@ import re
 
 class Qmarker(object):
 
-    RE_QMARK = re.compile(r'\?\?|\?|%')
+    RE_QMARK = re.compile(r"\?\?|\?|%")
 
     @classmethod
     def qmark(cls, query):
         """
         Convert a "qmark" query into "format" style.
         """
+
         def sub_sequence(m):
             s = m.group(0)
-            if s == '??':
-                return '?'
-            if s == '%':
-                return '%%'
+            if s == "??":
+                return "?"
+            if s == "%":
+                return "%%"
             else:
-                return '%s'
+                return "%s"
 
         return cls.RE_QMARK.sub(sub_sequence, query)
 

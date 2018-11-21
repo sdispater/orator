@@ -24,24 +24,20 @@ class MigrateMakeCommand(BaseCommand):
         """
         creator = MigrationCreator()
 
-        name = self.argument('name')
-        table = self.option('table')
-        create = bool(self.option('create'))
+        name = self.argument("name")
+        table = self.option("table")
+        create = bool(self.option("create"))
 
         if not table and create is not False:
             table = create
 
-        path = self.option('path')
+        path = self.option("path")
         if path is None:
             path = self._get_migration_path()
 
-        migration_name = self._write_migration(
-            creator, name, table, create, path
-        )
+        migration_name = self._write_migration(creator, name, table, create, path)
 
-        self.line(
-            '<info>Created migration:</info> {}'.format(migration_name)
-        )
+        self.line("<info>Created migration:</info> {}".format(migration_name))
 
     def _write_migration(self, creator, name, table, create, path):
         """

@@ -16,10 +16,10 @@ class InstallCommand(BaseCommand):
         """
         Executes the command
         """
-        database = self.option('database')
-        repository = DatabaseMigrationRepository(self.resolver, 'migrations')
+        database = self.option("database")
+        repository = DatabaseMigrationRepository(self.resolver, "migrations")
 
         repository.set_source(database)
         repository.create_repository()
 
-        self.info('Migration table created successfully')
+        self.info("Migration table created successfully")

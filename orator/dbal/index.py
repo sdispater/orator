@@ -10,7 +10,9 @@ class Index(AbstractAsset):
     An abstraction class for an index.
     """
 
-    def __init__(self, name, columns, is_unique=False, is_primary=False, flags=None, options=None):
+    def __init__(
+        self, name, columns, is_unique=False, is_primary=False, flags=None, options=None
+    ):
         """
         Constructor.
 
@@ -124,7 +126,9 @@ class Index(AbstractAsset):
 
         for i in range(number_of_columns):
             column = self._trim_quotes(columns[i].lower())
-            if i >= len(column_names) or column != self._trim_quotes(column_names[i].lower()):
+            if i >= len(column_names) or column != self._trim_quotes(
+                column_names[i].lower()
+            ):
                 same_columns = False
 
         return same_columns
@@ -176,11 +180,14 @@ class Index(AbstractAsset):
 
         :rtype: bool
         """
-        if (self.has_option('where') and other.has_option('where')
-            and self.get_option('where') == other.get_option('where')):
+        if (
+            self.has_option("where")
+            and other.has_option("where")
+            and self.get_option("where") == other.get_option("where")
+        ):
             return True
 
-        if not self.has_option('where') and not other.has_option('where'):
+        if not self.has_option("where") and not other.has_option("where"):
             return True
 
         return False
@@ -201,7 +208,11 @@ class Index(AbstractAsset):
             return False
 
         same_columns = self.spans_columns(other.get_columns())
-        if same_columns and (self.is_primary() or self.is_unique()) and self.same_partial_index(other):
+        if (
+            same_columns
+            and (self.is_primary() or self.is_unique())
+            and self.same_partial_index(other)
+        ):
             return True
 
         return False

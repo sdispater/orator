@@ -41,7 +41,6 @@ class Wrapper(Proxy):
 
 
 class BelongsToManyWrapper(Wrapper):
-
     def with_timestamps(self):
         self._relation.with_timestamps()
 

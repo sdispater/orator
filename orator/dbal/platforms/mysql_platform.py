@@ -16,53 +16,55 @@ class MySQLPlatform(Platform):
     LENGTH_LIMIT_MEDIUMBLOB = 16777215
 
     INTERNAL_TYPE_MAPPING = {
-        'tinyint': 'boolean',
-        'smallint': 'smallint',
-        'mediumint': 'integer',
-        'int': 'integer',
-        'integer': 'integer',
-        'bigint': 'bigint',
-        'int8': 'bigint',
-        'bool': 'boolean',
-        'boolean': 'boolean',
-        'tinytext': 'text',
-        'mediumtext': 'text',
-        'longtext': 'text',
-        'text': 'text',
-        'varchar': 'string',
-        'string': 'string',
-        'char': 'string',
-        'date': 'date',
-        'datetime': 'datetime',
-        'timestamp': 'datetime',
-        'time': 'time',
-        'float': 'float',
-        'double': 'float',
-        'real': 'float',
-        'decimal': 'decimal',
-        'numeric': 'decimal',
-        'year': 'date',
-        'longblob': 'blob',
-        'blob': 'blob',
-        'mediumblob': 'blob',
-        'tinyblob': 'blob',
-        'binary': 'binary',
-        'varbinary': 'binary',
-        'set': 'simple_array',
-        'enum': 'enum',
+        "tinyint": "boolean",
+        "smallint": "smallint",
+        "mediumint": "integer",
+        "int": "integer",
+        "integer": "integer",
+        "bigint": "bigint",
+        "int8": "bigint",
+        "bool": "boolean",
+        "boolean": "boolean",
+        "tinytext": "text",
+        "mediumtext": "text",
+        "longtext": "text",
+        "text": "text",
+        "varchar": "string",
+        "string": "string",
+        "char": "string",
+        "date": "date",
+        "datetime": "datetime",
+        "timestamp": "datetime",
+        "time": "time",
+        "float": "float",
+        "double": "float",
+        "real": "float",
+        "decimal": "decimal",
+        "numeric": "decimal",
+        "year": "date",
+        "longblob": "blob",
+        "blob": "blob",
+        "mediumblob": "blob",
+        "tinyblob": "blob",
+        "binary": "binary",
+        "varbinary": "binary",
+        "set": "simple_array",
+        "enum": "enum",
     }
 
     def get_list_table_columns_sql(self, table, database=None):
         if database:
             database = "'%s'" % database
         else:
-            database = 'DATABASE()'
+            database = "DATABASE()"
 
-        return 'SELECT COLUMN_NAME AS field, COLUMN_TYPE AS type, IS_NULLABLE AS `null`, ' \
-               'COLUMN_KEY AS `key`, COLUMN_DEFAULT AS `default`, EXTRA AS extra, COLUMN_COMMENT AS comment, ' \
-               'CHARACTER_SET_NAME AS character_set, COLLATION_NAME AS collation ' \
-               'FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = \'%s\''\
-               % (database, table)
+        return (
+            "SELECT COLUMN_NAME AS field, COLUMN_TYPE AS type, IS_NULLABLE AS `null`, "
+            "COLUMN_KEY AS `key`, COLUMN_DEFAULT AS `default`, EXTRA AS extra, COLUMN_COMMENT AS comment, "
+            "CHARACTER_SET_NAME AS character_set, COLLATION_NAME AS collation "
+            "FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = '%s'"
+            % (database, table)
+        )
 
     def get_list_table_indexes_sql(self, table, current_database=None):
         sql = """
@@ -74,21 +76,25 @@ class MySQLPlatform(Platform):
         """
 
         if current_database:
-            sql += ' AND TABLE_SCHEMA = \'%s\'' % current_database
+            sql += " AND TABLE_SCHEMA = '%s'" % current_database
 
         return sql % table
 
     def get_list_table_foreign_keys_sql(self, table, database=None):
-        sql = ("SELECT DISTINCT k.`CONSTRAINT_NAME`, k.`COLUMN_NAME`, k.`REFERENCED_TABLE_NAME`, "
-               "k.`REFERENCED_COLUMN_NAME` /*!50116 , c.update_rule, c.delete_rule */ "
-               "FROM information_schema.key_column_usage k /*!50116 "
-               "INNER JOIN information_schema.referential_constraints c ON "
-               "  c.constraint_name = k.constraint_name AND "
-               "  c.table_name = '%s' */ WHERE k.table_name = '%s'" % (table, table))
+        sql = (
+            "SELECT DISTINCT k.`CONSTRAINT_NAME`, k.`COLUMN_NAME`, k.`REFERENCED_TABLE_NAME`, "
+            "k.`REFERENCED_COLUMN_NAME` /*!50116 , c.update_rule, c.delete_rule */ "
+            "FROM information_schema.key_column_usage k /*!50116 "
+            "INNER JOIN information_schema.referential_constraints c ON "
+            "  c.constraint_name = k.constraint_name AND "
+            "  c.table_name = '%s' */ WHERE k.table_name = '%s'" % (table, table)
+        )
 
         if database:
-            sql += " AND k.table_schema = '%s' /*!50116 AND c.constraint_schema = '%s' */"\
-                   % (database, database)
+            sql += (
+                " AND k.table_schema = '%s' /*!50116 AND c.constraint_schema = '%s' */"
+                % (database, database)
+            )
 
         sql += " AND k.`REFERENCED_COLUMN_NAME` IS NOT NULL"
 
@@ -107,7 +113,9 @@ class MySQLPlatform(Platform):
         query_parts = []
 
         if diff.new_name is not False:
-            query_parts.append('RENAME TO %s' % diff.get_new_name().get_quoted_name(self))
+            query_parts.append(
+                "RENAME TO %s" % diff.get_new_name().get_quoted_name(self)
+            )
 
         # Added columns?
 
@@ -118,30 +126,43 @@ class MySQLPlatform(Platform):
             column_dict = column.to_dict()
 
             # Don't propagate default value changes for unsupported column types.
-            if column_diff.has_changed('default') \
-                    and len(column_diff.changed_properties) == 1 \
-                    and (column_dict['type'] == 'text' or column_dict['type'] == 'blob'):
+            if (
+                column_diff.has_changed("default")
+                and len(column_diff.changed_properties) == 1
+                and (column_dict["type"] == "text" or column_dict["type"] == "blob")
+            ):
                 continue
 
-            query_parts.append('CHANGE %s %s'
-                               % (column_diff.get_old_column_name().get_quoted_name(self),
-                                  self.get_column_declaration_sql(column.get_quoted_name(self), column_dict)))
+            query_parts.append(
+                "CHANGE %s %s"
+                % (
+                    column_diff.get_old_column_name().get_quoted_name(self),
+                    self.get_column_declaration_sql(
+                        column.get_quoted_name(self), column_dict
+                    ),
+                )
+            )
 
         for old_column_name, column in diff.renamed_columns.items():
             column_dict = column.to_dict()
             old_column_name = Identifier(old_column_name)
-            query_parts.append('CHANGE %s %s'
-                               % (self.quote(old_column_name.get_quoted_name(self)),
-                                  self.get_column_declaration_sql(
-                                      self.quote(column.get_quoted_name(self)),
-                                      column_dict)))
+            query_parts.append(
+                "CHANGE %s %s"
+                % (
+                    self.quote(old_column_name.get_quoted_name(self)),
+                    self.get_column_declaration_sql(
+                        self.quote(column.get_quoted_name(self)), column_dict
+                    ),
+                )
+            )
 
         sql = []
 
         if len(query_parts) > 0:
-            sql.append('ALTER TABLE %s %s'
-                       % (diff.get_name(self).get_quoted_name(self),
-                          ', '.join(query_parts)))
+            sql.append(
+                "ALTER TABLE %s %s"
+                % (diff.get_name(self).get_quoted_name(self), ", ".join(query_parts))
+            )
 
         return sql
 
@@ -156,85 +177,85 @@ class MySQLPlatform(Platform):
         return item
 
     def get_boolean_type_declaration_sql(self, column):
-        return 'TINYINT(1)'
+        return "TINYINT(1)"
 
     def get_integer_type_declaration_sql(self, column):
-        return 'INT ' + self._get_common_integer_type_declaration_sql(column)
+        return "INT " + self._get_common_integer_type_declaration_sql(column)
 
     def get_bigint_type_declaration_sql(self, column):
-        return 'BIGINT ' + self._get_common_integer_type_declaration_sql(column)
+        return "BIGINT " + self._get_common_integer_type_declaration_sql(column)
 
     def get_smallint_type_declaration_sql(self, column):
-        return 'SMALLINT ' + self._get_common_integer_type_declaration_sql(column)
+        return "SMALLINT " + self._get_common_integer_type_declaration_sql(column)
 
     def get_guid_type_declaration_sql(self, column):
-        return 'UUID'
+        return "UUID"
 
     def get_datetime_type_declaration_sql(self, column):
-        if 'version' in column and column['version'] == True:
-            return 'TIMESTAMP'
+        if "version" in column and column["version"] == True:
+            return "TIMESTAMP"
 
-        return 'DATETIME'
+        return "DATETIME"
 
     def get_date_type_declaration_sql(self, column):
-        return 'DATE'
+        return "DATE"
 
     def get_time_type_declaration_sql(self, column):
-        return 'TIME'
+        return "TIME"
 
     def get_varchar_type_declaration_sql_snippet(self, length, fixed):
         if fixed:
-            return 'CHAR(%s)' % length if length else 'CHAR(255)'
+            return "CHAR(%s)" % length if length else "CHAR(255)"
         else:
-            return 'VARCHAR(%s)' % length if length else 'VARCHAR(255)'
+            return "VARCHAR(%s)" % length if length else "VARCHAR(255)"
 
     def get_binary_type_declaration_sql_snippet(self, length, fixed):
         if fixed:
-            return 'BINARY(%s)' % (length or 255)
+            return "BINARY(%s)" % (length or 255)
         else:
-            return 'VARBINARY(%s)' % (length or 255)
+            return "VARBINARY(%s)" % (length or 255)
 
     def get_text_type_declaration_sql(self, column):
-        length = column.get('length')
+        length = column.get("length")
         if length:
             if length <= self.LENGTH_LIMIT_TINYTEXT:
-                return 'TINYTEXT'
+                return "TINYTEXT"
 
             if length <= self.LENGTH_LIMIT_TEXT:
-                return 'TEXT'
+                return "TEXT"
 
             if length <= self.LENGTH_LIMIT_MEDIUMTEXT:
-                return 'MEDIUMTEXT'
+                return "MEDIUMTEXT"
 
-        return 'LONGTEXT'
+        return "LONGTEXT"
 
     def get_blob_type_declaration_sql(self, column):
-        length = column.get('length')
+        length = column.get("length")
         if length:
             if length <= self.LENGTH_LIMIT_TINYBLOB:
-                return 'TINYBLOB'
+                return "TINYBLOB"
 
             if length <= self.LENGTH_LIMIT_BLOB:
-                return 'BLOB'
+                return "BLOB"
 
             if length <= self.LENGTH_LIMIT_MEDIUMBLOB:
-                return 'MEDIUMBLOB'
+                return "MEDIUMBLOB"
 
-        return 'LONGBLOB'
+        return "LONGBLOB"
 
     def get_clob_type_declaration_sql(self, column):
-        length = column.get('length')
+        length = column.get("length")
         if length:
             if length <= self.LENGTH_LIMIT_TINYTEXT:
-                return 'TINYTEXT'
+                return "TINYTEXT"
 
             if length <= self.LENGTH_LIMIT_TEXT:
-                return 'TEXT'
+                return "TEXT"
 
             if length <= self.LENGTH_LIMIT_MEDIUMTEXT:
-                return 'MEDIUMTEXT'
+                return "MEDIUMTEXT"
 
-        return 'LONGTEXT'
+        return "LONGTEXT"
 
     def get_decimal_type_declaration_sql(self, column):
         decl = super(MySQLPlatform, self).get_decimal_type_declaration_sql(column)
@@ -242,23 +263,23 @@ class MySQLPlatform(Platform):
         return decl + self.get_unsigned_declaration(column)
 
     def get_unsigned_declaration(self, column):
-        if column.get('unsigned'):
-            return ' UNSIGNED'
+        if column.get("unsigned"):
+            return " UNSIGNED"
 
-        return ''
+        return ""
 
     def _get_common_integer_type_declaration_sql(self, column):
-        autoinc = ''
-        if column.get('autoincrement'):
-            autoinc = ' AUTO_INCREMENT'
+        autoinc = ""
+        if column.get("autoincrement"):
+            autoinc = " AUTO_INCREMENT"
 
         return self.get_unsigned_declaration(column) + autoinc
 
     def get_float_type_declaration_sql(self, column):
-        return 'DOUBLE PRECISION' + self.get_unsigned_declaration(column)
+        return "DOUBLE PRECISION" + self.get_unsigned_declaration(column)
 
     def get_enum_type_declaration_sql(self, column):
-        return 'ENUM{}'.format(column['extra']['definition'])
+        return "ENUM{}".format(column["extra"]["definition"])
 
     def supports_foreign_key_constraints(self):
         return True
@@ -267,10 +288,10 @@ class MySQLPlatform(Platform):
         return False
 
     def quote(self, name):
-        return '`%s`' % name.replace('`', '``')
+        return "`%s`" % name.replace("`", "``")
 
     def _get_reserved_keywords_class(self):
         return MySQLKeywords
 
     def get_identifier_quote_character(self):
-        return '`'
+        return "`"

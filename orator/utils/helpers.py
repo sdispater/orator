@@ -24,7 +24,7 @@ def mkdir_p(path, mode=0o777):
 
 def serialize(value):
     if isinstance(value, datetime.datetime):
-        if hasattr(value, 'to_json'):
+        if hasattr(value, "to_json"):
             value = value.to_json()
         else:
             value = value.isoformat()

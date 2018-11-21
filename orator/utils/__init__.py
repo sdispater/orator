@@ -21,10 +21,12 @@ if PY2:
     from urlparse import parse_qsl
 
     def load_module(module, path):
-        with open(path, 'rb') as fh:
+        with open(path, "rb") as fh:
             mod = imp.load_source(module, path, fh)
 
             return mod
+
+
 else:
     long = int
     unicode = str
@@ -32,21 +34,19 @@ else:
 
     from functools import reduce
 
-    from urllib.parse import (quote_plus, unquote_plus,
-                              parse_qsl, quote, unquote)
+    from urllib.parse import quote_plus, unquote_plus, parse_qsl, quote, unquote
 
     if PY33:
         from importlib import machinery
 
         def load_module(module, path):
-            return machinery.SourceFileLoader(
-                module, path
-            ).load_module(module)
+            return machinery.SourceFileLoader(module, path).load_module(module)
+
     else:
         import imp
 
         def load_module(module, path):
-            with open(path, 'rb') as fh:
+            with open(path, "rb") as fh:
                 mod = imp.load_source(module, path, fh)
 
                 return mod
@@ -56,7 +56,6 @@ from .helpers import mkdir_p, value
 
 
 class Null(object):
-
     def __bool__(self):
         return False
 
@@ -65,9 +64,9 @@ class Null(object):
 
 
 def deprecated(func):
-    '''This is a decorator which can be used to mark functions
+    """This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
-    when the function is used.'''
+    when the function is used."""
 
     @functools.wraps(func)
     def new_func(*args, **kwargs):
@@ -80,7 +79,7 @@ def deprecated(func):
             "Call to deprecated function {}.".format(func.__name__),
             category=DeprecationWarning,
             filename=func_code.co_filename,
-            lineno=func_code.co_firstlineno + 1
+            lineno=func_code.co_firstlineno + 1,
         )
 
         return func(*args, **kwargs)
@@ -96,7 +95,7 @@ def decode(string, encodings=None):
         return string
 
     if encodings is None:
-        encodings = ['utf-8', 'latin1', 'ascii']
+        encodings = ["utf-8", "latin1", "ascii"]
 
     for encoding in encodings:
         try:
@@ -104,7 +103,7 @@ def decode(string, encodings=None):
         except (UnicodeEncodeError, UnicodeDecodeError):
             pass
 
-    return string.decode(encodings[0], errors='ignore')
+    return string.decode(encodings[0], errors="ignore")
 
 
 def encode(string, encodings=None):
@@ -115,7 +114,7 @@ def encode(string, encodings=None):
         return string
 
     if encodings is None:
-        encodings = ['utf-8', 'latin1', 'ascii']
+        encodings = ["utf-8", "latin1", "ascii"]
 
     for encoding in encodings:
         try:
@@ -123,4 +122,4 @@ def encode(string, encodings=None):
         except (UnicodeEncodeError, UnicodeDecodeError):
             pass
 
-    return string.encode(encodings[0], errors='ignore')
+    return string.encode(encodings[0], errors="ignore")

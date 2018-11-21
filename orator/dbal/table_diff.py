@@ -6,10 +6,17 @@ from .identifier import Identifier
 
 
 class TableDiff(object):
-
-    def __init__(self, table_name, added_columns=None,
-                 changed_columns=None, removed_columns=None, added_indexes=None,
-                 changed_indexes=None, removed_indexes=None, from_table=None):
+    def __init__(
+        self,
+        table_name,
+        added_columns=None,
+        changed_columns=None,
+        removed_columns=None,
+        added_indexes=None,
+        changed_indexes=None,
+        removed_indexes=None,
+        from_table=None,
+    ):
         self.name = table_name
         self.new_name = False
         self.added_columns = added_columns or OrderedDict()

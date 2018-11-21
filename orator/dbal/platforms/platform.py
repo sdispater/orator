@@ -22,30 +22,39 @@ class Platform(object):
         self._version = None
 
     def get_default_value_declaration_sql(self, field):
-        default = ''
+        default = ""
 
-        if not field.get('notnull'):
-            default = ' DEFAULT NULL'
+        if not field.get("notnull"):
+            default = " DEFAULT NULL"
 
-        if 'default' in field and field['default'] is not None:
-            default = ' DEFAULT \'%s\'' % field['default']
+        if "default" in field and field["default"] is not None:
+            default = " DEFAULT '%s'" % field["default"]
 
-            if 'type' in field:
-                type = field['type']
+            if "type" in field:
+                type = field["type"]
 
-                if type in ['integer', 'bigint', 'smallint']:
-                    default = ' DEFAULT %s' % field['default']
-                elif type in ['datetime', 'datetimetz'] \
-                        and field['default'] in [self.get_current_timestamp_sql(), 'NOW', 'now']:
-                    default = ' DEFAULT %s' % self.get_current_timestamp_sql()
-                elif type in ['time'] \
-                        and field['default'] in [self.get_current_time_sql(), 'NOW', 'now']:
-                    default = ' DEFAULT %s' % self.get_current_time_sql()
-                elif type in ['date'] \
-                        and field['default'] in [self.get_current_date_sql(), 'NOW', 'now']:
-                    default = ' DEFAULT %s' % self.get_current_date_sql()
-                elif type in ['boolean']:
-                    default = ' DEFAULT \'%s\'' % self.convert_booleans(field['default'])
+                if type in ["integer", "bigint", "smallint"]:
+                    default = " DEFAULT %s" % field["default"]
+                elif type in ["datetime", "datetimetz"] and field["default"] in [
+                    self.get_current_timestamp_sql(),
+                    "NOW",
+                    "now",
+                ]:
+                    default = " DEFAULT %s" % self.get_current_timestamp_sql()
+                elif type in ["time"] and field["default"] in [
+                    self.get_current_time_sql(),
+                    "NOW",
+                    "now",
+                ]:
+                    default = " DEFAULT %s" % self.get_current_time_sql()
+                elif type in ["date"] and field["default"] in [
+                    self.get_current_date_sql(),
+                    "NOW",
+                    "now",
+                ]:
+                    default = " DEFAULT %s" % self.get_current_date_sql()
+                elif type in ["boolean"]:
+                    default = " DEFAULT '%s'" % self.convert_booleans(field["default"])
 
         return default
 
@@ -73,15 +82,15 @@ class Platform(object):
         constraints = []
         for field, def_ in definition.items():
             if isinstance(def_, basestring):
-                constraints.append('CHECK (%s)' % def_)
+                constraints.append("CHECK (%s)" % def_)
             else:
-                if 'min' in def_:
-                    constraints.append('CHECK (%s >= %s)' % (field, def_['min']))
+                if "min" in def_:
+                    constraints.append("CHECK (%s >= %s)" % (field, def_["min"]))
 
-                if 'max' in def_:
-                    constraints.append('CHECK (%s <= %s)' % (field, def_['max']))
+                if "max" in def_:
+                    constraints.append("CHECK (%s <= %s)" % (field, def_["max"]))
 
-        return ', '.join(constraints)
+        return ", ".join(constraints)
 
     def get_unique_constraint_declaration_sql(self, name, index):
         """
@@ -103,10 +112,11 @@ class Platform(object):
         if not columns:
             raise DBALException('Incomplete definition. "columns" required.')
 
-        return 'CONSTRAINT %s UNIQUE (%s)%s'\
-               % (name.get_quoted_name(self),
-                  self.get_index_field_declaration_list_sql(columns),
-                  self.get_partial_index_sql(index))
+        return "CONSTRAINT %s UNIQUE (%s)%s" % (
+            name.get_quoted_name(self),
+            self.get_index_field_declaration_list_sql(columns),
+            self.get_partial_index_sql(index),
+        )
 
     def get_index_declaration_sql(self, name, index):
         """
@@ -128,11 +138,12 @@ class Platform(object):
         if not columns:
             raise DBALException('Incomplete definition. "columns" required.')
 
-        return '%sINDEX %s (%s)%s'\
-               % (self.get_create_index_sql_flags(index),
-                  name.get_quoted_name(self),
-                  self.get_index_field_declaration_list_sql(columns),
-                  self.get_partial_index_sql(index))
+        return "%sINDEX %s (%s)%s" % (
+            self.get_create_index_sql_flags(index),
+            name.get_quoted_name(self),
+            self.get_index_field_declaration_list_sql(columns),
+            self.get_partial_index_sql(index),
+        )
 
     def get_foreign_key_declaration_sql(self, foreign_key):
         """
@@ -159,12 +170,18 @@ class Platform(object):
 
         :rtype: str
         """
-        query = ''
-        if self.supports_foreign_key_on_update() and foreign_key.has_option('on_update'):
-            query += ' ON UPDATE %s' % self.get_foreign_key_referential_action_sql(foreign_key.get_option('on_update'))
+        query = ""
+        if self.supports_foreign_key_on_update() and foreign_key.has_option(
+            "on_update"
+        ):
+            query += " ON UPDATE %s" % self.get_foreign_key_referential_action_sql(
+                foreign_key.get_option("on_update")
+            )
 
-        if foreign_key.has_option('on_delete'):
-            query += ' ON DELETE %s' % self.get_foreign_key_referential_action_sql(foreign_key.get_option('on_delete'))
+        if foreign_key.has_option("on_delete"):
+            query += " ON DELETE %s" % self.get_foreign_key_referential_action_sql(
+                foreign_key.get_option("on_delete")
+            )
 
         return query
 
@@ -178,8 +195,14 @@ class Platform(object):
         :rtype: str
         """
         action = action.upper()
-        if action not in ['CASCADE', 'SET NULL', 'NO ACTION', 'RESTRICT', 'SET DEFAULT']:
-            raise DBALException('Invalid foreign key action: %s' % action)
+        if action not in [
+            "CASCADE",
+            "SET NULL",
+            "NO ACTION",
+            "RESTRICT",
+            "SET DEFAULT",
+        ]:
+            raise DBALException("Invalid foreign key action: %s" % action)
 
         return action
 
@@ -193,11 +216,11 @@ class Platform(object):
 
         :rtype: str
         """
-        sql = ''
+        sql = ""
         if foreign_key.get_name():
-            sql += 'CONSTRAINT %s ' % foreign_key.get_quoted_name(self)
+            sql += "CONSTRAINT %s " % foreign_key.get_quoted_name(self)
 
-        sql += 'FOREIGN KEY ('
+        sql += "FOREIGN KEY ("
 
         if not foreign_key.get_local_columns():
             raise DBALException('Incomplete definition. "local" required.')
@@ -208,26 +231,27 @@ class Platform(object):
         if not foreign_key.get_foreign_table_name():
             raise DBALException('Incomplete definition. "foreign_table" required.')
 
-        sql += '%s) REFERENCES %s (%s)'\
-               % (', '.join(foreign_key.get_quoted_local_columns(self)),
-                  foreign_key.get_quoted_foreign_table_name(self),
-                  ', '.join(foreign_key.get_quoted_foreign_columns(self)))
+        sql += "%s) REFERENCES %s (%s)" % (
+            ", ".join(foreign_key.get_quoted_local_columns(self)),
+            foreign_key.get_quoted_foreign_table_name(self),
+            ", ".join(foreign_key.get_quoted_foreign_columns(self)),
+        )
 
         return sql
 
     def get_current_date_sql(self):
-        return 'CURRENT_DATE'
+        return "CURRENT_DATE"
 
     def get_current_time_sql(self):
-        return 'CURRENT_TIME'
+        return "CURRENT_TIME"
 
     def get_current_timestamp_sql(self):
-        return 'CURRENT_TIMESTAMP'
+        return "CURRENT_TIMESTAMP"
 
     def get_sql_type_declaration(self, column):
-        internal_type = column['type']
+        internal_type = column["type"]
 
-        return getattr(self, 'get_%s_type_declaration_sql' % internal_type)(column)
+        return getattr(self, "get_%s_type_declaration_sql" % internal_type)(column)
 
     def get_column_declaration_list_sql(self, fields):
         """
@@ -238,95 +262,97 @@ class Platform(object):
         for name, field in fields.items():
             query_fields.append(self.get_column_declaration_sql(name, field))
 
-        return ', '.join(query_fields)
+        return ", ".join(query_fields)
 
     def get_column_declaration_sql(self, name, field):
-        if 'column_definition' in field:
+        if "column_definition" in field:
             column_def = self.get_custom_type_declaration_sql(field)
         else:
             default = self.get_default_value_declaration_sql(field)
 
-            charset = field.get('charset', '')
+            charset = field.get("charset", "")
             if charset:
-                charset = ' ' + self.get_column_charset_declaration_sql(charset)
+                charset = " " + self.get_column_charset_declaration_sql(charset)
 
-            collation = field.get('collation', '')
+            collation = field.get("collation", "")
             if charset:
-                charset = ' ' + self.get_column_collation_declaration_sql(charset)
+                charset = " " + self.get_column_collation_declaration_sql(charset)
 
-            notnull = field.get('notnull', '')
+            notnull = field.get("notnull", "")
             if notnull:
-                notnull = ' NOT NULL'
+                notnull = " NOT NULL"
             else:
-                notnull = ''
+                notnull = ""
 
-            unique = field.get('unique', '')
+            unique = field.get("unique", "")
             if unique:
-                unique = ' ' + self.get_unique_field_declaration_sql()
+                unique = " " + self.get_unique_field_declaration_sql()
             else:
-                unique = ''
+                unique = ""
 
-            check = field.get('check', '')
+            check = field.get("check", "")
 
             type_decl = self.get_sql_type_declaration(field)
-            column_def = type_decl + charset + default + notnull + unique + check + collation
+            column_def = (
+                type_decl + charset + default + notnull + unique + check + collation
+            )
 
-        return name + ' ' + column_def
+        return name + " " + column_def
 
     def get_custom_type_declaration_sql(self, column_def):
-        return column_def['column_definition']
+        return column_def["column_definition"]
 
     def get_column_charset_declaration_sql(self, charset):
-        return ''
+        return ""
 
     def get_column_collation_declaration_sql(self, collation):
         if self.supports_column_collation():
-            return 'COLLATE %s' % collation
+            return "COLLATE %s" % collation
 
-        return ''
+        return ""
 
     def supports_column_collation(self):
         return False
 
     def get_unique_field_declaration_sql(self):
-        return 'UNIQUE'
+        return "UNIQUE"
 
     def get_string_type_declaration_sql(self, column):
-        if 'length' not in column:
-            column['length'] = self.get_varchar_default_length()
+        if "length" not in column:
+            column["length"] = self.get_varchar_default_length()
 
-        fixed = column.get('fixed', False)
+        fixed = column.get("fixed", False)
 
-        if column['length'] > self.get_varchar_max_length():
+        if column["length"] > self.get_varchar_max_length():
             return self.get_clob_type_declaration_sql(column)
 
-        return self.get_varchar_type_declaration_sql_snippet(column['length'], fixed)
+        return self.get_varchar_type_declaration_sql_snippet(column["length"], fixed)
 
     def get_binary_type_declaration_sql(self, column):
-        if 'length' not in column:
-            column['length'] = self.get_binary_default_length()
+        if "length" not in column:
+            column["length"] = self.get_binary_default_length()
 
-        fixed = column.get('fixed', False)
+        fixed = column.get("fixed", False)
 
-        if column['length'] > self.get_binary_max_length():
+        if column["length"] > self.get_binary_max_length():
             return self.get_blob_type_declaration_sql(column)
 
-        return self.get_binary_type_declaration_sql_snippet(column['length'], fixed)
+        return self.get_binary_type_declaration_sql_snippet(column["length"], fixed)
 
     def get_varchar_type_declaration_sql_snippet(self, length, fixed):
-        raise NotImplementedError('VARCHARS not supported by Platform')
+        raise NotImplementedError("VARCHARS not supported by Platform")
 
     def get_binary_type_declaration_sql_snippet(self, length, fixed):
-        raise NotImplementedError('BINARY/VARBINARY not supported by Platform')
+        raise NotImplementedError("BINARY/VARBINARY not supported by Platform")
 
     def get_decimal_type_declaration_sql(self, column):
-        if 'precision' not in column or not column['precision']:
-            column['precision'] = 10
+        if "precision" not in column or not column["precision"]:
+            column["precision"] = 10
 
-        if 'scale' not in column or not column['scale']:
-            column['precision'] = 0
+        if "scale" not in column or not column["scale"]:
+            column["precision"] = 0
 
-        return 'NUMERIC(%s, %s)' % (column['precision'], column['scale'])
+        return "NUMERIC(%s, %s)" % (column["precision"], column["scale"])
 
     def get_json_type_declaration_sql(self, column):
         return self.get_clob_type_declaration_sql(column)
@@ -387,7 +413,7 @@ class Platform(object):
         for field in fields:
             ret.append(field)
 
-        return ', '.join(ret)
+        return ", ".join(ret)
 
     def get_create_index_sql(self, index, table):
         """
@@ -413,9 +439,15 @@ class Platform(object):
         if index.is_primary():
             return self.get_create_primary_key_sql(index, table)
 
-        query = 'CREATE %sINDEX %s ON %s' % (self.get_create_index_sql_flags(index), name, table)
-        query += ' (%s)%s' % (self.get_index_field_declaration_list_sql(columns),
-                              self.get_partial_index_sql(index))
+        query = "CREATE %sINDEX %s ON %s" % (
+            self.get_create_index_sql_flags(index),
+            name,
+            table,
+        )
+        query += " (%s)%s" % (
+            self.get_index_field_declaration_list_sql(columns),
+            self.get_partial_index_sql(index),
+        )
 
         return query
 
@@ -428,10 +460,10 @@ class Platform(object):
 
         :rtype: str
         """
-        if self.supports_partial_indexes() and index.has_option('where'):
-            return ' WHERE %s' % index.get_option('where')
+        if self.supports_partial_indexes() and index.has_option("where"):
+            return " WHERE %s" % index.get_option("where")
 
-        return ''
+        return ""
 
     def get_create_index_sql_flags(self, index):
         """
@@ -443,9 +475,9 @@ class Platform(object):
         :rtype: str
         """
         if index.is_unique():
-            return 'UNIQUE '
+            return "UNIQUE "
 
-        return ''
+        return ""
 
     def get_create_primary_key_sql(self, index, table):
         """
@@ -459,9 +491,10 @@ class Platform(object):
 
         :rtype: str
         """
-        return 'ALTER TABLE %s ADD PRIMARY KEY (%s)'\
-               % (table,
-                  self.get_index_field_declaration_list_sql(index.get_quoted_columns(self)))
+        return "ALTER TABLE %s ADD PRIMARY KEY (%s)" % (
+            table,
+            self.get_index_field_declaration_list_sql(index.get_quoted_columns(self)),
+        )
 
     def get_create_foreign_key_sql(self, foreign_key, table):
         """
@@ -472,7 +505,10 @@ class Platform(object):
         if isinstance(table, Table):
             table = table.get_quoted_name(self)
 
-        query = 'ALTER TABLE %s ADD %s' % (table, self.get_foreign_key_declaration_sql(foreign_key))
+        query = "ALTER TABLE %s ADD %s" % (
+            table,
+            self.get_foreign_key_declaration_sql(foreign_key),
+        )
 
         return query
 
@@ -488,7 +524,7 @@ class Platform(object):
         if isinstance(table, Table):
             table = table.get_quoted_name(self)
 
-        return 'DROP TABLE %s' % table
+        return "DROP TABLE %s" % table
 
     def get_drop_index_sql(self, index, table=None):
         """
@@ -505,7 +541,7 @@ class Platform(object):
         if isinstance(index, Index):
             index = index.get_quoted_name(self)
 
-        return 'DROP INDEX %s' % index
+        return "DROP INDEX %s" % index
 
     def get_create_table_sql(self, table, create_flags=CREATE_INDEXES):
         """
@@ -523,42 +559,42 @@ class Platform(object):
         table_name = table.get_quoted_name(self)
         options = dict((k, v) for k, v in table.get_options().items())
 
-        options['unique_constraints'] = OrderedDict()
-        options['indexes'] = OrderedDict()
-        options['primary'] = []
+        options["unique_constraints"] = OrderedDict()
+        options["indexes"] = OrderedDict()
+        options["primary"] = []
 
         if create_flags & self.CREATE_INDEXES > 0:
             for index in table.get_indexes().values():
                 if index.is_primary():
-                    options['primary'] = index.get_quoted_columns(self)
-                    options['primary_index'] = index
+                    options["primary"] = index.get_quoted_columns(self)
+                    options["primary_index"] = index
                 else:
-                    options['indexes'][index.get_quoted_name(self)] = index
+                    options["indexes"][index.get_quoted_name(self)] = index
 
         columns = OrderedDict()
 
         for column in table.get_columns().values():
             column_data = column.to_dict()
-            column_data['name'] = column.get_quoted_name(self)
-            if column.has_platform_option('version'):
-                column_data['version'] = column.get_platform_option('version')
+            column_data["name"] = column.get_quoted_name(self)
+            if column.has_platform_option("version"):
+                column_data["version"] = column.get_platform_option("version")
             else:
-                column_data['version'] = False
+                column_data["version"] = False
 
             # column_data['comment'] = self.get_column_comment(column)
 
-            if column_data['type'] == 'string' and  column_data['length'] is None:
-                column_data['length'] = 255
+            if column_data["type"] == "string" and column_data["length"] is None:
+                column_data["length"] = 255
 
-            if column.get_name() in options['primary']:
-                column_data['primary'] = True
+            if column.get_name() in options["primary"]:
+                column_data["primary"] = True
 
-            columns[column_data['name']] = column_data
+            columns[column_data["name"]] = column_data
 
         if create_flags & self.CREATE_FOREIGNKEYS > 0:
-            options['foreign_keys'] = []
+            options["foreign_keys"] = []
             for fk in table.get_foreign_keys().values():
-                options['foreign_keys'].append(fk)
+                options["foreign_keys"].append(fk)
 
         sql = self._get_create_table_sql(table_name, columns, options)
 
@@ -585,33 +621,36 @@ class Platform(object):
 
         column_list_sql = self.get_column_declaration_list_sql(columns)
 
-        if options.get('unique_constraints'):
-            for name, definition in options['unique_constraints'].items():
-                column_list_sql += ', %s' % self.get_unique_constraint_declaration_sql(name, definition)
+        if options.get("unique_constraints"):
+            for name, definition in options["unique_constraints"].items():
+                column_list_sql += ", %s" % self.get_unique_constraint_declaration_sql(
+                    name, definition
+                )
 
-        if options.get('primary'):
-            column_list_sql += ', PRIMARY KEY(%s)' % ', '.join(options['primary'])
+        if options.get("primary"):
+            column_list_sql += ", PRIMARY KEY(%s)" % ", ".join(options["primary"])
 
-        if options.get('indexes'):
-            for index, definition in options['indexes']:
-                column_list_sql += ', %s' % self.get_index_declaration_sql(index, definition)
+        if options.get("indexes"):
+            for index, definition in options["indexes"]:
+                column_list_sql += ", %s" % self.get_index_declaration_sql(
+                    index, definition
+                )
 
-        query = 'CREATE TABLE %s (%s' % (table_name, column_list_sql)
+        query = "CREATE TABLE %s (%s" % (table_name, column_list_sql)
 
         check = self.get_check_declaration_sql(columns)
         if check:
-            query += ', %s' % check
+            query += ", %s" % check
 
-        query += ')'
+        query += ")"
 
         sql = [query]
 
-        if options.get('foreign_keys'):
-            for definition in options['foreign_keys']:
+        if options.get("foreign_keys"):
+            for definition in options["foreign_keys"]:
                 sql.append(self.get_create_foreign_key_sql(definition, table_name))
 
         return sql
-
 
     def quote_identifier(self, string):
         """
@@ -625,10 +664,10 @@ class Platform(object):
         :return: The quoted identifier string.
         :rtype: str
         """
-        if '.' in string:
-            parts = list(map(self.quote_single_identifier, string.split('.')))
+        if "." in string:
+            parts = list(map(self.quote_single_identifier, string.split(".")))
 
-            return '.'.join(parts)
+            return ".".join(parts)
 
         return self.quote_single_identifier(string)
 
@@ -644,7 +683,7 @@ class Platform(object):
         """
         c = self.get_identifier_quote_character()
 
-        return '%s%s%s' % (c, string.replace(c, c+c), c)
+        return "%s%s%s" % (c, string.replace(c, c + c), c)
 
     def get_identifier_quote_character(self):
         return '"'

@@ -7,20 +7,20 @@ from ...utils import basestring
 class MySQLQueryGrammar(QueryGrammar):
 
     _select_components = [
-        'aggregate_',
-        'columns',
-        'from__',
-        'joins',
-        'wheres',
-        'groups',
-        'havings',
-        'orders',
-        'limit_',
-        'offset_',
-        'lock_'
+        "aggregate_",
+        "columns",
+        "from__",
+        "joins",
+        "wheres",
+        "groups",
+        "havings",
+        "orders",
+        "limit_",
+        "offset_",
+        "lock_",
     ]
 
-    marker = '%s'
+    marker = "%s"
 
     def compile_select(self, query):
         """
@@ -35,7 +35,7 @@ class MySQLQueryGrammar(QueryGrammar):
         sql = super(MySQLQueryGrammar, self).compile_select(query)
 
         if query.unions:
-            sql = '(%s) %s' % (sql, self._compile_unions(query))
+            sql = "(%s) %s" % (sql, self._compile_unions(query))
 
         return sql
 
@@ -49,12 +49,12 @@ class MySQLQueryGrammar(QueryGrammar):
         :return: The compiled union statement
         :rtype: str
         """
-        if union['all']:
-            joiner = ' UNION ALL '
+        if union["all"]:
+            joiner = " UNION ALL "
         else:
-            joiner = ' UNION '
+            joiner = " UNION "
 
-        return '%s(%s)' % (joiner, union['query'].to_sql())
+        return "%s(%s)" % (joiner, union["query"].to_sql())
 
     def _compile_lock(self, query, value):
         """
@@ -73,9 +73,9 @@ class MySQLQueryGrammar(QueryGrammar):
             return value
 
         if value is True:
-            return 'FOR UPDATE'
+            return "FOR UPDATE"
         elif value is False:
-            return 'LOCK IN SHARE MODE'
+            return "LOCK IN SHARE MODE"
 
     def compile_update(self, query, values):
         """
@@ -93,10 +93,10 @@ class MySQLQueryGrammar(QueryGrammar):
         sql = super(MySQLQueryGrammar, self).compile_update(query, values)
 
         if query.orders:
-            sql += ' %s' % self._compile_orders(query, query.orders)
+            sql += " %s" % self._compile_orders(query, query.orders)
 
         if query.limit_:
-            sql += ' %s' % self._compile_limit(query, query.limit_)
+            sql += " %s" % self._compile_limit(query, query.limit_)
 
         return sql.rstrip()
 
@@ -115,22 +115,22 @@ class MySQLQueryGrammar(QueryGrammar):
         if isinstance(query.wheres, list):
             wheres = self._compile_wheres(query)
         else:
-            wheres = ''
+            wheres = ""
 
         if query.joins:
-            joins = ' %s' % self._compile_joins(query, query.joins)
+            joins = " %s" % self._compile_joins(query, query.joins)
 
-            sql = 'DELETE %s FROM %s%s %s' % (table, table, joins, wheres)
+            sql = "DELETE %s FROM %s%s %s" % (table, table, joins, wheres)
         else:
-            sql = 'DELETE FROM %s %s' % (table, wheres)
+            sql = "DELETE FROM %s %s" % (table, wheres)
 
         sql = sql.strip()
 
         if query.orders:
-            sql += ' %s' % self._compile_orders(query, query.orders)
+            sql += " %s" % self._compile_orders(query, query.orders)
 
         if query.limit_:
-            sql += ' %s' % self._compile_limit(query, query.limit_)
+            sql += " %s" % self._compile_limit(query, query.limit_)
 
         return sql
 
@@ -144,7 +144,7 @@ class MySQLQueryGrammar(QueryGrammar):
         :return: The wrapped value
         :rtype: str
         """
-        if value == '*':
+        if value == "*":
             return value
 
-        return '`%s`' % value.replace('`', '``')
+        return "`%s`" % value.replace("`", "``")

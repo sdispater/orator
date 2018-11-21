@@ -6,7 +6,6 @@ from .result import Result
 
 
 class HasOneOrMany(Relation):
-
     def __init__(self, query, parent, foreign_key, local_key):
         """
         :type query: orator.orm.Builder
@@ -30,7 +29,7 @@ class HasOneOrMany(Relation):
         Set the base constraints of the relation query
         """
         if self._constraints:
-            self._query.where(self._foreign_key, '=', self.get_parent_key())
+            self._query.where(self._foreign_key, "=", self.get_parent_key())
 
     def add_eager_constraints(self, models):
         """
@@ -38,7 +37,9 @@ class HasOneOrMany(Relation):
 
         :type models: list
         """
-        return self._query.where_in(self._foreign_key, self.get_keys(models, self._local_key))
+        return self._query.where_in(
+            self._foreign_key, self.get_keys(models, self._local_key)
+        )
 
     def match_one(self, models, results, relation):
         """
@@ -55,7 +56,7 @@ class HasOneOrMany(Relation):
 
         :rtype: list
         """
-        return self._match_one_or_many(models, results, relation, 'one')
+        return self._match_one_or_many(models, results, relation, "one")
 
     def match_many(self, models, results, relation):
         """
@@ -72,7 +73,7 @@ class HasOneOrMany(Relation):
 
         :rtype: list
         """
-        return self._match_one_or_many(models, results, relation, 'many')
+        return self._match_one_or_many(models, results, relation, "many")
 
     def _match_one_or_many(self, models, results, relation, type_):
         """
@@ -98,9 +99,11 @@ class HasOneOrMany(Relation):
             key = model.get_attribute(self._local_key)
 
             if key in dictionary:
-                value = Result(self._get_relation_value(dictionary, key, type_), self, model)
+                value = Result(
+                    self._get_relation_value(dictionary, key, type_), self, model
+                )
             else:
-                if type_ == 'one':
+                if type_ == "one":
                     value = Result(None, self, model)
                 else:
                     value = Result(self._related.new_collection(), self, model)
@@ -119,7 +122,7 @@ class HasOneOrMany(Relation):
         """
         value = dictionary[key]
 
-        if type == 'one':
+        if type == "one":
             return value[0]
 
         return self._related.new_collection(value)
@@ -186,7 +189,7 @@ class HasOneOrMany(Relation):
         :rtype: Collection or Model
         """
         if columns is None:
-            columns = ['*']
+            columns = ["*"]
 
         instance = self._query.find(id, columns)
 
@@ -315,7 +318,7 @@ class HasOneOrMany(Relation):
         return self._foreign_key
 
     def get_plain_foreign_key(self):
-        segments = self.get_foreign_key().split('.')
+        segments = self.get_foreign_key().split(".")
 
         return segments[-1]
 
@@ -323,4 +326,4 @@ class HasOneOrMany(Relation):
         return self._parent.get_attribute(self._local_key)
 
     def get_qualified_parent_key_name(self):
-        return '%s.%s' % (self._parent.get_table(), self._local_key)
+        return "%s.%s" % (self._parent.get_table(), self._local_key)

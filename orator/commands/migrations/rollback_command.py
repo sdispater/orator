@@ -20,20 +20,20 @@ class RollbackCommand(BaseCommand):
         Executes the command.
         """
         if not self.confirm_to_proceed(
-            '<question>Are you sure you want to rollback the last migration?:</question> '
+            "<question>Are you sure you want to rollback the last migration?:</question> "
         ):
             return
 
-        database = self.option('database')
-        repository = DatabaseMigrationRepository(self.resolver, 'migrations')
+        database = self.option("database")
+        repository = DatabaseMigrationRepository(self.resolver, "migrations")
 
         migrator = Migrator(repository, self.resolver)
 
         self._prepare_database(migrator, database)
 
-        pretend = self.option('pretend')
+        pretend = self.option("pretend")
 
-        path = self.option('path')
+        path = self.option("path")
 
         if path is None:
             path = self._get_migration_path()

@@ -9,7 +9,6 @@ from ..utils import deprecated
 
 
 class LengthAwarePaginator(BasePaginator):
-
     def __init__(self, items, total, per_page, current_page=None, options=None):
         """
         Constructor
