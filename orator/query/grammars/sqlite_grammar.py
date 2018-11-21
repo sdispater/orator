@@ -82,6 +82,21 @@ class SQLiteQueryGrammar(QueryGrammar):
 
         return sql
 
+    def _where_date(self, query, where):
+        """
+        Compile a "where date" clause
+
+        :param query: A QueryBuilder instance
+        :type query: QueryBuilder
+
+        :param where: The condition
+        :type where: dict
+
+        :return: The compiled clause
+        :rtype: str
+        """
+        return self._date_based_where("%Y-%m-%d", query, where)
+
     def _where_day(self, query, where):
         """
         Compile a "where day" clause

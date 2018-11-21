@@ -369,6 +369,7 @@ class Connection(ConnectionInterface):
             "server closed the connection unexpectedly",
             "ssl connection has been closed unexpectedly",
             "error writing data to the connection",
+            "connection timed out",
             "resource deadlock avoided",
         ]:
             if s in message:
@@ -549,6 +550,7 @@ class Connection(ConnectionInterface):
         return self
 
     def __enter__(self):
+        self._reconnect_if_missing_connection()
         self.begin_transaction()
 
         return self
