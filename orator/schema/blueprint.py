@@ -331,7 +331,7 @@ class Blueprint(object):
 
         :rtype: Fluent
         """
-        return self._add_column('uuid', column, length=length)
+        return self._add_column("uuid", column, length=length)
 
     def text(self, column):
         """

@@ -197,7 +197,7 @@ class SchemaGrammar(Grammar):
         ###
         # Need better way to do this but for now this will do.
         ###
-        if value == 'gen_random_uuid()':
+        if value == "gen_random_uuid()":
             return value
 
         return "'%s'" % value

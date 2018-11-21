@@ -216,7 +216,7 @@ class PostgresSchemaGrammar(SchemaGrammar):
         return "BYTEA"
 
     def _type_uuid(self, column):
-        return 'UUID'
+        return "UUID"
 
     def _modify_nullable(self, blueprint, column):
         if column.get("nullable"):
