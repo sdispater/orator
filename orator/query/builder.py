@@ -688,6 +688,15 @@ class QueryBuilder(object):
     def _add_dynamic(self, segment, connector, parameters, index):
         self.where(segment, '=', parameters[index], connector)
 
+    def starts_with(self, column, search):
+        return self.where(column, 'LIKE', '{}%'.format(search))
+
+    def like(self, column, search):
+        return self.where(column, 'LIKE', '%{}%'.format(search))
+
+    def ends_with(self, column, search):
+        return self.where(column, 'LIKE', '%{}'.format(search))
+
     def group_by(self, *columns):
         """
         Add a "group by" clause to the query
