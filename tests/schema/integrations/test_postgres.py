@@ -33,7 +33,7 @@ class DatabaseIntegrationConnectionResolver(object):
 
         self._connection = PostgresConnection(
             PostgresConnector().connect(
-                {"database": database, "user": user, "password": password}
+                {"database": database, "user": user, "password": password, "host": "localhost"}
             )
         )
 

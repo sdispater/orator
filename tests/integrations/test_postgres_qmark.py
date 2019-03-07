@@ -28,6 +28,7 @@ class PostgresQmarkIntegrationTestCase(IntegrationTestCase, OratorTestCase):
                 "user": user,
                 "password": password,
                 "use_qmark": True,
+                "host": "localhost",
             },
         }
 

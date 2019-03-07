@@ -27,6 +27,7 @@ class PostgresIntegrationTestCase(IntegrationTestCase, OratorTestCase):
                 "database": database,
                 "user": user,
                 "password": password,
+                "host": "localhost",
             },
         }
 
