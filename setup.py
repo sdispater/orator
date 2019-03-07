@@ -37,19 +37,19 @@ setup_kwargs = dict(
     download_url="https://github.com/sdispater/orator/archive/%s.tar.gz" % __version__,
     packages=find_packages(exclude=["tests"]),
     install_requires=[
-        "backpack>=0.1,<=1.0"
-        "blinker>=1.4,<=2.0"
-        "cleo>=0.6,<=1.0"
-        "inflection>=0.3,<=1.0"
-        "Faker>=0.8,<=1.0"
-        "lazy-object-proxy>=1.2,<=2.0"
-        "pendulum>=1.4,<=2.0"
-        "pyaml>=16.12,<=17.0"
-        "pyyaml>=3.12,<=4.0"
-        "Pygments>=2.2,<=3.0"
-        "simplejson>=3.10,<=4.0"
-        "six>=1.10,<=2.0"
-        "wrapt>=1.10,<=2.0"
+        "backpack>=0.1,<=1.0",
+        "blinker>=1.4,<=2.0",
+        "cleo>=0.6,<=1.0",
+        "inflection>=0.3,<=1.0",
+        "Faker>=0.8,<=1.0",
+        "lazy-object-proxy>=1.2,<=2.0",
+        "pendulum>=1.4,<=2.0",
+        "pyaml>=16.12,<=17.0",
+        "pyyaml>=3.12,<=4.0",
+        "Pygments>=2.2,<=3.0",
+        "simplejson>=3.10,<=4.0",
+        "six>=1.10,<=2.0",
+        "wrapt>=1.10,<=2.0",
     ],
     tests_require=["pytest", "mock", "flexmock==0.9.7", "mysqlclient", "psycopg2"],
     test_suite="nose.collector",
