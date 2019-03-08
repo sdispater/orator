@@ -1,0 +1,2 @@
+CREATE DATABASE orator_test;
+GRANT ALL PRIVILEGES ON DATABASE orator_test TO orator;

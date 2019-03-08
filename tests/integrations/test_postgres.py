@@ -15,10 +15,12 @@ class PostgresIntegrationTestCase(IntegrationTestCase, OratorTestCase):
             database = "orator_test"
             user = "postgres"
             password = None
+            host = "localhost"
         else:
             database = "orator_test"
             user = "orator"
             password = "orator"
+            host = "postgres-db"
 
         return {
             "default": "postgres",
@@ -27,7 +29,7 @@ class PostgresIntegrationTestCase(IntegrationTestCase, OratorTestCase):
                 "database": database,
                 "user": user,
                 "password": password,
-                "host": "localhost",
+                "host": host,
             },
         }
 

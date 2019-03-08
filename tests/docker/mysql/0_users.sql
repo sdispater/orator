@@ -1,0 +1,1 @@
+CREATE USER 'orator'@'%' IDENTIFIED BY 'orator';

@@ -1,0 +1,1 @@
+CREATE USER orator WITH ENCRYPTED PASSWORD 'orator';

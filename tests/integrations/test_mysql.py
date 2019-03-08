@@ -15,10 +15,12 @@ class MySQLIntegrationTestCase(IntegrationTestCase, OratorTestCase):
             database = "orator_test"
             user = "root"
             password = ""
+            host = "localhost"
         else:
             database = "orator_test"
             user = "orator"
             password = "orator"
+            host = "mysql-db"
 
         return {
             "default": "mysql",
@@ -27,6 +29,7 @@ class MySQLIntegrationTestCase(IntegrationTestCase, OratorTestCase):
                 "database": database,
                 "user": user,
                 "password": password,
+                "host": host,
             },
         }
 

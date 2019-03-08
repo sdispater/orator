@@ -26,14 +26,16 @@ class DatabaseIntegrationConnectionResolver(object):
             database = "orator_test"
             user = "root"
             password = ""
+            host = "localhost"
         else:
             database = "orator_test"
             user = "orator"
             password = "orator"
+            host = "mysql-db"
 
         self._connection = MySQLConnection(
             MySQLConnector().connect(
-                {"database": database, "user": user, "password": password}
+                {"database": database, "user": user, "password": password, "host": host}
             )
         )
 

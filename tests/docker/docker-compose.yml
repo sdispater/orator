@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  orator:
+    build:
+      context: .
+      dockerfile: ./tests/docker/orator/Dockerfile
+    volumes:
+      - .:/code
+    working_dir: /code
+    user: ${CURRENT_UID}
+    tty: true
+    links:
+      - postgres:postgres-db
+      - mysql:mysql-db
+    depends_on:
+      - postgres
+      - mysql
+
+  postgres:
+    image: postgres:9.6
+    volumes:
+      - orator_postgres:/var/lib/postgresql
+      - ./tests/docker/postgres:/docker-entrypoint-initdb.d
+
+  mysql:
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=orator
+    volumes:
+      - orator_mysql:/var/lib/mysql
+      - ./tests/docker/mysql:/docker-entrypoint-initdb.d
+
+volumes:
+  orator_postgres: {}
+  orator_mysql: {}
