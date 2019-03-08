@@ -5,7 +5,7 @@ All kind of contribution is welcome: reporting new issues, pull requests or twee
 ## Installation
 In this section we will focus to setup the project to run the tests in our local environment. 
 
-Orator support many python versions and also multiple databases so the setup can be a little difficult. To make it 
+Orator supports many python versions and also multiple databases so the setup can be a little difficult. To make it 
 as easy as possible we will use docker.
 
 But before beginning there are some prerequisites to setup the environment.
