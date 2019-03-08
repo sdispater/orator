@@ -8,7 +8,6 @@ services:
     volumes:
       - .:/code
     working_dir: /code
-    user: ${CURRENT_UID}
     tty: true
     links:
       - postgres:postgres-db
