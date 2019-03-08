@@ -38,7 +38,16 @@ class MySQLConnection(Connection):
         return MySQLSchemaManager(self)
 
     def begin_transaction(self):
-        self._connection.autocommit(False)
+        self._reconnect_if_missing_connection()
+
+        try:
+            self._connection.autocommit(False)
+        except Exception as e:
+            if self._caused_by_lost_connection(e):
+                self.reconnect()
+                self._connection.autocommit(False)
+            else:
+                raise
 
         super(MySQLConnection, self).begin_transaction()
 
