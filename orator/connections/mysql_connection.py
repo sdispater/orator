@@ -2,7 +2,7 @@
 
 from ..utils import decode
 from ..utils import PY2
-from .connection import Connection
+from .connection import Connection, recoverable
 from ..query.grammars.mysql_grammar import MySQLQueryGrammar
 from ..query.processors.mysql_processor import MySQLQueryProcessor
 from ..schema.grammars import MySQLSchemaGrammar
@@ -37,6 +37,7 @@ class MySQLConnection(Connection):
     def get_schema_manager(self):
         return MySQLSchemaManager(self)
 
+    @recoverable
     def begin_transaction(self):
         self._connection.autocommit(False)
 
