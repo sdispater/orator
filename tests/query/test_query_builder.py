@@ -1618,6 +1618,20 @@ class QueryBuilderTestCase(OratorTestCase):
         self.assertEqual(expected_sql, builder.to_sql())
         self.assertEqual(expected_bindings, builder.get_bindings())
 
+    def test_from_sub_query(self):
+        builder = self.get_builder()
+        marker = builder.get_grammar().get_marker()
+        expected_sql = (
+            'SELECT "foo", "bar" FROM '
+            '(SELECT "a" AS "foo", "b" AS "bar" FROM "one" WHERE "key" = %s ORDER BY "foo" ASC) AS "two" '
+            'WHERE "foo" = %s ORDER BY "bar" DESC' % (marker, marker)
+        )
+        expected_bindings = ['innerval', 'outerval']
+        inner_query = builder.new_query().from_('one').select('a as foo', 'b as bar').where('key', '=', 'innerval').order_by('foo', 'asc')
+        builder.select('foo', 'bar').from_sub(inner_query, 'two').where('foo', '=', 'outerval').order_by('bar', 'desc')
+        self.assertEqual(expected_sql, builder.to_sql())
+        self.assertEqual(expected_bindings, builder.get_bindings())
+
     def test_chunk(self):
         builder = self.get_builder()
         results = [{"foo": "bar"}, {"foo": "baz"}, {"foo": "bam"}, {"foo": "boom"}]

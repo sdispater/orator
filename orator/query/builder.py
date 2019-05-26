@@ -63,7 +63,7 @@ class QueryBuilder(object):
         self._processor = processor
         self._connection = connection
         self._bindings = OrderedDict()
-        for type in ["select", "join", "where", "having", "order"]:
+        for type in ["select", "from", "join", "where", "having", "order"]:
             self._bindings[type] = []
 
         self.aggregate_ = None
@@ -188,8 +188,31 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
+        self.set_bindings([], "from")
         self.from__ = table
+        return self
 
+    def from_sub(self, query, as_):
+        """
+        Set the query target table to a subquery
+
+        :param query: The QueryBuilder to set as from expression
+        :type query: QueryBuilder
+
+        :param as_: The alias name for the subquery
+        :type as_: str
+
+        :return: The current QueryBuilder instance
+        :rtype: QueryBuilder
+        """
+        if not isinstance(query, QueryBuilder):
+            raise ArgumentError("From expression must be a QueryBuilder")
+
+        bindings = query.get_bindings()
+        query = "(%s) AS %s" % (query.to_sql(), self._grammar.wrap(as_))
+
+        self.set_bindings(bindings, "from")
+        self.from__ = QueryExpression(query)
         return self
 
     def join(self, table, one=None, operator=None, two=None, type="inner", where=False):
