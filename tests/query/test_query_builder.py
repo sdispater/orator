@@ -1626,9 +1626,18 @@ class QueryBuilderTestCase(OratorTestCase):
             '(SELECT "a" AS "foo", "b" AS "bar" FROM "one" WHERE "key" = %s ORDER BY "foo" ASC) AS "two" '
             'WHERE "foo" = %s ORDER BY "bar" DESC' % (marker, marker)
         )
-        expected_bindings = ['innerval', 'outerval']
-        inner_query = builder.new_query().from_('one').select('a as foo', 'b as bar').where('key', '=', 'innerval').order_by('foo', 'asc')
-        builder.select('foo', 'bar').from_sub(inner_query, 'two').where('foo', '=', 'outerval').order_by('bar', 'desc')
+        expected_bindings = ["innerval", "outerval"]
+        inner_query = (
+            builder.new_query()
+            .from_("one")
+            .select("a as foo", "b as bar")
+            .where("key", "=", "innerval")
+            .order_by("foo", "asc")
+        )
+        builder.from_sub(inner_query, "two").select("foo", "bar").where(
+            "foo", "=", "outerval"
+        ).order_by("bar", "desc")
+
         self.assertEqual(expected_sql, builder.to_sql())
         self.assertEqual(expected_bindings, builder.get_bindings())
 
