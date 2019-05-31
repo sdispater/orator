@@ -66,6 +66,8 @@ class QueryBuilder(object):
         for type in ["select", "join", "where", "having", "order"]:
             self._bindings[type] = []
 
+        self._settable_bindings = ["select", "from", "join", "having", "order"]
+
         self.aggregate_ = None
         self.columns = []
         self.distinct_ = False
@@ -403,18 +405,18 @@ class QueryBuilder(object):
 
         type = "basic"
 
-        self.wheres.append(
-            {
-                "type": type,
-                "column": column,
-                "operator": operator,
-                "value": value,
-                "boolean": boolean,
-            }
-        )
+        where = {
+            "type": type,
+            "column": column,
+            "operator": operator,
+            "value": value,
+            "boolean": boolean,
+        }
 
         if not isinstance(value, QueryExpression):
-            self.add_binding(value, "where")
+            where["bindings"] = value
+
+        self.wheres.append(where)
 
         return self
 
@@ -429,9 +431,9 @@ class QueryBuilder(object):
     def where_raw(self, sql, bindings=None, boolean="and"):
         type = "raw"
 
-        self.wheres.append({"type": type, "sql": sql, "boolean": boolean})
-
-        self.add_binding(bindings, "where")
+        self.wheres.append(
+            {"type": type, "sql": sql, "boolean": boolean, "bindings": bindings}
+        )
 
         return self
 
@@ -442,10 +444,14 @@ class QueryBuilder(object):
         type = "between"
 
         self.wheres.append(
-            {"column": column, "type": type, "boolean": boolean, "not": negate}
+            {
+                "column": column,
+                "type": type,
+                "boolean": boolean,
+                "not": negate,
+                "bindings": values,
+            }
         )
-
-        self.add_binding(values, "where")
 
         return self
 
@@ -574,10 +580,14 @@ class QueryBuilder(object):
             values = values.all()
 
         self.wheres.append(
-            {"type": type, "column": column, "values": values, "boolean": boolean}
+            {
+                "type": type,
+                "column": column,
+                "values": values,
+                "boolean": boolean,
+                "bindings": values,
+            }
         )
-
-        self.add_binding(values, "where")
 
         return self
 
@@ -661,10 +671,9 @@ class QueryBuilder(object):
                 "boolean": boolean,
                 "operator": operator,
                 "value": value,
+                "bindings": value,
             }
         )
-
-        self.add_binding(value, "where")
 
     def dynamic_where(self, method):
         finder = method[6:]
@@ -690,6 +699,38 @@ class QueryBuilder(object):
 
     def _add_dynamic(self, segment, connector, parameters, index):
         self.where(segment, "=", parameters[index], connector)
+
+    def remove_where(self, column, operator=None):
+        """
+        Remove where clauses referencing a specific column
+
+        :param column: The column for which to remove the clauses
+        :type column: str
+
+        :param operator: If specified, will only remove a where clause matching the operator
+        :type operator: str
+
+        :return: The current QueryBuilder instance
+        :rtype: QueryBuilder
+        """
+        remove_indexes = []
+
+        for i, w in enumerate(self.wheres):
+            if w.get("column") != column:
+                continue
+            if operator and (
+                w.get("operator") != operator and w.get("type") != operator
+            ):
+                continue
+            remove_indexes.append(i)
+
+        removed = 0
+        for i in remove_indexes:
+            idx = i - removed
+            del self.wheres[idx]
+            removed = removed + 1
+
+        return self
 
     def group_by(self, *columns):
         """
@@ -1507,20 +1548,16 @@ class QueryBuilder(object):
         """
         return QueryBuilder(self._connection, self._grammar, self._processor)
 
-    def merge_wheres(self, wheres, bindings):
+    def merge_wheres(self, wheres):
         """
         Merge a list of where clauses and bindings
 
         :param wheres: A list of where clauses
         :type wheres: list
 
-        :param bindings: A list of bindings
-        :type bindings: list
-
         :rtype: None
         """
         self.wheres = self.wheres + wheres
-        self._bindings["where"] = self._bindings["where"] + bindings
 
     def _clean_bindings(self, bindings):
         """
@@ -1548,6 +1585,8 @@ class QueryBuilder(object):
 
     def get_bindings(self):
         bindings = []
+        self._bindings["where"] = self.get_where_bindings()
+
         for value in chain(*self._bindings.values()):
             if isinstance(value, datetime.date):
                 value = value.strftime(self._grammar.get_date_format())
@@ -1556,22 +1595,40 @@ class QueryBuilder(object):
 
         return bindings
 
+    def get_where_bindings(self):
+        bindings = []
+        for where in self.wheres:
+            if "bindings" in where:
+                value = where.get("bindings")
+
+                if isinstance(value, (list, tuple)):
+                    bindings += value
+                else:
+                    bindings.append(value)
+            elif isinstance(where.get("query"), QueryBuilder):
+                bindings += where["query"].get_where_bindings()
+
+        for union in self.unions:
+            bindings += union["query"].get_where_bindings()
+
+        return bindings
+
     def get_raw_bindings(self):
         return self._bindings
 
-    def set_bindings(self, bindings, type="where"):
-        if type not in self._bindings:
+    def set_bindings(self, bindings, type):
+        if type not in self._settable_bindings:
             raise ArgumentError("Invalid binding type: %s" % type)
 
         self._bindings[type] = bindings
 
         return self
 
-    def add_binding(self, value, type="where"):
+    def add_binding(self, value, type):
         if value is None:
             return self
 
-        if type not in self._bindings:
+        if type not in self._settable_bindings:
             raise ArgumentError("Invalid binding type: %s" % type)
 
         if isinstance(value, (list, tuple)):
