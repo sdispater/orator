@@ -506,6 +506,46 @@ class QueryBuilder(object):
 
         return self
 
+    def where_expression(
+        self, left_expression, operator, right_expression, boolean="and"
+    ):
+        type = "expression"
+
+        bindings = []
+
+        if isinstance(left_expression, QueryBuilder):
+            self.merge_bindings(left_expression)
+            bindings += left_expression.get_bindings()
+            left_expression = QueryExpression("(%s)" % left_expression.to_sql())
+        elif not isinstance(left_expression, QueryExpression):
+            if not isinstance(left_expression, list):
+                bindings.append(left_expression)
+            else:
+                bindings += left_expression
+
+        if isinstance(right_expression, QueryBuilder):
+            self.merge_bindings(right_expression)
+            bindings += right_expression.get_bindings()
+            right_expression = QueryExpression("(%s)" % right_expression.to_sql())
+        elif not isinstance(right_expression, QueryExpression):
+            if not isinstance(right_expression, list):
+                bindings.append(right_expression)
+            else:
+                bindings += right_expression
+
+        self.wheres.append(
+            {
+                "type": type,
+                "lhs": left_expression,
+                "operator": operator,
+                "rhs": right_expression,
+                "boolean": boolean,
+                "bindings": bindings,
+            }
+        )
+
+        return self
+
     def where_exists(self, query, boolean="and", negate=False):
         """
         Add an exists clause to the query.
