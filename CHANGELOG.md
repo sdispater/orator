@@ -1,10 +1,13 @@
 # Change Log
 
-## [Unreleased]
+## [0.9.9] - 2019-07-15
 
 ### Fixed
 
 - Fixed missing relationships when eager loading multiple nested relationships.
+- Fixed a possible `AttributeError` when starting a transaction.
+- Fixed an infinite recursion when using `where_exists()` on a soft-deletable model.
+- Fixed some cases where a reconnection would not occur for PostgreSQL.
 
 
 ## [0.9.8] - 2018-10-10
@@ -433,7 +436,9 @@
 Initial release
 
 
-[Unreleased]: https://github.com/sdispater/orator/compare/0.9.7...0.9
+[Unreleased]: https://github.com/sdispater/orator/compare/0.9.9...0.9
+[0.9.9]: https://github.com/sdispater/orator/releases/0.9.9
+[0.9.8]: https://github.com/sdispater/orator/releases/0.9.8
 [0.9.7]: https://github.com/sdispater/orator/releases/0.9.7
 [0.9.6]: https://github.com/sdispater/orator/releases/0.9.6
 [0.9.5]: https://github.com/sdispater/orator/releases/0.9.5
