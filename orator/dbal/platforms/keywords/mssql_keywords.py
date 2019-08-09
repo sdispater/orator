@@ -6,7 +6,7 @@ from .keyword_list import KeywordList
 class MsSQLKeywords(KeywordList):
 
     #  List acording to:
-    #     
+    #     https://docs.microsoft.com/en-us/sql/t-sql/language-elements/reserved-keywords-transact-sql?view=sql-server-2017
     KEYWORDS = [
         #  SQL Server and Azure SQL Data Warehouse reserved keywords
         'ADD',
@@ -435,5 +435,3 @@ class MsSQLKeywords(KeywordList):
 
     def get_name(self):
         return 'MsSQL'
-
-    
