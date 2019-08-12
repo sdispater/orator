@@ -9,7 +9,7 @@ except ImportError:
     row_class = object
 
 
-from ..dbal.platforms import MySQLPlatform, MySQL57Platform
+from ..dbal.platforms import MsSQLPlatform
 from .connector import Connector
 from ..utils.qmarker import qmark, denullify
     

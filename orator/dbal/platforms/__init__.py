@@ -4,4 +4,4 @@ from .sqlite_platform import SQLitePlatform
 from .mysql_platform import MySQLPlatform
 from .mysql57_platform import MySQL57Platform
 from .postgres_platform import PostgresPlatform
-from .mssql_platform import MsSqlPlatform
+from .mssql_platform import MsSQLPlatform
