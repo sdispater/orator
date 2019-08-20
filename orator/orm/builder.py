@@ -286,7 +286,7 @@ class Builder(object):
 
                 results[i] = self._model.new_from_builder(fill).column
 
-    def paginate(self, per_page=None, current_page=None, columns=None):
+    def paginate(self, per_page=None, current_page=None, column_count=None, columns=None):
         """
         Paginate the given query.
 
@@ -296,6 +296,9 @@ class Builder(object):
         :param current_page: The current page of results
         :type current_page: int
 
+        :param column_count: The columns that used to get count
+        :type column_count: list
+
         :param columns: The columns to return
         :type columns: list
 
@@ -303,8 +306,10 @@ class Builder(object):
         """
         if columns is None:
             columns = ["*"]
+        if column_count is None:
+            column_count = ["*"]
 
-        total = self.to_base().get_count_for_pagination()
+        total = self.to_base().get_count_for_pagination(column_count)
 
         page = current_page or Paginator.resolve_current_page()
         per_page = per_page or self._model.get_per_page()
