@@ -34,3 +34,5 @@ profile.html
 benchmark.py
 results.json
 *.so
+
+.vscode/
