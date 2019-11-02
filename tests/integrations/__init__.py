@@ -9,6 +9,7 @@ import simplejson as json
 from datetime import datetime, timedelta, date
 from backpack import collect
 from orator import Model, Collection, DatabaseManager
+from orator.exceptions.orm import ModelNotFound
 from orator.orm import (
     morph_to,
     has_one,
@@ -20,7 +21,7 @@ from orator.orm import (
     accessor,
 )
 from orator.orm.relations import BelongsToMany
-from orator.exceptions.orm import ModelNotFound
+from orator.utils import basestring
 
 
 logger = logging.getLogger("orator.connection.queries")
@@ -271,7 +272,7 @@ class IntegrationTestCase(object):
         self.assertEqual("First Post", photos[3].imageable.name)
 
     def test_multi_insert_with_different_values(self):
-        date = pendulum.utcnow()._datetime
+        date = pendulum.now("UTC")
         user1 = OratorTestUser.create(email="john@doe.com")
         user2 = OratorTestUser.create(email="jane@doe.com")
         result = OratorTestPost.insert(
@@ -295,7 +296,7 @@ class IntegrationTestCase(object):
         self.assertEqual(2, OratorTestPost.count())
 
     def test_multi_insert_with_same_values(self):
-        date = pendulum.utcnow()._datetime
+        date = pendulum.now("UTC")
         user1 = OratorTestUser.create(email="john@doe.com")
         result = OratorTestPost.insert(
             [
@@ -582,7 +583,7 @@ class IntegrationTestCase(object):
 
     def test_date(self):
         user = OratorTestUser.create(id=1, email="john@doe.com")
-        photo1 = user.photos().create(name="Photo 1", taken_on=pendulum.date.today())
+        photo1 = user.photos().create(name="Photo 1", taken_on=pendulum.now())
         photo2 = user.photos().create(name="Photo 2")
 
         self.assertIsInstance(OratorTestPhoto.find(photo1.id).taken_on, date)
@@ -623,7 +624,7 @@ class IntegrationTestCase(object):
         self.assertEqual(count, 20)
 
     def test_timestamp_with_timezone(self):
-        now = pendulum.utcnow()
+        now = pendulum.now("UTC")
         user = OratorTestUser.create(email="john@doe.com", created_at=now)
         fresh_user = OratorTestUser.find(user.id)
 
@@ -761,7 +762,7 @@ class OratorTestUser(Model):
 
     @scope
     def older_than(self, query, **kwargs):
-        query.where("updated_at", "<", pendulum.utcnow().subtract(**kwargs))
+        query.where("updated_at", "<", pendulum.now("UTC").subtract(**kwargs))
 
 
 class OratorTestPost(Model):
@@ -817,4 +818,7 @@ class OratorTestPhoto(Model):
 
     @accessor
     def created_at(self):
+        if isinstance(self._attributes["created_at"], basestring):
+            return pendulum.parse(self._attributes["created_at"]).in_tz("Europe/Paris")
+
         return pendulum.instance(self._attributes["created_at"]).in_tz("Europe/Paris")
