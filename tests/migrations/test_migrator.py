@@ -3,7 +3,7 @@
 import os
 import glob
 import inspect
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from .. import OratorTestCase
 from orator.migrations import Migrator, DatabaseMigrationRepository, Migration
 from orator import DatabaseManager
@@ -18,7 +18,7 @@ class MigratorTestCase(OratorTestCase):
             inspect.getargspec = lambda fn: inspect.getfullargspec(fn)[:4]
 
     def tearDown(self):
-        flexmock_teardown()
+        super(MigratorTestCase, self).tearDown()
 
         if PY3K:
             inspect.getargspec = self.orig
@@ -224,7 +224,7 @@ class MigratorTestCase(OratorTestCase):
         migrator.rollback(os.getcwd())
 
     def test_last_batch_of_migrations_can_be_rolled_back_directly_if_transactional_is_false(
-        self
+        self,
     ):
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive("connection").and_return({})

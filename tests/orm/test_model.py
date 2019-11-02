@@ -1,34 +1,31 @@
 # -*- coding: utf-8 -*-
 
 import simplejson as json
-import hashlib
 import time
 import datetime
 from pendulum import Pendulum
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from .. import OratorTestCase, mock
-from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
+from ..utils import MockConnection
 
 from orator.query.builder import QueryBuilder
 from orator.query.grammars import QueryGrammar
 from orator.query.processors import QueryProcessor
 from orator.orm.builder import Builder
 from orator.orm.model import Model
-from orator.orm.utils import mutator, accessor
-from orator.exceptions.orm import ModelNotFound, MassAssignmentError
+from orator.exceptions.orm import MassAssignmentError
 from orator.orm.collection import Collection
 from orator.connections import Connection
 from orator import DatabaseManager
 from orator.utils import basestring
 from orator.events import Event
 
+from tests.orm import models
+
 
 class OrmModelTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_attributes_manipulation(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.name = "foo"
         self.assertEqual("foo", model.name)
         del model.name
@@ -40,7 +37,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual(json.dumps({"name": "john"}), attributes["list_items"])
 
     def test_dirty_attributes(self):
-        model = OrmModelStub(foo="1", bar=2, baz=3)
+        model = models.OrmModelStub(foo="1", bar=2, baz=3)
         model.foo = 1
         model.bar = 20
         model.baz = 30
@@ -52,7 +49,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.is_dirty("foo", "bar", "baz"))
 
     def test_calculated_attributes(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.password = "secret"
         attributes = model.get_attributes()
 
@@ -64,19 +61,19 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual("5ebe2294ecd0e0f08eab7690d2a6ee69", model.password_hash)
 
     def test_new_instance_returns_instance_wit_attributes_set(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         instance = model.new_instance({"name": "john"})
-        self.assertIsInstance(instance, OrmModelStub)
+        self.assertIsInstance(instance, models.OrmModelStub)
         self.assertEqual("john", instance.name)
 
     def test_hydrate_creates_collection_of_models(self):
         data = [{"name": "john"}, {"name": "jane"}]
-        collection = OrmModelStub.hydrate(data, "foo_connection")
+        collection = models.OrmModelStub.hydrate(data, "foo_connection")
 
         self.assertIsInstance(collection, Collection)
         self.assertEqual(2, len(collection))
-        self.assertIsInstance(collection[0], OrmModelStub)
-        self.assertIsInstance(collection[1], OrmModelStub)
+        self.assertIsInstance(collection[0], models.OrmModelStub)
+        self.assertIsInstance(collection[1], models.OrmModelStub)
         self.assertEqual(collection[0].get_attributes(), collection[0].get_original())
         self.assertEqual(collection[1].get_attributes(), collection[1].get_original())
         self.assertEqual("john", collection[0].name)
@@ -85,7 +82,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual("foo_connection", collection[1].get_connection_name())
 
     def test_hydrate_raw_makes_raw_query(self):
-        model = OrmModelHydrateRawStub()
+        model = models.OrmModelHydrateRawStub()
         connection = MockConnection().prepare_mock()
         connection.select.return_value = []
         model.get_connection = mock.MagicMock(return_value=connection)
@@ -95,36 +92,36 @@ class OrmModelTestCase(OratorTestCase):
 
             return model
 
-        OrmModelHydrateRawStub.set_connection = mock.MagicMock(
+        models.OrmModelHydrateRawStub.set_connection = mock.MagicMock(
             side_effect=_set_connection
         )
-        collection = OrmModelHydrateRawStub.hydrate_raw("SELECT ?", ["foo"])
+        collection = models.OrmModelHydrateRawStub.hydrate_raw("SELECT ?", ["foo"])
         self.assertEqual("hydrated", collection)
         connection.select.assert_called_once_with("SELECT ?", ["foo"])
 
     def test_create_saves_new_model(self):
-        model = OrmModelSaveStub.create(name="john")
+        model = models.OrmModelSaveStub.create(name="john")
         self.assertTrue(model.get_saved())
         self.assertEqual("john", model.name)
 
     def test_find_method_calls_query_builder_correctly(self):
-        result = OrmModelFindStub.find(1)
+        result = models.OrmModelFindStub.find(1)
 
         self.assertEqual("foo", result)
 
     def test_find_use_write_connection(self):
-        OrmModelFindWithWriteConnectionStub.on_write_connection().find(1)
+        models.OrmModelFindWithWriteConnectionStub.on_write_connection().find(1)
 
     def test_find_with_list_calls_query_builder_correctly(self):
-        result = OrmModelFindManyStub.find([1, 2])
+        result = models.OrmModelFindManyStub.find([1, 2])
 
         self.assertEqual("foo", result)
 
     def test_destroy_method_calls_query_builder_correctly(self):
-        OrmModelDestroyStub.destroy(1, 2, 3)
+        models.OrmModelDestroyStub.destroy(1, 2, 3)
 
     def test_with_calls_query_builder_correctly(self):
-        result = OrmModelWithStub.with_("foo", "bar")
+        result = models.OrmModelWithStub.with_("foo", "bar")
         self.assertEqual("foo", result)
 
     def test_update_process(self):
@@ -132,7 +129,7 @@ class OrmModelTestCase(OratorTestCase):
         query.should_receive("where").once().with_args("id", 1)
         query.should_receive("update").once().with_args({"name": "john"})
 
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.new_query = mock.MagicMock(
             return_value=Builder(QueryBuilder(None, None, None))
         )
@@ -169,7 +166,7 @@ class OrmModelTestCase(OratorTestCase):
             {"created_at": "foo", "updated_at": "bar"}
         )
 
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.new_query = mock.MagicMock(
             return_value=Builder(QueryBuilder(None, None, None))
         )
@@ -206,7 +203,7 @@ class OrmModelTestCase(OratorTestCase):
             {"name": "john"}, "id"
         ).and_return(1)
 
-        model = flexmock(OrmModelCreatedAt())
+        model = flexmock(models.OrmModelCreatedAt())
         model.should_receive("new_query").and_return(
             Builder(QueryBuilder(None, None, None))
         )
@@ -221,7 +218,7 @@ class OrmModelTestCase(OratorTestCase):
             {"name": "john"}, "id"
         ).and_return(1)
 
-        model = flexmock(OrmModelUpdatedAt())
+        model = flexmock(models.OrmModelUpdatedAt())
         model.should_receive("new_query").and_return(
             Builder(QueryBuilder(None, None, None))
         )
@@ -235,7 +232,7 @@ class OrmModelTestCase(OratorTestCase):
         query.should_receive("where").once().with_args("id", 1)
         query.should_receive("update").once().with_args({"name": "john"})
 
-        model = flexmock(OrmModelCreatedAt())
+        model = flexmock(models.OrmModelCreatedAt())
         model.id = 1
         model.sync_original()
         model.set_exists(True)
@@ -252,7 +249,7 @@ class OrmModelTestCase(OratorTestCase):
         query.should_receive("where").once().with_args("id", 1)
         query.should_receive("update").once().with_args({"name": "john"})
 
-        model = flexmock(OrmModelUpdatedAt())
+        model = flexmock(models.OrmModelUpdatedAt())
         model.id = 1
         model.sync_original()
         model.set_exists(True)
@@ -265,7 +262,7 @@ class OrmModelTestCase(OratorTestCase):
         model.save()
 
     def test_update_is_cancelled_if_updating_event_returns_false(self):
-        model = flexmock(OrmModelStub())
+        model = flexmock(models.OrmModelStub())
         query = flexmock(Builder(flexmock(QueryBuilder(None, None, None))))
         model.should_receive("new_query_without_scopes").once().and_return(query)
         events = flexmock(Event())
@@ -286,7 +283,7 @@ class OrmModelTestCase(OratorTestCase):
         query.should_receive("where").once().with_args("id", 1)
         query.should_receive("update").once().with_args({"name": "john"})
 
-        model = flexmock(OrmModelStub())
+        model = flexmock(models.OrmModelStub())
         model.__timestamps__ = False
         model.new_query = mock.MagicMock(
             return_value=Builder(QueryBuilder(None, None, None))
@@ -311,7 +308,7 @@ class OrmModelTestCase(OratorTestCase):
         query.should_receive("where").once().with_args("id", 1)
         query.should_receive("update").once().with_args({"id": 2, "name": "john"})
 
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.new_query = mock.MagicMock(
             return_value=Builder(QueryBuilder(None, None, None))
         )
@@ -395,7 +392,7 @@ class OrmModelTestCase(OratorTestCase):
     def test_insert_process(self):
         query = flexmock(Builder)
 
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         query_builder = flexmock(QueryBuilder)
         query_builder.should_receive("insert_get_id").once().with_args(
             {"name": "john"}, "id"
@@ -427,7 +424,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model.exists)
         self.assertTrue(model._update_timestamps.called)
 
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         query_builder.should_receive("insert").once().with_args({"name": "john"})
         model.new_query = mock.MagicMock(
             return_value=Builder(QueryBuilder(None, None, None))
@@ -458,7 +455,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertTrue(model._update_timestamps.called)
 
     def test_insert_is_cancelled_if_creating_event_returns_false(self):
-        model = flexmock(OrmModelStub())
+        model = flexmock(models.OrmModelStub())
         query = flexmock(Builder(flexmock(QueryBuilder(None, None, None))))
         model.should_receive("new_query_without_scopes").once().and_return(query)
         events = flexmock(Event())
@@ -474,7 +471,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertFalse(model.exists)
 
     def test_delete_properly_deletes_model(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         builder = flexmock(Builder(QueryBuilder(None, None, None)))
         builder.should_receive("where").once().with_args("id", 1).and_return(builder)
         builder.should_receive("delete").once()
@@ -666,20 +663,20 @@ class OrmModelTestCase(OratorTestCase):
         conn.should_receive("get_post_processor").and_return(processor)
         resolver = flexmock(DatabaseManager)
         resolver.should_receive("connection").and_return(Connection(None))
-        OrmModelStub.set_connection_resolver(DatabaseManager({}))
+        models.OrmModelStub.set_connection_resolver(DatabaseManager({}))
 
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         builder = model.new_query()
         self.assertIsInstance(builder, Builder)
 
     def test_get_and_set_table(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         self.assertEqual("stub", model.get_table())
         model.set_table("foo")
         self.assertEqual("foo", model.get_table())
 
     def test_get_key_returns_primary_key_value(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.id = 1
         self.assertEqual(1, model.get_key())
         self.assertEqual("id", model.get_key_name())
@@ -688,22 +685,25 @@ class OrmModelTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager)
         resolver.should_receive("connection").once().with_args("foo").and_return("bar")
 
-        OrmModelStub.set_connection_resolver(DatabaseManager({}))
-        model = OrmModelStub()
+        models.OrmModelStub.set_connection_resolver(DatabaseManager({}))
+        model = models.OrmModelStub()
         model.set_connection("foo")
 
         self.assertEqual("bar", model.get_connection())
 
     def test_serialize(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.name = "foo"
         model.age = None
         model.password = "password1"
         model.set_hidden(["password"])
         model.set_relation(
-            "names", Collection([OrmModelStub(bar="baz"), OrmModelStub(bam="boom")])
+            "names",
+            Collection(
+                [models.OrmModelStub(bar="baz"), models.OrmModelStub(bam="boom")]
+            ),
         )
-        model.set_relation("partner", OrmModelStub(name="jane"))
+        model.set_relation("partner", models.OrmModelStub(name="jane"))
         model.set_relation("group", None)
         model.set_relation("multi", Collection())
 
@@ -754,7 +754,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual("25-03-15", d["updated_at"])
 
     def test_visible_creates_dict_whitelist(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.set_visible(["name"])
         model.name = "John"
         model.age = 28
@@ -763,7 +763,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual({"name": "John"}, d)
 
     def test_hidden_can_also_exclude_relationships(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.name = "John"
         model.set_relation("foo", ["bar"])
         model.set_hidden(["foo", "list_items", "password"])
@@ -772,19 +772,19 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual({"name": "John"}, d)
 
     def test_to_dict_uses_mutators(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.list_items = [1, 2, 3]
         d = model.to_dict()
 
         self.assertEqual([1, 2, 3], d["list_items"])
 
-        model = OrmModelStub(list_items=[1, 2, 3])
+        model = models.OrmModelStub(list_items=[1, 2, 3])
         d = model.to_dict()
 
         self.assertEqual([1, 2, 3], d["list_items"])
 
     def test_hidden_are_ignored_when_visible(self):
-        model = OrmModelStub(name="john", age=28, id="foo")
+        model = models.OrmModelStub(name="john", age=28, id="foo")
         model.set_visible(["name", "id"])
         model.set_hidden(["name", "age"])
         d = model.to_dict()
@@ -794,20 +794,20 @@ class OrmModelTestCase(OratorTestCase):
         self.assertNotIn("age", d)
 
     def test_fillable(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.fillable(["name", "age"])
         model.fill(name="foo", age=28)
         self.assertEqual("foo", model.name)
         self.assertEqual(28, model.age)
 
     def test_fill_with_dict(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.fill({"name": "foo", "age": 28})
         self.assertEqual("foo", model.name)
         self.assertEqual(28, model.age)
 
     def test_unguard_allows_anything(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.unguard()
         model.guard(["*"])
         model.fill(name="foo", age=28)
@@ -816,12 +816,12 @@ class OrmModelTestCase(OratorTestCase):
         model.reguard()
 
     def test_underscore_properties_are_not_filled(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.fill(_foo="bar")
         self.assertEqual({}, model.get_attributes())
 
     def test_guarded(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.guard(["name", "age"])
         model.fill(name="foo", age="bar", foo="bar")
         self.assertFalse(hasattr(model, "name"))
@@ -829,7 +829,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual("bar", model.foo)
 
     def test_fillable_overrides_guarded(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.guard(["name", "age"])
         model.fillable(["age", "foo"])
         model.fill(name="foo", age="bar", foo="bar")
@@ -838,7 +838,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual("bar", model.foo)
 
     def test_global_guarded(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.guard(["*"])
         self.assertRaises(
             MassAssignmentError, model.fill, name="foo", age="bar", foo="bar"
@@ -847,12 +847,12 @@ class OrmModelTestCase(OratorTestCase):
     # TODO: test relations
 
     def test_models_assumes_their_name(self):
-        model = OrmModelNoTableStub()
+        model = models.OrmModelNoTableStub()
 
         self.assertEqual("orm_model_no_table_stubs", model.get_table())
 
     def test_mutator_cache_is_populated(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
 
         expected_attributes = sorted(["list_items", "password", "appendable"])
 
@@ -861,7 +861,7 @@ class OrmModelTestCase(OratorTestCase):
         )
 
     def test_fresh_method(self):
-        model = flexmock(OrmModelStub())
+        model = flexmock(models.OrmModelStub())
         model.id = 1
         model.set_exists(True)
         flexmock(Builder)
@@ -879,7 +879,7 @@ class OrmModelTestCase(OratorTestCase):
         model.fresh()
 
     def test_clone_model_makes_a_fresh_copy(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.id = 1
         model.set_exists(True)
         model.first = "john"
@@ -904,7 +904,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual("jane", clone.first)
 
     def test_get_attribute_raise_attribute_error(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
 
         try:
             relation = model.incorrect_relation
@@ -914,8 +914,8 @@ class OrmModelTestCase(OratorTestCase):
 
     def test_increment(self):
         query = flexmock()
-        model_mock = flexmock(OrmModelStub, new_query=lambda: query)
-        model = OrmModelStub()
+        model_mock = flexmock(models.OrmModelStub, new_query=lambda: query)
+        model = models.OrmModelStub()
         model.set_exists(True)
         model.id = 1
         model.sync_original_attribute("id")
@@ -939,7 +939,7 @@ class OrmModelTestCase(OratorTestCase):
         query.should_receive("where").once().with_args("id", 1)
         query.should_receive("update").once().with_args({"name": "john"})
 
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.new_query = mock.MagicMock(
             return_value=Builder(QueryBuilder(None, None, None))
         )
@@ -954,7 +954,7 @@ class OrmModelTestCase(OratorTestCase):
         model.new_query.assert_called_once_with()
 
     def test_casts(self):
-        model = OrmModelCastingStub()
+        model = models.OrmModelCastingStub()
         model.first = "3"
         model.second = "4.0"
         model.third = 2.5
@@ -995,7 +995,7 @@ class OrmModelTestCase(OratorTestCase):
         self.assertEqual(["foo", "bar"], d["seventh"])
 
     def test_casts_preserve_null(self):
-        model = OrmModelCastingStub()
+        model = models.OrmModelCastingStub()
         model.first = None
         model.second = None
         model.third = None
@@ -1026,155 +1026,17 @@ class OrmModelTestCase(OratorTestCase):
         self.assertIsNone(d["eighth"])
 
     def test_get_foreign_key(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
         model.set_table("stub")
 
         self.assertEqual("stub_id", model.get_foreign_key())
 
     def test_default_values(self):
-        model = OrmModelDefaultAttributes()
+        model = models.OrmModelDefaultAttributes()
 
         self.assertEqual("bar", model.foo)
 
     def test_get_morph_name(self):
-        model = OrmModelStub()
+        model = models.OrmModelStub()
 
         self.assertEqual("stub", model.get_morph_name())
-
-
-class OrmModelStub(Model):
-
-    __table__ = "stub"
-
-    __guarded__ = []
-
-    @accessor
-    def list_items(self):
-        return json.loads(self.get_raw_attribute("list_items"))
-
-    @list_items.mutator
-    def set_list_items(self, value):
-        self.set_raw_attribute("list_items", json.dumps(value))
-
-    @mutator
-    def password(self, value):
-        self.set_raw_attribute("password_hash", hashlib.md5(value.encode()).hexdigest())
-
-    @password.accessor
-    def get_password(self):
-        return "******"
-
-    @accessor
-    def appendable(self):
-        return "appended"
-
-    def public_increment(self, column, amount=1):
-        return self._increment(column, amount)
-
-    def get_dates(self):
-        return []
-
-
-class OrmModelHydrateRawStub(Model):
-    @classmethod
-    def hydrate(cls, items, connection=None):
-        return "hydrated"
-
-
-class OrmModelWithStub(Model):
-    def new_query(self):
-        mock = flexmock(Builder(None))
-        mock.should_receive("with_").once().with_args("foo", "bar").and_return("foo")
-
-        return mock
-
-
-class OrmModelSaveStub(Model):
-
-    __table__ = "save_stub"
-
-    __guarded__ = []
-
-    def save(self, options=None):
-        self.__saved = True
-
-    def set_incrementing(self, value):
-        self.__incrementing__ = value
-
-    def get_saved(self):
-        return self.__saved
-
-
-class OrmModelFindStub(Model):
-    def new_query(self):
-        flexmock(Builder).should_receive("find").once().with_args(1, ["*"]).and_return(
-            "foo"
-        )
-
-        return Builder(None)
-
-
-class OrmModelFindWithWriteConnectionStub(Model):
-    def new_query(self):
-        mock = flexmock(Builder)
-        mock_query = flexmock(QueryBuilder)
-        mock_query.should_receive("use_write_connection").once().and_return(flexmock)
-        mock.should_receive("find").once().with_args(1).and_return("foo")
-
-        return Builder(QueryBuilder(None, None, None))
-
-
-class OrmModelFindManyStub(Model):
-    def new_query(self):
-        mock = flexmock(Builder)
-        mock.should_receive("find").once().with_args([1, 2], ["*"]).and_return("foo")
-
-        return Builder(QueryBuilder(None, None, None))
-
-
-class OrmModelDestroyStub(Model):
-    def new_query(self):
-        mock = flexmock(Builder)
-        model = flexmock()
-        mock_query = flexmock(QueryBuilder)
-        mock_query.should_receive("where_in").once().with_args(
-            "id", [1, 2, 3]
-        ).and_return(flexmock)
-        mock.should_receive("get").once().and_return([model])
-        model.should_receive("delete").once()
-
-        return Builder(QueryBuilder(None, None, None))
-
-
-class OrmModelNoTableStub(Model):
-
-    pass
-
-
-class OrmModelCastingStub(Model):
-
-    __casts__ = {
-        "first": "int",
-        "second": "float",
-        "third": "str",
-        "fourth": "bool",
-        "fifth": "boolean",
-        "sixth": "dict",
-        "seventh": "list",
-        "eighth": "json",
-    }
-
-
-class OrmModelCreatedAt(Model):
-
-    __timestamps__ = ["created_at"]
-
-
-class OrmModelUpdatedAt(Model):
-
-    __timestamps__ = ["updated_at"]
-
-
-class OrmModelDefaultAttributes(Model):
-
-    __attributes__ = {"foo": "bar"}

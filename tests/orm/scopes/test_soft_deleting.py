@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from orator.orm.scopes import SoftDeletingScope
 from orator.orm import Builder, Model
 from orator.query import QueryBuilder
@@ -8,9 +8,6 @@ from ... import OratorTestCase, mock
 
 
 class SoftDeletingScopeTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_apply_scope_to_a_builder(self):
         scope = SoftDeletingScope()
         query = flexmock(QueryBuilder(None, None, None))

@@ -1,26 +1,19 @@
 # -*- coding: utf-8 -*-
 
 
-import pendulum
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from ... import OratorTestCase
 from ...utils import MockConnection
 
 from orator.query.builder import QueryBuilder
 from orator.query.grammars import QueryGrammar
 from orator.query.processors import QueryProcessor
-from orator.query.expression import QueryExpression
 from orator.orm.builder import Builder
 from orator.orm.model import Model
 from orator.orm.relations import MorphToMany
-from orator.orm.relations.pivot import Pivot
-from orator.orm.collection import Collection
 
 
 class OrmMorphToManyTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_eager_constraints_are_properly_added(self):
         relation = self._get_relation()
         relation.get_query().get_query().should_receive("where_in").once().with_args(

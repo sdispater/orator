@@ -2,9 +2,11 @@
 
 import sys
 import os
+
+from flexmock import flexmock_teardown
 from unittest import TestCase
 from orator.database_manager import DatabaseManager
-from .orm.models import Model, User
+from orator.orm import Model
 
 PY2 = sys.version_info[0] == 2
 
@@ -18,6 +20,8 @@ class OratorTestCase(TestCase):
     def tearDown(self):
         if hasattr(self, "local_database"):
             os.remove(self.local_database)
+
+        flexmock_teardown()
 
     def init_database(self):
         self.local_database = "/tmp/orator_test_database.db"

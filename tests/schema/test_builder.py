@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from orator.connections import Connection
 from orator.schema import SchemaBuilder
 from .. import OratorTestCase
 
 
 class SchemaBuilderTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_has_table_correctly_calls_grammar(self):
         connection = flexmock(Connection(None))
         grammar = flexmock()

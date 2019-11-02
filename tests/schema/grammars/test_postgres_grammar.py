@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from orator.connections import Connection
 from orator.schema.grammars import PostgresSchemaGrammar
 from orator.schema.blueprint import Blueprint
@@ -8,9 +8,6 @@ from ... import OratorTestCase
 
 
 class PostgresSchemaGrammarTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_basic_create(self):
         blueprint = Blueprint("users")
         blueprint.create()

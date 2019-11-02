@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from .. import OratorTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
 from orator.query.grammars.grammar import QueryGrammar
@@ -15,9 +15,6 @@ from orator.query.processors import QueryProcessor
 
 
 class BuilderTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_find_method(self):
         builder = Builder(self.get_mock_query_builder())
         builder.set_model(self.get_mock_model())

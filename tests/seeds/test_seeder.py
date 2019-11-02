@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from orator import DatabaseManager
 from orator.connections import Connection
 from orator.seeds import Seeder
-from cleo import Output, Command as BaseCommand
+from cleo import Command as BaseCommand
 
 from .. import OratorTestCase
 
 
 class SeederTestCase(OratorTestCase):
-    def tearDown(self):
-        super(SeederTestCase, self).tearDown()
-        flexmock_teardown()
-
     def test_call_resolve_class_and_calls_run(self):
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive("connection").and_return({})

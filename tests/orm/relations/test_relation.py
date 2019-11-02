@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-
 import pendulum
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from ... import OratorTestCase
 
 from orator.query.builder import QueryBuilder
@@ -12,9 +11,6 @@ from orator.orm.relations import HasOne
 
 
 class OrmRelationTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_set_relation_fail(self):
         parent = OrmRelationResetModelStub()
         relation = OrmRelationResetModelStub()

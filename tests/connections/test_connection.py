@@ -11,7 +11,7 @@ from flexmock import flexmock
 
 from .. import OratorTestCase
 from .. import mock
-from ..orm.models import User
+from tests.models import User
 
 from orator.query.builder import QueryBuilder
 from orator.connections.connection import Connection

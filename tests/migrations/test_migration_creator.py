@@ -2,16 +2,13 @@
 
 import tempfile
 import os
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from orator.migrations import MigrationCreator
 from orator.migrations.stubs import CREATE_STUB, UPDATE_STUB, BLANK_STUB
 from .. import OratorTestCase
 
 
 class MigrationCreatorTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_basic_create_method_stores_migration_file(self):
         expected = os.path.join(tempfile.gettempdir(), "foo_create_bar.py")
         if os.path.exists(expected):

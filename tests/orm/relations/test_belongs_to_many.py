@@ -9,7 +9,6 @@ from ...utils import MockConnection
 from orator.query.builder import QueryBuilder
 from orator.query.grammars import QueryGrammar
 from orator.query.processors import QueryProcessor
-from orator.query.expression import QueryExpression
 from orator.orm.builder import Builder
 from orator.orm.model import Model
 from orator.orm.relations import BelongsToMany
@@ -18,9 +17,6 @@ from orator.orm.collection import Collection
 
 
 class OrmBelongsToTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_models_are_properly_hydrated(self):
         model1 = OrmBelongsToManyModelStub()
         model1.fill(name="john", pivot_user_id=1, pivot_role_id=2)

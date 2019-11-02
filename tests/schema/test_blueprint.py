@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from orator.schema import Blueprint
 from orator.schema.grammars import SchemaGrammar
 from orator.connections import Connection
@@ -8,9 +8,6 @@ from .. import OratorTestCase
 
 
 class SchemaBuilderTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_to_sql_runs_commands_from_blueprint(self):
         conn = flexmock(Connection(None))
         conn.should_receive("statement").once().with_args("foo")

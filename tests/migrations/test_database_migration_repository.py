@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from .. import OratorTestCase
 from orator.migrations import DatabaseMigrationRepository
 from orator import DatabaseManager
 from orator.query import QueryBuilder
 from orator.connections import Connection
-from orator.schema import SchemaBuilder
 
 
 class DatabaseMigrationRepositoryTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_get_ran_migrations_list_migrations_by_package(self):
         repo = self.get_repository()
         connection = flexmock(Connection(None))

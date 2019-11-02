@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 
-
-import pendulum
-from flexmock import flexmock, flexmock_teardown
+from flexmock import flexmock
 from ... import OratorTestCase, mock
 
 from orator.query.builder import QueryBuilder
 from orator.query.grammars import QueryGrammar
-from orator.query.expression import QueryExpression
 from orator.orm.builder import Builder
 from orator.orm.model import Model
 from orator.orm.relations import BelongsTo
@@ -15,9 +12,6 @@ from orator.orm.collection import Collection
 
 
 class OrmBelongsToTestCase(OratorTestCase):
-    def tearDown(self):
-        flexmock_teardown()
-
     def test_update_retrieve_model_and_updates(self):
         relation = self._get_relation()
         mock = flexmock(Model())
