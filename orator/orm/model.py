@@ -1871,7 +1871,7 @@ class Model(object):
 
         :return: pendulum.Pendulum
         """
-        return pendulum.utcnow()
+        return pendulum.now("UTC")
 
     def fresh_timestamp_string(self):
         """
@@ -2596,13 +2596,13 @@ class Model(object):
         """
         date_format = self.get_connection().get_query_grammar().get_date_format()
 
-        if isinstance(value, pendulum.Pendulum):
+        if isinstance(value, pendulum.DateTime):
             return value.format(date_format)
 
         if isinstance(value, datetime.date) and not isinstance(
             value, (datetime.datetime)
         ):
-            value = pendulum.date.instance(value)
+            value = pendulum.date(value.year, value.month, value.day)
 
             return value.format(date_format)
 
@@ -2612,7 +2612,7 @@ class Model(object):
         """
         Return a timestamp as a datetime.
 
-        :rtype: pendulum.Pendulum or pendulum.Date
+        :rtype: pendulum.DateTime or pendulum.Date
         """
         if isinstance(value, basestring):
             return pendulum.parse(value)
@@ -2623,7 +2623,7 @@ class Model(object):
         if isinstance(value, datetime.date) and not isinstance(
             value, (datetime.datetime)
         ):
-            return pendulum.date.instance(value)
+            return pendulum.date(value.year, value.month, value.day)
 
         return pendulum.instance(value)
 
@@ -2640,7 +2640,7 @@ class Model(object):
         Format a date or timestamp.
 
         :param date: The date or timestamp
-        :type date: datetime.datetime or datetime.date or pendulum.Pendulum
+        :type date: datetime.datetime or datetime.date or pendulum.DateTime
 
         :rtype: str
         """
@@ -2648,17 +2648,18 @@ class Model(object):
             return date
 
         format = self.get_date_format()
+        date = self.as_datetime(date)
 
         if format == "iso":
             if isinstance(date, basestring):
-                return pendulum.parse(date).isoformat()
+                return pendulum.parse(date).to_iso8601_string()
 
-            return date.isoformat()
+            return date.to_iso8601_string()
         else:
             if isinstance(date, basestring):
                 return pendulum.parse(date).format(format)
 
-            return date.strftime(format)
+            return date.format(format)
 
     def set_attribute(self, key, value):
         """

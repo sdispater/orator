@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import simplejson as json
+import datetime
 import hashlib
 import time
-import datetime
-from pendulum import Pendulum
-from flexmock import flexmock, flexmock_teardown
-from .. import OratorTestCase, mock
-from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
 
+import simplejson as json
+from flexmock import flexmock, flexmock_teardown
+from orator import DatabaseManager
+from orator.connections import Connection
+from orator.events import Event
+from orator.exceptions.orm import MassAssignmentError, ModelNotFound
+from orator.orm.builder import Builder
+from orator.orm.collection import Collection
+from orator.orm.model import Model
+from orator.orm.utils import accessor, mutator
 from orator.query.builder import QueryBuilder
 from orator.query.grammars import QueryGrammar
 from orator.query.processors import QueryProcessor
-from orator.orm.builder import Builder
-from orator.orm.model import Model
-from orator.orm.utils import mutator, accessor
-from orator.exceptions.orm import ModelNotFound, MassAssignmentError
-from orator.orm.collection import Collection
-from orator.connections import Connection
-from orator import DatabaseManager
 from orator.utils import basestring
-from orator.events import Event
+from pendulum import DateTime
+
+from .. import OratorTestCase, mock
+from ..utils import MockConnection, MockModel, MockProcessor, MockQueryBuilder
 
 
 class OrmModelTestCase(OratorTestCase):
@@ -348,8 +349,8 @@ class OrmModelTestCase(OratorTestCase):
             {"created_at": "2015-03-24", "updated_at": "2015-03-24"}
         )
 
-        self.assertIsInstance(model.created_at, Pendulum)
-        self.assertIsInstance(model.updated_at, Pendulum)
+        self.assertIsInstance(model.created_at, DateTime)
+        self.assertIsInstance(model.updated_at, DateTime)
 
     def test_timestamps_are_returned_as_objects_from_timestamps_and_datetime(self):
         model = Model()
@@ -357,8 +358,8 @@ class OrmModelTestCase(OratorTestCase):
             {"created_at": datetime.datetime.utcnow(), "updated_at": time.time()}
         )
 
-        self.assertIsInstance(model.created_at, Pendulum)
-        self.assertIsInstance(model.updated_at, Pendulum)
+        self.assertIsInstance(model.created_at, DateTime)
+        self.assertIsInstance(model.updated_at, DateTime)
 
     def test_timestamps_are_returned_as_objects_on_create(self):
         model = Model()
@@ -371,8 +372,8 @@ class OrmModelTestCase(OratorTestCase):
 
         instance = model.new_instance(timestamps)
 
-        self.assertIsInstance(instance.created_at, Pendulum)
-        self.assertIsInstance(instance.updated_at, Pendulum)
+        self.assertIsInstance(instance.created_at, DateTime)
+        self.assertIsInstance(instance.updated_at, DateTime)
 
         model.reguard()
 
@@ -731,13 +732,13 @@ class OrmModelTestCase(OratorTestCase):
 
         d = model.to_dict()
 
-        self.assertEqual("2015-03-24T00:00:00+00:00", d["created_at"])
-        self.assertEqual("2015-03-25T00:00:00+00:00", d["updated_at"])
+        self.assertEqual("2015-03-24T00:00:00Z", d["created_at"])
+        self.assertEqual("2015-03-25T00:00:00Z", d["updated_at"])
 
     def test_to_dict_includes_custom_formatted_timestamps(self):
         class Stub(Model):
             def get_date_format(self):
-                return "%d-%m-%-y"
+                return "DD-MM-YY"
 
         flexmock(Stub).should_receive("_boot_columns").and_return(
             ["created_at", "updated_at"]

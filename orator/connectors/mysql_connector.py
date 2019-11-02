@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import re
-from pendulum import Pendulum, Date
+from pendulum import Date
+from pendulum import DateTime
 
 try:
     import MySQLdb as mysql
@@ -9,7 +10,7 @@ try:
     # Fix for understanding Pendulum object
     import MySQLdb.converters
 
-    MySQLdb.converters.conversions[Pendulum] = MySQLdb.converters.DateTime2literal
+    MySQLdb.converters.conversions[DateTime] = MySQLdb.converters.DateTime2literal
     MySQLdb.converters.conversions[Date] = MySQLdb.converters.Thing2Literal
 
     from MySQLdb.cursors import DictCursor as cursor_class
@@ -22,7 +23,7 @@ except ImportError as e:
         # Fix for understanding Pendulum object
         import pymysql.converters
 
-        pymysql.converters.conversions[Pendulum] = pymysql.converters.escape_datetime
+        pymysql.converters.conversions[DateTime] = pymysql.converters.escape_datetime
         pymysql.converters.conversions[Date] = pymysql.converters.escape_date
 
         from pymysql.cursors import DictCursor as cursor_class

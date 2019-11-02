@@ -3,6 +3,7 @@
 import re
 import copy
 import datetime
+import pendulum
 
 from itertools import chain
 from collections import OrderedDict
@@ -1550,7 +1551,13 @@ class QueryBuilder(object):
         bindings = []
         for value in chain(*self._bindings.values()):
             if isinstance(value, datetime.date):
-                value = value.strftime(self._grammar.get_date_format())
+                if not isinstance(value, pendulum.Date):
+                    if isinstance(value, datetime.datetime):
+                        value = pendulum.instance(value)
+                    else:
+                        value = pendulum.date(value.year, value.month, value.day)
+
+                value = value.format(self._grammar.get_date_format())
 
             bindings.append(value)
 
