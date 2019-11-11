@@ -31,7 +31,7 @@ class MigrateMakeCommandTestCase(OratorCommandTestCase):
         self.run_command(command, [("name", "create_foo"), ("--table", "users")])
 
     def test_basic_create_gives_creator_proper_arguments_when_table_is_set_with_create(
-        self
+        self,
     ):
         creator_mock = flexmock(MigrationCreator)
         creator_mock.should_receive("create").once().with_args(
