@@ -5,6 +5,8 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015 Sébastien Eustace
 
+DOCKER_COMPOSE=docker-compose -f tests/docker/docker-compose.yml --project-directory .
+
 # lists all available targets
 list:
 	@sh -c "$(MAKE) -p no_targets__ | \
@@ -56,12 +58,14 @@ extensions:
 	cython orator/support/_collection.pyx
 	cython orator/utils/_helpers.pyx
 
-# test your application (tests in the tests/ directory)
 test:
-	@py.test tests -sq
+	${DOCKER_COMPOSE} exec orator poetry run pytest tests
 
-# run tests against all supported python versions
-tox:
-	@poet make:setup
-	@tox
-	@rm -f setup.py
+start-containers:
+	${DOCKER_COMPOSE} up -d
+
+stop-containers:
+	${DOCKER_COMPOSE} stop
+
+remove-containers:
+	${DOCKER_COMPOSE} down

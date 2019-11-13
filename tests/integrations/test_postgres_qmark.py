@@ -15,10 +15,12 @@ class PostgresQmarkIntegrationTestCase(IntegrationTestCase, OratorTestCase):
             database = "orator_test"
             user = "postgres"
             password = None
+            host = "localhost"
         else:
             database = "orator_test"
             user = "orator"
             password = "orator"
+            host = "postgres-db"
 
         return {
             "default": "postgres",
@@ -28,6 +30,7 @@ class PostgresQmarkIntegrationTestCase(IntegrationTestCase, OratorTestCase):
                 "user": user,
                 "password": password,
                 "use_qmark": True,
+                "host": host,
             },
         }
 

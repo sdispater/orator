@@ -26,14 +26,16 @@ class DatabaseIntegrationConnectionResolver(object):
             database = "orator_test"
             user = "postgres"
             password = None
+            host = "localhost"
         else:
             database = "orator_test"
             user = "orator"
             password = "orator"
+            host = "postgres-db"
 
         self._connection = PostgresConnection(
             PostgresConnector().connect(
-                {"database": database, "user": user, "password": password}
+                {"database": database, "user": user, "password": password, "host": host}
             )
         )
 

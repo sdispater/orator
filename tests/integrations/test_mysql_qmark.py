@@ -15,10 +15,12 @@ class MySQLQmarkIntegrationTestCase(IntegrationTestCase, OratorTestCase):
             database = "orator_test"
             user = "root"
             password = ""
+            host = "localhost"
         else:
             database = "orator_test"
             user = "orator"
             password = "orator"
+            host = "mysql-db"
 
         return {
             "default": "mysql",
@@ -28,6 +30,7 @@ class MySQLQmarkIntegrationTestCase(IntegrationTestCase, OratorTestCase):
                 "user": user,
                 "password": password,
                 "use_qmark": True,
+                "host": host,
             },
         }
 
