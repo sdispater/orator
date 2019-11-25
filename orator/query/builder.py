@@ -1064,7 +1064,7 @@ class QueryBuilder(object):
             self.to_sql(), self.get_bindings(), not self._use_write_connection
         )
 
-    def paginate(self, per_page=15, current_page=None, column_count=None, columns=None):
+    def paginate(self, per_page=15, current_page=None, columns=None, column_count=None):
         """
         Paginate the given query.
 

@@ -286,7 +286,7 @@ class Builder(object):
 
                 results[i] = self._model.new_from_builder(fill).column
 
-    def paginate(self, per_page=None, current_page=None, column_count=None, columns=None):
+    def paginate(self, per_page=None, current_page=None, columns=None, column_count=None):
         """
         Paginate the given query.
 
