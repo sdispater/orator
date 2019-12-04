@@ -184,6 +184,9 @@ class relation(object):
             self._conditions = self._related
             self._related = self._related.get_model().__class__
 
+            # Pass the relation specific scope to the instance, so can be used with the query
+            instance.set_without_scope_name(self._conditions.get_model().without_scope_name)
+
         relation = self._get(instance)
 
         if self._conditions:
@@ -191,6 +194,8 @@ class relation(object):
             self._set_conditions(relation)
 
         relation = Wrapper(relation)
+
+
 
         instance._relations[self._relation] = relation
 

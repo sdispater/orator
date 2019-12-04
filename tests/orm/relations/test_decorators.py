@@ -10,6 +10,7 @@ from orator.orm import (
     morph_many,
     belongs_to,
 )
+from orator import SoftDeletes
 from orator.orm.model import ModelRegister
 from orator.connections import SQLiteConnection
 from orator.connectors.sqlite_connector import SQLiteConnector
@@ -28,6 +29,20 @@ class DecoratorsTestCase(OratorTestCase):
         with self.schema().create("test_users") as table:
             table.increments("id")
             table.string("email").unique()
+            table.datetime("deleted_at").nullable()
+            table.timestamps()
+
+        with self.schema().create("test_cars") as table:
+            table.increments("id")
+            table.string("company_name")
+            table.datetime("deleted_at").nullable()
+            table.timestamps()
+
+        with self.schema().create("test_car_models") as table:
+            table.increments("id")
+            table.string("model_name")
+            table.integer("car_id")
+            table.datetime("deleted_at").nullable()
             table.timestamps()
 
         with self.schema().create("test_friends") as table:
@@ -53,13 +68,14 @@ class DecoratorsTestCase(OratorTestCase):
         self.schema().drop("test_friends")
         self.schema().drop("test_posts")
         self.schema().drop("test_photos")
+        self.schema().drop("test_cars")
 
     def test_extra_queries_are_properly_set_on_relations(self):
         self.create()
 
         # With eager loading
         user = OratorTestUser.with_("friends", "posts", "post", "photos").find(1)
-        post = OratorTestPost.with_("user", "photos").find(1)
+        post = OratorTestPost.find(1)
         self.assertEqual(1, len(user.friends))
         self.assertEqual(2, len(user.posts))
         self.assertIsInstance(user.post, OratorTestPost)
@@ -83,6 +99,8 @@ class DecoratorsTestCase(OratorTestCase):
             'SELECT * FROM "test_photos" WHERE "name" IS NOT NULL AND "test_photos"."imageable_id" = ? AND "test_photos"."imageable_type" = ?',
             user.photos().to_sql(),
         )
+        # OratorTestUser.to_sql()
+        # OratorTestUser.with_trashed().to_sql()
         self.assertEqual(
             'SELECT * FROM "test_users" WHERE "test_users"."id" = ? ORDER BY "id" ASC',
             post.user().to_sql(),
@@ -95,6 +113,8 @@ class DecoratorsTestCase(OratorTestCase):
         # Without eager loading
         user = OratorTestUser.find(1)
         post = OratorTestPost.find(1)
+
+
         self.assertEqual(1, len(user.friends))
         self.assertEqual(2, len(user.posts))
         self.assertIsInstance(user.post, OratorTestPost)
@@ -132,6 +152,18 @@ class DecoratorsTestCase(OratorTestCase):
             user.posts().order_by("user_id").distinct().to_sql(),
         )
 
+        car = OratorTestCar.where("company_name", "Toyota").first()
+        self.assertEqual(2, len(car.car_models))
+
+        model = car.car_models.first()
+        self.assertEqual("Toyota", model.car.company_name)
+
+
+        # Soft Delete the car, after that model should be able to access the car
+        model.car.delete()
+        model = model.fresh()
+        self.assertEqual("Toyota", model.car.company_name)
+
     def create(self):
         user = OratorTestUser.create(id=1, email="john@doe.com")
         friend = OratorTestUser.create(id=2, email="jane@doe.com")
@@ -146,6 +178,14 @@ class DecoratorsTestCase(OratorTestCase):
 
         post1.photos().create(name="Hero 1")
         post1.photos().create(name="Hero 2")
+
+        car1 = OratorTestCar.create(company_name="Toyota")
+        car2 = OratorTestCar.create(company_name="Honda")
+        car1.car_models().create(model_name="Corolla")
+        car1.car_models().create(model_name="Prius")
+
+        # user.cars().create(company_name="Toyota", model="Prius")
+        # user.cars().create(company_name="Toyota", model="Corolla")
 
     def connection(self):
         return Model.get_connection_resolver().connection()
@@ -203,6 +243,24 @@ class OratorTestPhoto(Model):
     @morph_to
     def imageable(self):
         return
+
+
+class OratorTestCar(Model, SoftDeletes):
+    __table__ = "test_cars"
+    __fillable__ = ["company_name"]
+
+    @has_many("car_id")
+    def car_models(self):
+        return OratorTestCarModels
+
+
+class OratorTestCarModels(Model, SoftDeletes):
+    __table__ = "test_car_models"
+    __fillable__ = ["model_name"]
+
+    @belongs_to("car_id")
+    def car(self):
+        return OratorTestCar.with_trashed()
 
 
 class DatabaseIntegrationConnectionResolver(object):

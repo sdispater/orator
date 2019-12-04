@@ -129,7 +129,9 @@ class Model(object):
         self._boot_if_not_booted()
 
         self._exists = False
+        self._without_scope_name = None
         self._original = {}
+
 
         # Setting default attributes' values
         self._attributes = dict((k, v) for k, v in self.__attributes__.items())
@@ -802,6 +804,9 @@ class Model(object):
         instance = self._get_related(related, True)
 
         query = instance.new_query()
+
+        if self.without_scope_name:
+            query.without_global_scope(self.without_scope_name)
 
         if not other_key:
             other_key = instance.get_key_name()
@@ -1829,6 +1834,7 @@ class Model(object):
         if isinstance(self.__timestamps__, bool):
             return self.__timestamps__
 
+
         return timestamp in self.__timestamps__
 
     def set_created_at(self, value):
@@ -1903,6 +1909,8 @@ class Model(object):
         :rtype: Builder
         """
         builder = self.new_query()
+
+        self.set_without_scope_name(scope)
 
         return builder.without_global_scope(scope)
 
@@ -2822,6 +2830,13 @@ class Model(object):
     def exists(self):
         return self._exists
 
+    @property
+    def without_scope_name(self):
+        return self._without_scope_name
+
+    def set_without_scope_name(self, s):
+        self._without_scope_name = s
+
     def set_exists(self, exists):
         self._exists = exists
 
@@ -2962,6 +2977,7 @@ class Model(object):
             "_exists",
             "_relations",
             "_original",
+            "_without_scope_name"
         ] or key.startswith("__"):
             return object.__setattr__(self, key, value)
 
@@ -2990,6 +3006,7 @@ class Model(object):
             "attributes": self._attributes,
             "relations": self._relations,
             "exists": self._exists,
+            "without_scope_name": self._without_scope_name,
         }
 
     def __setstate__(self, state):
@@ -2998,3 +3015,4 @@ class Model(object):
         self.set_raw_attributes(state["attributes"], True)
         self.set_relations(state["relations"])
         self.set_exists(state["exists"])
+        self.set_without_scope_name(state["without_scope_name"])
