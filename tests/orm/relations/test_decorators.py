@@ -75,7 +75,7 @@ class DecoratorsTestCase(OratorTestCase):
 
         # With eager loading
         user = OratorTestUser.with_("friends", "posts", "post", "photos").find(1)
-        post = OratorTestPost.find(1)
+        post = OratorTestPost.with_("user", "photos").find(1)
         self.assertEqual(1, len(user.friends))
         self.assertEqual(2, len(user.posts))
         self.assertIsInstance(user.post, OratorTestPost)
@@ -99,8 +99,6 @@ class DecoratorsTestCase(OratorTestCase):
             'SELECT * FROM "test_photos" WHERE "name" IS NOT NULL AND "test_photos"."imageable_id" = ? AND "test_photos"."imageable_type" = ?',
             user.photos().to_sql(),
         )
-        # OratorTestUser.to_sql()
-        # OratorTestUser.with_trashed().to_sql()
         self.assertEqual(
             'SELECT * FROM "test_users" WHERE "test_users"."id" = ? ORDER BY "id" ASC',
             post.user().to_sql(),
@@ -113,8 +111,6 @@ class DecoratorsTestCase(OratorTestCase):
         # Without eager loading
         user = OratorTestUser.find(1)
         post = OratorTestPost.find(1)
-
-
         self.assertEqual(1, len(user.friends))
         self.assertEqual(2, len(user.posts))
         self.assertIsInstance(user.post, OratorTestPost)
