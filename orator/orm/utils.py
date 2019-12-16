@@ -195,8 +195,6 @@ class relation(object):
 
         relation = Wrapper(relation)
 
-
-
         instance._relations[self._relation] = relation
 
         return relation
