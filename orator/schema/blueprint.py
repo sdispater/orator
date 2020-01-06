@@ -442,7 +442,7 @@ class Blueprint(object):
 
     def unsigned_integer(self, column, auto_increment=False):
         """
-        Create a new unisgned integer column on the table.
+        Create a new unsigned integer column on the table.
 
         :param column: The column
         :type column: str
