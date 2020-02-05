@@ -118,7 +118,7 @@ class Command(BaseCommand):
         filename, ext = os.path.splitext(path)
         if ext in [".yml", ".yaml"]:
             with open(path) as fd:
-                config = yaml.load(fd)
+                config = yaml.load(fd, Loader=yaml.FullLoader)
         elif ext in [".py"]:
             config = {}
 
