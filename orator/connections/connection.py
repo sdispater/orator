@@ -416,7 +416,7 @@ class Connection(ConnectionInterface):
                 log += " in %sms" % time_
 
             query_logger.debug(
-                log, extra={"query": query, "bindings": bindings, "elapsed_time": time_}
+                log, extra={"query": query.decode("utf-8"), "bindings": bindings, "elapsed_time": time_}
             )
 
     def _get_elapsed_time(self, start):
