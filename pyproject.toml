@@ -11,7 +11,7 @@ authors = [
 
 readme = 'README.rst'
 
-repository = "https://github.com/sdispater/orator"
+repository = "https://github.com/alexpdr/orator"
 homepage = "https://orator-orm.com/"
 
 keywords = ['database', 'orm']
