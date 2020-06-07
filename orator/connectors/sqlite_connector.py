@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from pendulum import Pendulum, Date
+import pendulum
 
 try:
     import sqlite3
 
     from sqlite3 import register_adapter
 
-    register_adapter(Pendulum, lambda val: val.isoformat(" "))
-    register_adapter(Date, lambda val: val.isoformat())
+    register_adapter(pendulum, lambda val: val.isoformat(" "))
+    register_adapter(pendulum.Date, lambda val: val.isoformat())
 except ImportError:
     sqlite3 = None
 
