@@ -4,8 +4,8 @@ class Validator(object):
     _validation_init = True
     __errors__ = {'code':200, 'errors':[]}
 
-    @classmethod
-    def validate(cls, key, require=False, data_type=False,
+    # @classmethod
+    def validate(self, key, require=False, data_type=False,
             regex=False, custom_error=False, *args):
         '''
         Function dedicated to validate if a imput has some values
@@ -18,21 +18,21 @@ class Validator(object):
         param: *args *args: arguments to go with the function
         return: data response: We can return the value validated or None if the value doest correspont to the statements
         '''
-        if cls._validation_init:
-            cls._errors()
-            cls._validation_init = False
-        value = getattr(cls, key, None)
+        if self._validation_init:
+            self._errors()
+            self._validation_init = False
+        value = getattr(self, key, None)
         if require and not value:
-            cls._handle_error('require', key, custom_error=custom_error, *args)
-            return cls
+            self._handle_error('require', key, custom_error=custom_error, *args)
+            return self
         if data_type and not isinstance(value, data_type):
-            cls._handle_error('data type', key, custom_msg='Bad data type on {}'.format(key),
+            self._handle_error('data type', key, custom_msg='Bad data type on {}'.format(key),
                 custom_error=custom_error, *args)
-            return cls
+            return self
         if regex and not re.match(regex, value):
-            if not require: cls.validate(key, require=True)
-            cls._handle_error('regex', key, custom_error=custom_error, *args)
-        return cls
+            if not require: self.validate(key, require=True)
+            self._handle_error('regex', key, custom_error=custom_error, *args)
+        return self
 
     @classmethod
     def _handle_error(cls, type_error, value_name,
@@ -54,23 +54,16 @@ class Validator(object):
                 'Error of {} on {}'.format(type_error, value_name)
         )
 
-    def _change_error_code(self, code):
-        '''
-        Fucntion dedicated do _change_error_code
-
-        param: int code: The error code that we will return
-        '''
-        self._errors(code=code)
-
-    def errors(self, code=None, msg=None):
+    @classmethod
+    def errors(cls, code=None, msg=None):
         '''
         Function dedicated to delete errors after use
 
         return: __errors__
         '''
-        self._validation_init = True
-        errors = self.__errors__
-        self.__errors__ = {'code':200, 'errors':[]}
+        cls._validation_init = True
+        errors = cls.__errors__
+        cls.__errors__ = {'code':200, 'errors':[]}
         return errors
 
     @classmethod
