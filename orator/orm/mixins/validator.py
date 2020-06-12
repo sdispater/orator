@@ -19,11 +19,15 @@ class Validator(object):
         value = getattr(self, key, None)
         if require and not value:
             self._handle_error('require', key, custom_error=custom_error, *args)
+            return self
         if data_type and not isinstance(value, data_type):
             self._handle_error('data type', key, custom_msg='Bad data type on {}'.format(key),
                 custom_error=custom_error, *args)
+            return self
         if regex and not re.match(regex, value):
+            if require=False: self.validate(key, require=True)
             self._handle_error('regex', key, custom_error=custom_error, *args)
+        return self
 
     def _handle_error(self, type_error, value_name,
             custom_msg=False, custom_error=False, *args):
