@@ -326,7 +326,7 @@ class QueryGrammar(Grammar):
 
         return "%s%s" % (joiner, union["query"].to_sql())
 
-    def compile_insert(self, query, values):
+    def compile_insert(self, query, values, insert_type='INSERT'):
         """
         Compile an insert SQL statement
 
@@ -335,6 +335,9 @@ class QueryGrammar(Grammar):
 
         :param values: The values to insert
         :type values: dict or list
+
+        :param insert_type: Insert type: "INSERT"(default), "INSERT_IGNORE" or "REPLACE"
+        :type insert_type: str
 
         :return: The compiled statement
         :rtype: str
@@ -357,8 +360,12 @@ class QueryGrammar(Grammar):
         value = ["(%s)" % parameters] * len(values)
 
         parameters = ", ".join(value)
-
-        return "INSERT INTO %s (%s) VALUES %s" % (table, columns, parameters)
+        if insert_type == "INSERT_IGNORE":
+            return "INSERT INTO %s (%s) VALUES %s" % (table, columns, parameters)
+        elif insert_type == "REPLACE":
+            return "REPLACE INTO %s (%s) VALUES %s" % (table, columns, parameters)
+        else:
+            return "INSERT INTO %s (%s) VALUES %s" % (table, columns, parameters)
 
     def compile_insert_get_id(self, query, values, sequence):
         return self.compile_insert(query, values)
