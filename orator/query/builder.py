@@ -1379,7 +1379,7 @@ class QueryBuilder(object):
 
         return self._connection.insert(sql, bindings)
 
-    def inser_replace(self, _values=None, **values):
+    def insert_replace(self, _values=None, **values):
         """
         Insert a new record into the database, use "REPLACE INTO", if this data exists (primary key or unique index),
         the old record is deleted and a new record is inserted to replace it
