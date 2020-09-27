@@ -1340,6 +1340,84 @@ class QueryBuilder(object):
         if len(results) > 0:
             return dict((k.lower(), v) for k, v in results[0].items())["aggregate"]
 
+    def insert_ignore(self, _values=None, **values):
+        """
+        Insert a new record into the database, use "INSERT IGNORE INTO", insert failure is only a warning,
+        if the batch insert other statements can be executed successfully
+
+        :param _values: The new record values
+        :type _values: dict or list
+
+        :param values: The new record values as keyword arguments
+        :type values: dict
+
+        :return: The result
+        :rtype: bool
+        """
+        if not values and not _values:
+            return True
+
+        if not isinstance(_values, list):
+            if _values is not None:
+                values.update(_values)
+
+            values = [values]
+        else:
+            values = _values
+            for i, value in enumerate(values):
+                values[i] = OrderedDict(sorted(value.items()))
+
+        bindings = []
+
+        for record in values:
+            for value in record.values():
+                bindings.append(value)
+
+        sql = self._grammar.compile_insert(self, values, insert_type='INSERT_IGNORE')
+
+        bindings = self._clean_bindings(bindings)
+
+        return self._connection.insert(sql, bindings)
+
+    def insert_replace(self, _values=None, **values):
+        """
+        Insert a new record into the database, use "REPLACE INTO", if this data exists (primary key or unique index),
+        the old record is deleted and a new record is inserted to replace it
+
+        :param _values: The new record values
+        :type _values: dict or list
+
+        :param values: The new record values as keyword arguments
+        :type values: dict
+
+        :return: The result
+        :rtype: bool
+        """
+        if not values and not _values:
+            return True
+
+        if not isinstance(_values, list):
+            if _values is not None:
+                values.update(_values)
+
+            values = [values]
+        else:
+            values = _values
+            for i, value in enumerate(values):
+                values[i] = OrderedDict(sorted(value.items()))
+
+        bindings = []
+
+        for record in values:
+            for value in record.values():
+                bindings.append(value)
+
+        sql = self._grammar.compile_insert(self, values, insert_type='REPLACE')
+
+        bindings = self._clean_bindings(bindings)
+
+        return self._connection.insert(sql, bindings)
+
     def insert(self, _values=None, **values):
         """
         Insert a new record into the database
