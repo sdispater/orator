@@ -480,6 +480,9 @@ class SQLitePlatform(Platform):
     def get_integer_type_declaration_sql(self, column):
         return 'INTEGER' + self._get_common_integer_type_declaration_sql(column)
 
+    def get_float_type_declaration_sql(self, column):
+        return 'FLOAT'
+
     def get_bigint_type_declaration_sql(self, column):
         # SQLite autoincrement is implicit for INTEGER PKs, but not for BIGINT fields.
         if not column.get('autoincrement', False):
