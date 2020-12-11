@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import importlib
-import inflection
 import os
-from cleo import InputOption
-from orator import DatabaseManager
-from .base_command import BaseCommand
+
+import inflection
+
 from ...utils import load_module
+from .base_command import BaseCommand
 
 
 class SeedCommand(BaseCommand):

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from cleo import Application
+from cleo.application import Application
 from .. import __version__
 
-application = Application("Orator", __version__, complete=True)
+application = Application("Orator", __version__)
 
 # Migrations
 from .migrations import (

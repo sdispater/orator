@@ -28,20 +28,20 @@ class RefreshCommand(BaseCommand):
 
         database = self.option("database")
 
-        options = [("--force", True)]
+        options = ["--force"]
 
         if self.option("path"):
-            options.append(("--path", self.option("path")))
+            options.append("--path " + self.option("path"))
 
         if database:
-            options.append(("--database", database))
+            options.append("--database " + database)
 
-        if self.get_definition().has_option("config"):
-            options.append(("--config", self.option("config")))
+        if self._definition.has_option("config"):
+            options.append("--config " + self.option("config"))
 
-        self.call("migrate:reset", options)
+        self.call("migrate:reset", " ".join(options))
 
-        self.call("migrate", options)
+        self.call("migrate", " ".join(options))
 
         if self._needs_seeding():
             self._run_seeder(database)
@@ -50,15 +50,15 @@ class RefreshCommand(BaseCommand):
         return self.option("seed")
 
     def _run_seeder(self, database):
-        options = [("--seeder", self.option("seeder")), ("--force", True)]
+        options = ["--seeder " + self.option("seeder"), "--force"]
 
         if database:
-            options.append(("--database", database))
+            options.append("--database " + database)
 
-        if self.get_definition().has_option("config"):
-            options.append(("--config", self.option("config")))
+        if self._definition.has_option("config"):
+            options.append("--config " + self.option("config"))
 
         if self.option("seed-path"):
-            options.append(("--path", self.option("seed-path")))
+            options.append("--path " + self.option("seed-path"))
 
-        self.call("db:seed", options)
+        self.call("db:seed", " ".join(options))

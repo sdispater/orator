@@ -18,10 +18,10 @@ keywords = ['database', 'orm']
 
 
 [tool.poetry.dependencies]
-python = "~2.7 || ^3.5"
+python = "^3.6"
 backpack = "^0.1"
 blinker = "^1.4"
-cleo = "^0.6"
+cleo = "^1.0.0a3"
 inflection = "^0.3"
 Faker = "^0.8"
 lazy-object-proxy = "^1.2"
@@ -45,6 +45,8 @@ pytest = "^3.5"
 pytest-mock = "^1.6"
 tox = "^3.5"
 pre-commit = "^1.11"
+black = "^20.8b1"
+isort = "^5.6.4"
 
 
 [tool.poetry.extras]

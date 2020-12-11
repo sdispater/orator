@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from orator.migrations import Migrator, DatabaseMigrationRepository
+from orator.migrations import DatabaseMigrationRepository, Migrator
+
 from .base_command import BaseCommand
 
 
@@ -49,15 +50,15 @@ class MigrateCommand(BaseCommand):
             options = [("--force", self.option("force"))]
 
             if database:
-                options.append(("--database", database))
+                options.append(("--database {}".format(database)))
 
-            if self.get_definition().has_option("config"):
-                options.append(("--config", self.option("config")))
+            if self._args.format.has_option("config"):
+                options.append("--config {}".format(self.option("config")))
 
             if self.option("seed-path"):
-                options.append(("--path", self.option("seed-path")))
+                options.append("--path '{}'".format(self.option("seed-path")))
 
-            self.call("db:seed", options)
+            self.call("db:seed", " ".join(options))
 
     def _prepare_database(self, migrator, database):
         migrator.set_connection(database)
@@ -66,9 +67,9 @@ class MigrateCommand(BaseCommand):
             options = []
 
             if database:
-                options.append(("--database", database))
+                options.append(("--database {}".format(database)))
 
-            if self.get_definition().has_option("config"):
-                options.append(("--config", self.option("config")))
+            if self._args.format.has_option("config"):
+                options.append("--config {}".format(self.option("config")))
 
-            self.call("migrate:install", options)
+            self.call("migrate:install", " ".join(options))

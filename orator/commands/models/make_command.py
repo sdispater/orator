@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import os
+
 import inflection
-from cleo import Command
-from .stubs import MODEL_DEFAULT_STUB
+from cleo.commands.command import Command
+
 from ...utils import mkdir_p
+from .stubs import MODEL_DEFAULT_STUB
 
 
 class ModelMakeCommand(Command):
