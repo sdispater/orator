@@ -162,12 +162,11 @@ class HasManyThrough(Relation):
 
         :rtype: orator.Collection
         """
-        if columns is None:
-            columns = ["*"]
+        if not columns:
+            select = self._get_select_columns(["*"])
+            self._query.add_select(*select)
 
-        select = self._get_select_columns(columns)
-
-        models = self._query.add_select(*select).get_models()
+        models = self._query.get_models()
 
         if len(models) > 0:
             models = self._query.eager_load_relations(models)
