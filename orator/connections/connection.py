@@ -371,6 +371,8 @@ class Connection(ConnectionInterface):
             "error writing data to the connection",
             "connection timed out",
             "resource deadlock avoided",
+            "connection already closed",
+            "eof detected",
         ]:
             if s in message:
                 return True
