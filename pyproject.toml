@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "orator"
+name = "meliorator"
 version = "0.9.10"
-description = "The Orator ORM provides a simple yet beautiful ActiveRecord implementation."
+description = "This is a fork from Orator ORM used by Méliuz."
 
 license = "MIT"
 
@@ -9,13 +9,20 @@ authors = [
     "Sébastien Eustace <sebastien@eustace.io>"
 ]
 
+maintainers = [
+    "Matheus Oliveira <mco@meliuz.com.br>"
+]
+
 readme = 'README.rst'
 
-repository = "https://github.com/sdispater/orator"
+repository = "https://github.com/meliuz/meliorator"
 homepage = "https://orator-orm.com/"
 
 keywords = ['database', 'orm']
 
+packages = [
+    { include = "orator", from = "." }
+]
 
 [tool.poetry.dependencies]
 python = "~2.7 || ^3.5"

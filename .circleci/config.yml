@@ -1,0 +1,24 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@1.4.0
+
+jobs:
+  publish-pypi-package:
+    executor: python/default
+    steps:
+      - checkout
+      - run:
+          name: Publish
+          command: |
+            poetry publish --build -u ${PYPI_PUBLIC_REGISTRY_USERNAME} -p ${PYPI_PUBLIC_REGISTRY_PASSWORD} -n
+
+workflows:
+  main:
+    jobs:
+      - publish-pypi-package:
+          filters:
+            branches:
+              ignore: /.*?/
+            tags:
+              only: /^[0-9]+(\.[0-9]+){2}$/
