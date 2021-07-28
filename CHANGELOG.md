@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.9.10] - 2021-07-27
+
+### Fixed
+- Fixed some cases where a reconnection would not occur for PostgreSQL. (Again)
+
 ## [0.9.9] - 2019-07-15
 
 ### Fixed

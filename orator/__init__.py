@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = "0.9.9"
+__version__ = "0.9.10"
 
 from .orm import Model, SoftDeletes, Collection, accessor, mutator, scope
 from .database_manager import DatabaseManager
