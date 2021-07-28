@@ -1,0 +1,27 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@1.4.0
+
+jobs:
+  publish-pypi-package:
+    executor: python/default
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: poetry
+      - run:
+          name: Test it
+          command: |
+            poetry run pytest --version
+
+workflows:
+  main:
+    jobs:
+      - publish-pypi-package
+        # context: global
+        # filters:
+        #   branches:
+        #     ignore: /.*?/
+        #   tags:
+        #     only: /^[0-9]+(\.[0-9]+){2}$/
