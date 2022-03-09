@@ -361,7 +361,7 @@ Note that entire collections of models can also be converted to dictionaries:
 
 .. code-block:: python
 
-    return User.all().serailize()
+    return User.all().serialize()
 
 
 Converting a model to JSON
