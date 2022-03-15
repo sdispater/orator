@@ -72,7 +72,7 @@ class Relation(object):
 
         :rtype: Collection
         """
-        return self.get()
+        return self.get(columns=self._query.columns)
 
     def touch(self):
         """
