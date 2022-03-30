@@ -141,33 +141,6 @@ class URL(object):
         else:
             return cls
 
-    def translate_connect_args(self, names=[], **kw):
-        """Translate url attributes into a dictionary of connection arguments.
-
-        Returns attributes of this url (`host`, `database`, `username`,
-        `password`, `port`) as a plain dictionary.  The attribute names are
-        used as the keys by default.  Unset or false attributes are omitted
-        from the final dictionary.
-
-        :param \**kw: Optional, alternate key names for url attributes.
-
-        :param names: Deprecated.  Same purpose as the keyword-based alternate
-            names, but correlates the name to the original positionally.
-        """
-
-        translated = {}
-        attribute_names = ["host", "database", "username", "password", "port"]
-        for sname in attribute_names:
-            if names:
-                name = names.pop(0)
-            elif sname in kw:
-                name = kw[sname]
-            else:
-                name = sname
-            if name is not None and getattr(self, sname, False):
-                translated[name] = getattr(self, sname)
-        return translated
-
 
 def make_url(name_or_url):
     """Given a string or unicode instance, produce a new URL instance.

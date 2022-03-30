@@ -224,7 +224,7 @@ class MigratorTestCase(OratorTestCase):
         migrator.rollback(os.getcwd())
 
     def test_last_batch_of_migrations_can_be_rolled_back_directly_if_transactional_is_false(
-        self
+        self,
     ):
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive("connection").and_return({})
