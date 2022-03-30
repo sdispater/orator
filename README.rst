@@ -43,11 +43,13 @@ Configuration
 All you need to get you started is the configuration describing your database connections
 and passing it to a ``DatabaseManager`` instance.
 
+In order to run migrations, this config should be created in a separate file and be the passed with `-c` to `orator migrate`.
+
 .. code-block:: python
 
     from orator import DatabaseManager, Model
 
-    config = {
+    databases = {
         'mysql': {
             'driver': 'mysql',
             'host': 'localhost',
@@ -58,7 +60,7 @@ and passing it to a ``DatabaseManager`` instance.
         }
     }
 
-    db = DatabaseManager(config)
+    db = DatabaseManager(databases)
     Model.set_connection_resolver(db)
 
 
@@ -775,7 +777,7 @@ Here is an example of how read / write connections should be configured:
 
 .. code-block:: python
 
-    config = {
+    databases = {
         'mysql': {
             'read': {
                 'host': '192.168.1.1'
