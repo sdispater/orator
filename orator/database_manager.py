@@ -90,6 +90,7 @@ class BaseDatabaseManager(ConnectionResolverInterface):
 
         if name in self._connections:
             self._connections[name].disconnect()
+            del self._connections[name]  # Fix for https://github.com/sdispater/flask-orator/issues/8
 
     def reconnect(self, name=None):
         if name is None:
