@@ -219,6 +219,11 @@ class Relation(object):
         if self._extra_query:
             query.merge(self._extra_query.get_query())
 
+        if self._extra_query:
+            scope_in_relation = getattr(self._extra_query.get_model(), "without_scope_name")
+            if scope_in_relation:
+                query = query.without_global_scope(scope_in_relation)
+
         return query
 
     def new_instance(self, model, **kwargs):
