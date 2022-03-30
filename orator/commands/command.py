@@ -123,7 +123,7 @@ class Command(BaseCommand):
             config = {}
 
             with open(path) as fh:
-                exec(fh.read(), {}, config)
+                exec(fh.read(), {"__file__": path}, config)
         else:
             raise RuntimeError("Config file [%s] is not supported." % path)
 
