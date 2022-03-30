@@ -1462,10 +1462,16 @@ class QueryBuilderTestCase(OratorTestCase):
 
     def test_merge_wheres_can_merge_wheres_and_bindings(self):
         builder = self.get_builder()
-        builder.wheres = ["foo"]
-        builder.merge_wheres(["wheres"], ["foo", "bar"])
-        self.assertEqual(["foo", "wheres"], builder.wheres)
-        self.assertEqual(["foo", "bar"], builder.get_bindings())
+        builder.wheres = [{"column": "foo", "bindings": ["foo"]}]
+        builder.merge_wheres([{"column": "wheres", "bindings": ["bar"]}])
+        self.assertEqual(
+            [
+                {"column": "foo", "bindings": ["foo"]},
+                {"column": "wheres", "bindings": ["bar"]},
+            ],
+            builder.wheres,
+        )
+        self.assertEqual(["foo", "bar"], builder.get_where_bindings())
 
     def test_where_with_null_second_parameter(self):
         builder = self.get_builder()
@@ -1579,22 +1585,22 @@ class QueryBuilderTestCase(OratorTestCase):
 
     def test_add_binding_with_list_merges_bindings(self):
         builder = self.get_builder()
-        builder.add_binding(["foo", "bar"])
-        builder.add_binding(["baz"])
+        builder.add_binding(["foo", "bar"], "select")
+        builder.add_binding(["baz"], "select")
         self.assertEqual(["foo", "bar", "baz"], builder.get_bindings())
 
     def test_add_binding_with_list_merges_bindings_in_correct_order(self):
         builder = self.get_builder()
         builder.add_binding(["bar", "baz"], "having")
-        builder.add_binding(["foo"], "where")
+        builder.add_binding(["foo"], "select")
         self.assertEqual(["foo", "bar", "baz"], builder.get_bindings())
 
     def test_merge_builders(self):
         builder = self.get_builder()
-        builder.add_binding("foo", "where")
+        builder.add_binding("foo", "select")
         builder.add_binding("baz", "having")
         other_builder = self.get_builder()
-        other_builder.add_binding("bar", "where")
+        other_builder.add_binding("bar", "select")
         builder.merge_bindings(other_builder)
         self.assertEqual(["foo", "bar", "baz"], builder.get_bindings())
 
@@ -1675,6 +1681,71 @@ class QueryBuilderTestCase(OratorTestCase):
         )
 
         self.assertEqual(["boom", "bar"], b1.get_bindings())
+
+    def test_remove_where(self):
+        builder = self.get_builder().from_("a")
+        marker = builder.get_grammar().get_marker()
+        builder.where("not_removed_1", "1")
+        builder.where("col_1", "a").or_where("col_1", "b").or_where("col_1", "!=", "c")
+        builder.where("not_removed_2", "2")
+        builder.or_where_in("col_1", [1, 2, 3])
+        builder.or_where_between("col_1", (1, 2))
+        builder.or_where_null("col_1")
+
+        builder.remove_where("col_1")
+
+        self.assertEqual(
+            'SELECT * FROM "a" WHERE "not_removed_1" = %s AND "not_removed_2" = %s'
+            % (marker, marker),
+            builder.to_sql(),
+        )
+
+        self.assertEqual(["1", "2"], builder.get_bindings())
+
+    def test_remove_where_specific_operator(self):
+        builder = self.get_builder().from_("a")
+        marker = builder.get_grammar().get_marker()
+        builder.where("not_removed_1", "1")
+        builder.where("col_1", "a").or_where("col_1", "b").or_where("col_1", "!=", "c")
+        builder.where("not_removed_2", "2")
+        builder.or_where_in("col_1", [1, 2, 3])
+        builder.or_where_between("col_1", (100, 101))
+        builder.or_where_null("col_1")
+
+        builder.remove_where("col_1", "=")
+
+        expected_sql = (
+            'SELECT * FROM "a" WHERE "not_removed_1" = %s OR "col_1" != %s AND "not_removed_2" = %s'
+            ' OR "col_1" IN (%s, %s, %s)'
+            ' OR "col_1" BETWEEN %s AND %s OR "col_1" IS NULL'
+            % (marker, marker, marker, marker, marker, marker, marker, marker)
+        )
+
+        self.assertEqual(expected_sql, builder.to_sql())
+        self.assertEqual(["1", "c", "2", 1, 2, 3, 100, 101], builder.get_bindings())
+
+        builder.remove_where("col_1", "null")
+
+        expected_sql = (
+            'SELECT * FROM "a" WHERE "not_removed_1" = %s OR "col_1" != %s AND "not_removed_2" = %s'
+            ' OR "col_1" IN (%s, %s, %s)'
+            ' OR "col_1" BETWEEN %s AND %s'
+            % (marker, marker, marker, marker, marker, marker, marker, marker)
+        )
+
+        self.assertEqual(expected_sql, builder.to_sql())
+        self.assertEqual(["1", "c", "2", 1, 2, 3, 100, 101], builder.get_bindings())
+
+        builder.remove_where("col_1", "between")
+
+        expected_sql = (
+            'SELECT * FROM "a" WHERE "not_removed_1" = %s OR "col_1" != %s AND "not_removed_2" = %s'
+            ' OR "col_1" IN (%s, %s, %s)'
+            % (marker, marker, marker, marker, marker, marker)
+        )
+
+        self.assertEqual(expected_sql, builder.to_sql())
+        self.assertEqual(["1", "c", "2", 1, 2, 3], builder.get_bindings())
 
     def get_mysql_builder(self):
         grammar = MySQLQueryGrammar()

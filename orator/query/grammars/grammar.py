@@ -157,6 +157,21 @@ class QueryGrammar(Grammar):
 
         return "%s %s (%s)" % (self.wrap(where["column"]), where["operator"], select)
 
+    def _where_expression(self, query, where):
+        lhs = where["lhs"]
+        rhs = where["rhs"]
+        if isinstance(lhs, list):
+            lhs = "(%s)" % self.parameterize(lhs)
+        else:
+            lhs = self.parameter(lhs)
+
+        if isinstance(rhs, list):
+            rhs = "(%s)" % self.parameterize(rhs)
+        else:
+            rhs = self.parameter(rhs)
+
+        return "%s %s %s" % (lhs, where["operator"], rhs)
+
     def _where_basic(self, query, where):
         value = self.parameter(where["value"])
 

@@ -827,9 +827,7 @@ class Builder(object):
         if isinstance(count, basestring) and count.isdigit():
             count = QueryExpression(count)
 
-        return self.where(
-            QueryExpression("(%s)" % has_query.to_sql()), operator, count, boolean
-        )
+        return self._query.where_expression(has_query._query, operator, count, boolean)
 
     def _merge_model_defined_relation_wheres_to_has_query(self, has_query, relation):
         """
@@ -843,9 +841,7 @@ class Builder(object):
         """
         relation_query = relation.get_base_query()
 
-        has_query.merge_wheres(relation_query.wheres, relation_query.get_bindings())
-
-        self._query.add_binding(has_query.get_query().get_bindings(), "where")
+        has_query.merge_wheres(relation_query.wheres)
 
     def _get_has_relation_query(self, relation):
         """
