@@ -912,6 +912,24 @@ class OrmModelTestCase(OratorTestCase):
         except AttributeError:
             pass
 
+    def test_get_attribute_unknown_key(self):
+        model = OrmModelStub()
+
+        try:
+            model.unknown_attribute
+            self.fail("AttributeError not raised")
+        except AttributeError:
+            pass
+
+    def test_get_attribute_unknown_but_fillable_key(self):
+        model = OrmModelStub()
+        model.fillable(['unknown_attribute'])
+
+        try:
+            model.unknown_attribute
+        except AttributeError:
+            self.fail("AttributeError raised for fillable key")
+
     def test_increment(self):
         query = flexmock()
         model_mock = flexmock(OrmModelStub, new_query=lambda: query)

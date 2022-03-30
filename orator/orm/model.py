@@ -2401,7 +2401,7 @@ class Model(object):
         :param key: The attribute to get
         :type key: str
         """
-        in_attributes = key in self._attributes
+        in_attributes = key in self._attributes or self.is_fillable(key)
 
         if in_attributes:
             return self._get_attribute_value(key)
@@ -2588,7 +2588,7 @@ class Model(object):
     def from_datetime(self, value):
         """
         Convert datetime to a storable string.
-        
+
         :param value: The datetime value
         :type value: pendulum.Pendulum or datetime.date or datetime.datetime
 
