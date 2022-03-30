@@ -1064,7 +1064,7 @@ class QueryBuilder(object):
             self.to_sql(), self.get_bindings(), not self._use_write_connection
         )
 
-    def paginate(self, per_page=15, current_page=None, columns=None):
+    def paginate(self, per_page=15, current_page=None, columns=None, column_count=None):
         """
         Paginate the given query.
 
@@ -1077,15 +1077,20 @@ class QueryBuilder(object):
         :param columns: The columns to return
         :type columns: list
 
+        :param column_count: The columns that used to get count
+        :type column_count: list
+
         :return: The paginator
         :rtype: LengthAwarePaginator
         """
         if columns is None:
             columns = ["*"]
+        if column_count is None:
+            column_count = ["*"]
 
         page = current_page or Paginator.resolve_current_page()
 
-        total = self.get_count_for_pagination()
+        total = self.get_count_for_pagination(column_count)
 
         results = self.for_page(page, per_page).get(columns)
 
@@ -1116,10 +1121,10 @@ class QueryBuilder(object):
 
         return Paginator(self.get(columns), per_page, page)
 
-    def get_count_for_pagination(self):
+    def get_count_for_pagination(self, column_count):
         self._backup_fields_for_count()
 
-        total = self.count()
+        total = self.count(column_count)
 
         self._restore_fields_for_count()
 
