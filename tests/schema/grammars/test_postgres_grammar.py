@@ -469,6 +469,16 @@ class PostgresSchemaGrammarTestCase(OratorTestCase):
             'ALTER TABLE "users" ADD COLUMN "foo" BYTEA NOT NULL', statements[0]
         )
 
+    def test_adding_uuid(self):
+        blueprint = Blueprint("users")
+        blueprint.uuid("foo")
+        statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
+
+        self.assertEqual(1, len(statements))
+        self.assertEqual(
+            'ALTER TABLE "users" ADD COLUMN "foo" UUID NOT NULL', statements[0]
+        )
+
     def test_adding_json(self):
         blueprint = Blueprint("users")
         blueprint.json("foo")

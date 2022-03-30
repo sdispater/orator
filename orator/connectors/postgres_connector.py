@@ -9,6 +9,11 @@ try:
     connection_class = psycopg2.extras.DictConnection
     cursor_class = psycopg2.extras.DictCursor
     row_class = psycopg2.extras.DictRow
+
+    ###
+    # Register UUID extra for psycopg2
+    ###
+    psycopg2.extras.register_uuid()
 except ImportError:
     psycopg2 = None
     connection_class = object
