@@ -4,7 +4,7 @@ import simplejson as json
 import hashlib
 import time
 import datetime
-from pendulum import Pendulum
+from pendulum import DateTime as Pendulum
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase, mock
 from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
