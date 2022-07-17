@@ -203,7 +203,7 @@ class Model(object):
         :type scope: orator.orm.scopes.scope.Scope or callable or str
 
         :param implementation: The scope implementation
-        :type implementation: callbale or None
+        :type implementation: callable or None
         """
         if cls not in cls._global_scopes:
             cls._global_scopes[cls] = OrderedDict()
@@ -2180,7 +2180,7 @@ class Model(object):
     @classmethod
     def unguard(cls):
         """
-        Disable the mass assigment restrictions.
+        Disable the mass assignment restrictions.
         """
         cls.__unguarded__ = True
 
