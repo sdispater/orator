@@ -130,7 +130,7 @@ class SchemaGrammar(Grammar):
 
     def _add_modifiers(self, sql, blueprint, column):
         """
-        Add the column modifiers to the deifinition
+        Add the column modifiers to the definition
         """
         for modifier in self._modifiers:
             method = "_modify_%s" % modifier

@@ -83,7 +83,7 @@ class MorphToMany(BelongsToMany):
 
     def _create_attach_record(self, id, timed):
         """
-        Create a new pivot attachement record.
+        Create a new pivot attachment record.
         """
         record = super(MorphToMany, self)._create_attach_record(id, timed)
 

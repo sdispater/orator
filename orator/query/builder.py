@@ -983,7 +983,7 @@ class QueryBuilder(object):
         :param id: The id of the record to retrieve
         :type id: mixed
 
-        :param columns: The columns of the record to retrive
+        :param columns: The columns of the record to retrieve
         :type columns: list
 
         :return: mixed
@@ -1263,7 +1263,7 @@ class QueryBuilder(object):
         """
         Retrieve the "min" result of the query
 
-        :param column: The column to get the minimun for
+        :param column: The column to get the minimum for
         :type column: tuple
 
         :return: The min
@@ -1318,7 +1318,7 @@ class QueryBuilder(object):
         :param func: The aggregate function
         :type func: str
 
-        :param columns: The columns to execute the fnction for
+        :param columns: The columns to execute the function for
         :type columns: tuple
 
         :return: The aggregate result

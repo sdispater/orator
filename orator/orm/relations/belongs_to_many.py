@@ -704,7 +704,7 @@ class BelongsToMany(Relation):
 
     def _create_attach_record(self, id, timed):
         """
-        Create a new pivot attachement record.
+        Create a new pivot attachment record.
         """
         record = {}
 
