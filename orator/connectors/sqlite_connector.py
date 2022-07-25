@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pendulum import Pendulum, Date
+from pendulum import DateTime as Pendulum, Date
 
 try:
     import sqlite3
