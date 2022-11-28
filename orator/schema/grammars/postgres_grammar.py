@@ -215,6 +215,9 @@ class PostgresSchemaGrammar(SchemaGrammar):
     def _type_binary(self, column):
         return "BYTEA"
 
+    def _type_uuid(self, column):
+        return "UUID"
+
     def _modify_nullable(self, blueprint, column):
         if column.get("nullable"):
             return " NULL"

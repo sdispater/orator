@@ -522,6 +522,9 @@ class Blueprint(object):
         """
         return self._add_column("boolean", column)
 
+    def uuid(self, column):
+        return self._add_column('uuid', column)
+
     def enum(self, column, allowed):
         """
         Create a new enum column on the table.
